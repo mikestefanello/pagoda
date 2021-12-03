@@ -20,6 +20,6 @@ func (r *Register) Get(c echo.Context) error {
 }
 
 func (r *Register) Post(c echo.Context) error {
-	msg.Set(c, msg.Danger, "Registration is currently disabled.")
+	msg.Danger(c, "Registration is currently disabled.")
 	return r.Get(c)
 }

@@ -20,7 +20,7 @@ func (a *Contact) Get(c echo.Context) error {
 }
 
 func (a *Contact) Post(c echo.Context) error {
-	msg.Set(c, msg.Success, "Thank you for contacting us!")
-	msg.Set(c, msg.Info, "We will respond to you shortly.")
+	msg.Success(c, "Thank you for contacting us!")
+	msg.Info(c, "We will respond to you shortly.")
 	return a.Redirect(c, "home")
 }

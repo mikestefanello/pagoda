@@ -20,6 +20,6 @@ func (l *Login) Get(c echo.Context) error {
 }
 
 func (l *Login) Post(c echo.Context) error {
-	msg.Set(c, msg.Danger, "Invalid credentials. Please try again.")
+	msg.Danger(c, "Invalid credentials. Please try again.")
 	return l.Get(c)
 }

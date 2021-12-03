@@ -9,23 +9,34 @@ import (
 type Type string
 
 const (
-	Success Type = "success"
-	Info    Type = "info"
-	Warning Type = "warning"
-	Danger  Type = "danger"
+	TypeSuccess Type = "success"
+	TypeInfo    Type = "info"
+	TypeWarning Type = "warning"
+	TypeDanger  Type = "danger"
 )
 
-// TODO: Error handling
+// TODO: Error handling and cleanup
 
-func getSession(c echo.Context) *sessions.Session {
-	sess, _ := session.Get("msg", c)
-	return sess
+func Success(c echo.Context, message string) {
+	Set(c, TypeSuccess, message)
+}
+
+func Info(c echo.Context, message string) {
+	Set(c, TypeInfo, message)
+}
+
+func Warning(c echo.Context, message string) {
+	Set(c, TypeWarning, message)
+}
+
+func Danger(c echo.Context, message string) {
+	Set(c, TypeDanger, message)
 }
 
 // Set adds a new message into the cookie storage.
-func Set(c echo.Context, typ Type, value string) {
+func Set(c echo.Context, typ Type, message string) {
 	sess := getSession(c)
-	sess.AddFlash(value, string(typ))
+	sess.AddFlash(message, string(typ))
 	_ = sess.Save(c.Request(), c.Response())
 }
 
@@ -46,4 +57,9 @@ func Get(c echo.Context, typ Type) []string {
 		return flashes
 	}
 	return nil
+}
+
+func getSession(c echo.Context) *sessions.Session {
+	sess, _ := session.Get("msg", c)
+	return sess
 }
