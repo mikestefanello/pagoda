@@ -3,5 +3,6 @@
         <label for="message">Message</label>
         <textarea id="message"></textarea>
         <input type="submit" value="Send"/>
+        {{template "csrf" .}}
     </form>
 {{end}}

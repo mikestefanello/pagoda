@@ -26,6 +26,9 @@ func BuildRouter(c *container.Container) {
 	// TODO: needs cache control headers
 	c.Web.Use(middleware.Static(StaticDir))
 	c.Web.Use(session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))))
+	c.Web.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		TokenLookup: "form:csrf",
+	}))
 
 	// Base controller
 	ctr := controllers.NewController(c)

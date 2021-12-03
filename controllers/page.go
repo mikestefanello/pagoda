@@ -7,6 +7,8 @@ import (
 	"goweb/msg"
 	"goweb/pager"
 
+	"github.com/labstack/echo/v4/middleware"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -31,6 +33,7 @@ type Page struct {
 		Keywords    []string
 	}
 	Pager pager.Pager
+	CSRF  string
 }
 
 func NewPage(c echo.Context) Page {
@@ -43,6 +46,10 @@ func NewPage(c echo.Context) Page {
 	}
 
 	p.IsHome = p.Path == "/"
+
+	if csrf := c.Get(middleware.DefaultCSRFConfig.ContextKey); csrf != nil {
+		p.CSRF = csrf.(string)
+	}
 
 	return p
 }
