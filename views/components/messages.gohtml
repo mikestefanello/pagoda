@@ -1,0 +1,18 @@
+{{define "messages"}}
+    {{- range (.GetMessages "success")}}
+        {{template "message" dict "Type" "success" "Text" .}}
+    {{- end}}
+    {{- range (.GetMessages "info")}}
+        {{template "message" dict "Type" "info" "Text" .}}
+    {{- end}}
+    {{- range (.GetMessages "warning")}}
+        {{template "message" dict "Type" "warning" "Text" .}}
+    {{- end}}
+    {{- range (.GetMessages "danger")}}
+        {{template "message" dict "Type" "danger" "Text" .}}
+    {{- end}}
+{{end}}
+
+{{define "message"}}
+    <div class="alert alert-{{.Type}}">{{.Text}}</div>
+{{end}}
