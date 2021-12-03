@@ -1,0 +1,24 @@
+{{define "content"}}
+    <form action="" class="">
+        <div class="field">
+            <label for="" class="label">Email</label>
+            <div class="control">
+                <input type="email" placeholder="e.g. bobsmith@gmail.com" class="input" required>
+            </div>
+        </div>
+        <div class="field">
+            <label for="" class="label">Password</label>
+            <div class="control">
+                <input type="password" placeholder="*******" class="input" required>
+            </div>
+        </div>
+        <div class="field is-grouped">
+            <p class="control">
+                <button class="button is-primary">Log in</button>
+            </p>
+            <p class="control">
+                <a href="{{call .Reverse "home"}}" class="button is-light">Cancel</a>
+            </p>
+        </div>
+    </form>
+{{end}}

@@ -1,0 +1,16 @@
+{{define "metatags"}}
+    <title>{{ .AppName }}{{ if .Title }} | {{ .Title }}{{ end }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    {{- if .Metatags.Description}}
+        <meta name="description" content="{{.Metatags.Description}}">
+    {{- end}}
+    {{- if .Metatags.Keywords}}
+        <meta name="keywords" content="{{.Metatags.Keywords | join ", "}}">
+    {{- end}}
+{{end}}
+
+{{define "css"}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+{{end}}

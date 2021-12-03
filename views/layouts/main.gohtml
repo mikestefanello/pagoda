@@ -1,37 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>{{ .AppName }}{{ if .Title }} | {{ .Title }}{{ end }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-</head>
-<body>
-    <nav class="navbar is-dark">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="{{call .Reverse "home"}}" class="navbar-item">{{.AppName}}</a>
-            </div>
-            <div id="navbarMenu" class="navbar-menu">
-                <div class="navbar-end">
-                    {{link (call .Reverse "home") "Home" .Path "navbar-item"}}
-                    {{link (call .Reverse "about") "About" .Path "navbar-item"}}
-                    {{link (call .Reverse "contact") "Contact" .Path "navbar-item"}}
+    <head>
+        {{template "metatags" .}}
+        {{template "css" .}}
+    </head>
+    <body>
+        <nav class="navbar is-dark">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="{{call .Reverse "home"}}" class="navbar-item">{{.AppName}}</a>
+                </div>
+                <div id="navbarMenu" class="navbar-menu">
+                    <div class="navbar-end">
+                        {{link (call .Reverse "home") "Home" .Path "navbar-item"}}
+                        {{link (call .Reverse "about") "About" .Path "navbar-item"}}
+                        {{link (call .Reverse "contact") "Contact" .Path "navbar-item"}}
+                        {{- if .IsAuth}}
+
+                        {{- else}}
+                            {{link (call .Reverse "login") "Login" .Path "navbar-item"}}
+                        {{- end}}
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <section class="section">
-        <div class="container">
-        {{- if .Title}}
-            <h1 class="title">{{.Title}}</h1>
-        {{- end}}
+        <section class="section">
+            <div class="container">
+            {{- if .Title}}
+                <h1 class="title">{{.Title}}</h1>
+            {{- end}}
 
-        {{template "messages" .}}
-        {{template "content" .}}
-        </div>
-    </section>
-</body>
+            {{template "messages" .}}
+            {{template "content" .}}
+            </div>
+        </section>
+    </body>
 </html>

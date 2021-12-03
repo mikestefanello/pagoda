@@ -61,5 +61,6 @@ func navRoutes(e *echo.Echo, ctr controllers.Controller) {
 }
 
 func userRoutes(e *echo.Echo, ctr controllers.Controller) {
-	// TODO
+	login := controllers.Login{Controller: ctr}
+	e.GET("/user/login", login.Get).Name = "login"
 }

@@ -1,3 +1,3 @@
 {{define "content"}}
-    <p>Click here to return home</p>
+    <p>Click {{link (call .Reverse "home") "here" .Path}} to return home</p>
 {{end}}
