@@ -50,7 +50,7 @@ func File(filepath string) string {
 
 func Link(url, text, currentPath string, classes ...string) template.HTML {
 	if currentPath == url {
-		classes = append(classes, "active")
+		classes = append(classes, "is-active")
 	}
 
 	html := fmt.Sprintf(`<a class="%s" href="%s">%s</a>`, strings.Join(classes, " "), url, text)

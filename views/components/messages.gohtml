@@ -14,5 +14,7 @@
 {{end}}
 
 {{define "message"}}
-    <div class="alert alert-{{.Type}}">{{.Text}}</div>
+    <article class="message is-{{.Type}}">
+        <div class="message-body">{{.Text}}</div>
+    </article>
 {{end}}

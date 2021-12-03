@@ -14,6 +14,7 @@ func (a *Contact) Get(c echo.Context) error {
 	p := NewPage(c)
 	p.Layout = "main"
 	p.Name = "contact"
+	p.Title = "Contact us"
 	p.Data = "This is the contact page"
 	return a.RenderPage(c, p)
 }
