@@ -24,11 +24,20 @@ func BuildRouter(c *container.Container) {
 	c.Web.Use(middleware.Gzip())
 	c.Web.Use(middleware.Logger())
 	// TODO: needs cache control headers
-	c.Web.Use(middleware.Static(StaticDir))
 	c.Web.Use(session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))))
 	c.Web.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		TokenLookup: "form:csrf",
 	}))
+
+	// Static files with proper cache control
+	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
+	// after each server restart
+	c.Web.Group("", func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Response().Header().Set("Cache-Control", "public, max-age=15552000")
+			return next(c)
+		}
+	}).Static("/", StaticDir)
 
 	// Base controller
 	ctr := controllers.NewController(c)
