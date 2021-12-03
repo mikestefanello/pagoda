@@ -14,7 +14,7 @@
         </div>
         <div class="field is-grouped">
             <p class="control">
-                <button class="button is-primary">Log in</button>
+                <button class="button is-primary">Register</button>
             </p>
             <p class="control">
                 <a href="{{call .Reverse "home"}}" class="button is-light">Cancel</a>
@@ -22,5 +22,4 @@
         </div>
         {{template "csrf" .}}
     </form>
-    <div class="content is-small"><a href="{{call .Reverse "register"}}">Create an account</a></div>
 {{end}}

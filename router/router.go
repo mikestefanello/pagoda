@@ -63,4 +63,9 @@ func navRoutes(e *echo.Echo, ctr controllers.Controller) {
 func userRoutes(e *echo.Echo, ctr controllers.Controller) {
 	login := controllers.Login{Controller: ctr}
 	e.GET("/user/login", login.Get).Name = "login"
+	e.POST("/user/login", login.Post).Name = "login.post"
+
+	register := controllers.Register{Controller: ctr}
+	e.GET("/user/register", register.Get).Name = "register"
+	e.POST("/user/register", register.Post).Name = "register.post"
 }

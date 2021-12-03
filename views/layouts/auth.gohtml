@@ -10,8 +10,11 @@
                 <div class="container">
                     <div class="columns is-centered">
                         <div class="column is-half">
-                            <h1 class="title">Log in</h1>
+                            {{- if .Title}}
+                                <h1 class="title">{{.Title}}</h1>
+                            {{- end}}
                             <div class="box">
+                                {{template "messages" .}}
                                 {{template "content" .}}
                             </div>
                         </div>

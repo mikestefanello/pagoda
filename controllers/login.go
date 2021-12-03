@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"goweb/msg"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -17,8 +19,7 @@ func (l *Login) Get(c echo.Context) error {
 	return l.RenderPage(c, p)
 }
 
-//func (a *Contact) Post(c echo.Context) error {
-//	msg.Set(c, msg.Success, "Thank you for contacting us!")
-//	msg.Set(c, msg.Info, "We will respond to you shortly.")
-//	return a.Redirect(c, "home")
-//}
+func (l *Login) Post(c echo.Context) error {
+	msg.Set(c, msg.Danger, "Invalid credentials. Please try again.")
+	return l.Get(c)
+}
