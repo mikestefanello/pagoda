@@ -5,8 +5,13 @@ import (
 	"net/http"
 
 	"goweb/msg"
+	"goweb/pager"
 
 	"github.com/labstack/echo/v4"
+)
+
+const (
+	DefaultItemsPerPage = 20
 )
 
 type Page struct {
@@ -25,6 +30,7 @@ type Page struct {
 		Description string
 		Keywords    []string
 	}
+	Pager pager.Pager
 }
 
 func NewPage(c echo.Context) Page {
@@ -33,6 +39,7 @@ func NewPage(c echo.Context) Page {
 		Reverse:    c.Echo().Reverse,
 		Path:       c.Request().URL.Path,
 		StatusCode: http.StatusOK,
+		Pager:      pager.NewPager(c, DefaultItemsPerPage),
 	}
 
 	p.IsHome = p.Path == "/"
