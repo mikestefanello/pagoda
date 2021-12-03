@@ -3,10 +3,12 @@ package router
 import (
 	"net/http"
 
+	"goweb/middleware"
+
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echomw "github.com/labstack/echo/v4/middleware"
 
 	"goweb/container"
 	"goweb/controllers"
@@ -16,28 +18,23 @@ const StaticDir = "static"
 
 func BuildRouter(c *container.Container) {
 	// Middleware
-	c.Web.Use(middleware.RemoveTrailingSlashWithConfig(middleware.TrailingSlashConfig{
+	c.Web.Use(echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
 		RedirectCode: http.StatusMovedPermanently,
 	}))
-	c.Web.Use(middleware.RequestID())
-	c.Web.Use(middleware.Recover())
-	c.Web.Use(middleware.Gzip())
-	c.Web.Use(middleware.Logger())
-	// TODO: needs cache control headers
+	c.Web.Use(echomw.RequestID())
+	c.Web.Use(echomw.Recover())
+	c.Web.Use(echomw.Gzip())
+	c.Web.Use(echomw.Logger())
 	c.Web.Use(session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))))
-	c.Web.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+	c.Web.Use(echomw.CSRFWithConfig(echomw.CSRFConfig{
 		TokenLookup: "form:csrf",
 	}))
 
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart
-	c.Web.Group("", func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Response().Header().Set("Cache-Control", "public, max-age=15552000")
-			return next(c)
-		}
-	}).Static("/", StaticDir)
+	c.Web.Group("", middleware.CacheControl(15552000)).
+		Static("/", StaticDir)
 
 	// Base controller
 	ctr := controllers.NewController(c)
