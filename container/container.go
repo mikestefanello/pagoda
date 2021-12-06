@@ -1,6 +1,10 @@
 package container
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 
 	"goweb/config"
@@ -9,7 +13,7 @@ import (
 type Container struct {
 	Web    *echo.Echo
 	Config *config.Config
-	// Cache
+	Cache  *redis.Client
 	// DB
 }
 
@@ -22,10 +26,20 @@ func NewContainer() *Container {
 	// Configuration
 	cfg, err := config.GetConfig()
 	if err != nil {
+		c.Web.Logger.Error(err)
 		c.Web.Logger.Fatal("Failed to load configuration")
-		panic(err)
 	}
 	c.Config = &cfg
+
+	// Cache
+	c.Cache = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", c.Config.Cache.Hostname, c.Config.Cache.Port),
+		Password: c.Config.Cache.Password,
+	})
+	if _, err = c.Cache.Ping(context.Background()).Result(); err != nil {
+		c.Web.Logger.Error(err)
+		c.Web.Logger.Fatal("Failed to connect to cache server")
+	}
 
 	return &c
 }
