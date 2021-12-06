@@ -42,8 +42,7 @@ type httpRequest struct {
 
 func request(t *testing.T) *httpRequest {
 	r := httpRequest{
-		client: http.Client{},
-		t:      t,
+		t: t,
 	}
 	return &r
 }

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 	"goweb/config"
 	"goweb/container"
 	"goweb/funcmap"
+
+	"github.com/eko/gocache/v2/store"
 
 	"github.com/labstack/echo/v4"
 )
@@ -56,19 +59,37 @@ func (t *Controller) RenderPage(c echo.Context, p Page) error {
 		return err
 	}
 
-	tmpl, ok := templates.Load(p.Name)
-	if !ok {
-		c.Logger().Error("Uncached page template requested")
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	buf := new(bytes.Buffer)
-	err := tmpl.(*template.Template).ExecuteTemplate(buf, p.Layout+TemplateExt, p)
+	buf, err := t.executeTemplates(c, p)
 	if err != nil {
 		return err
 	}
 
+	t.cachePage(c, p)
+
 	return c.HTMLBlob(p.StatusCode, buf.Bytes())
+}
+
+func (t *Controller) cachePage(c echo.Context, p Page) {
+	if !p.Cache.Enabled {
+		return
+	}
+
+	if p.Cache.MaxAge == 0 {
+		p.Cache.MaxAge = t.Container.Config.Cache.MaxAge.Page
+	}
+
+	ctx := context.Background() // TODO: make this real
+	key := c.Request().URL.String()
+	opts := &store.Options{
+		Expiration: p.Cache.MaxAge,
+		Tags:       p.Cache.Tags,
+	}
+	err := t.Container.Cache.Set(ctx, key, "my-value", opts)
+	if err != nil {
+		c.Logger().Errorf("Failed to cache page: %s", key)
+		c.Logger().Error(err)
+		return
+	}
 }
 
 func (t *Controller) parsePageTemplates(p Page) error {
@@ -98,6 +119,22 @@ func (t *Controller) parsePageTemplates(p Page) error {
 	}
 
 	return nil
+}
+
+func (t *Controller) executeTemplates(c echo.Context, p Page) (*bytes.Buffer, error) {
+	tmpl, ok := templates.Load(p.Name)
+	if !ok {
+		c.Logger().Error("Uncached page template requested")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	buf := new(bytes.Buffer)
+	err := tmpl.(*template.Template).ExecuteTemplate(buf, p.Layout+TemplateExt, p)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf, nil
 }
 
 func (t *Controller) Redirect(c echo.Context, route string, routeParams ...interface{}) error {

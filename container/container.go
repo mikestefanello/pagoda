@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/eko/gocache/v2/cache"
+	"github.com/eko/gocache/v2/store"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 
@@ -13,7 +15,7 @@ import (
 type Container struct {
 	Web    *echo.Echo
 	Config *config.Config
-	Cache  *redis.Client
+	Cache  *cache.Cache
 	// DB
 }
 
@@ -32,14 +34,16 @@ func NewContainer() *Container {
 	c.Config = &cfg
 
 	// Cache
-	c.Cache = redis.NewClient(&redis.Options{
+	cacheClient := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", c.Config.Cache.Hostname, c.Config.Cache.Port),
 		Password: c.Config.Cache.Password,
 	})
-	if _, err = c.Cache.Ping(context.Background()).Result(); err != nil {
+	if _, err = cacheClient.Ping(context.Background()).Result(); err != nil {
 		c.Web.Logger.Error(err)
 		c.Web.Logger.Fatal("Failed to connect to cache server")
 	}
+	cacheStore := store.NewRedis(cacheClient, nil)
+	c.Cache = cache.New(cacheStore)
 
 	return &c
 }

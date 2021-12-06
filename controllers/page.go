@@ -3,6 +3,7 @@ package controllers
 import (
 	"html/template"
 	"net/http"
+	"time"
 
 	"goweb/msg"
 	"goweb/pager"
@@ -36,7 +37,7 @@ type Page struct {
 	CSRF  string
 	Cache struct {
 		Enabled bool
-		MaxAge  int
+		MaxAge  time.Duration
 		Tags    []string
 	}
 }

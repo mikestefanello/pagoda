@@ -44,8 +44,8 @@ type CacheConfig struct {
 	Port     uint16 `env:"CACHE_PORT,default=6379"`
 	Password string `env:"CACHE_PASSWORD"`
 	MaxAge   struct {
-		StaticFile int `env:"CACHE_MAX_AGE_STATIC_FILE,default=15552000"`
-		Page       int `env:"CACHE_STATIC_FILE_MAX_AGE,default=86400"`
+		StaticFile time.Duration `env:"CACHE_MAX_AGE_STATIC_FILE,default=4380h"`
+		Page       time.Duration `env:"CACHE_STATIC_FILE_MAX_AGE,default=24h"`
 	}
 }
 
