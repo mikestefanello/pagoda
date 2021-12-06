@@ -32,17 +32,31 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func GetRequest(t *testing.T, route string, routeParams ...interface{}) *http.Response {
+type httpResponse struct {
+	*http.Response
+	t *testing.T
+}
+
+func (h *httpResponse) assertStatusCode(code int) *httpResponse {
+	assert.Equal(h.t, code, h.Response)
+	return h
+}
+
+func (h *httpResponse) toDoc() *goquery.Document {
+	doc, err := goquery.NewDocumentFromReader(h.Body)
+	require.NoError(h.t, err)
+	err = h.Body.Close()
+	assert.NoError(h.t, err)
+	return doc
+}
+
+func getRequest(t *testing.T, route string, routeParams ...interface{}) *httpResponse {
 	cli := http.Client{}
 	resp, err := cli.Get(srv.URL + c.Web.Reverse(route, routeParams))
 	require.NoError(t, err)
-	return resp
-}
-
-func GetGoqueryDoc(t *testing.T, resp *http.Response) *goquery.Document {
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	require.NoError(t, err)
-	err = resp.Body.Close()
-	assert.NoError(t, err)
-	return doc
+	h := httpResponse{
+		t:        t,
+		Response: resp,
+	}
+	return &h
 }
