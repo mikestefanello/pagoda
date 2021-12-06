@@ -34,6 +34,11 @@ type Page struct {
 	}
 	Pager pager.Pager
 	CSRF  string
+	Cache struct {
+		Enabled bool
+		MaxAge  int
+		Tags    []string
+	}
 }
 
 func NewPage(c echo.Context) Page {
