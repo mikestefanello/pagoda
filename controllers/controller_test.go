@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -38,7 +39,12 @@ type httpResponse struct {
 }
 
 func (h *httpResponse) assertStatusCode(code int) *httpResponse {
-	assert.Equal(h.t, code, h.Response)
+	assert.Equal(h.t, code, h.Response.StatusCode)
+	return h
+}
+
+func (h *httpResponse) assertRedirect(t *testing.T, destination string) *httpResponse {
+	assert.Equal(t, destination, h.Header.Get("Location"))
 	return h
 }
 
@@ -53,6 +59,17 @@ func (h *httpResponse) toDoc() *goquery.Document {
 func getRequest(t *testing.T, route string, routeParams ...interface{}) *httpResponse {
 	cli := http.Client{}
 	resp, err := cli.Get(srv.URL + c.Web.Reverse(route, routeParams))
+	require.NoError(t, err)
+	h := httpResponse{
+		t:        t,
+		Response: resp,
+	}
+	return &h
+}
+
+func postRequest(t *testing.T, values url.Values, route string, routeParams ...interface{}) *httpResponse {
+	cli := http.Client{}
+	resp, err := cli.PostForm(srv.URL+c.Web.Reverse(route, routeParams), values)
 	require.NoError(t, err)
 	h := httpResponse{
 		t:        t,
