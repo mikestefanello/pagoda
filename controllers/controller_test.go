@@ -33,6 +33,56 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
+type httpRequest struct {
+	route  string
+	client http.Client
+	body   url.Values
+	t      *testing.T
+}
+
+func request(t *testing.T) *httpRequest {
+	r := httpRequest{
+		client: http.Client{},
+		t:      t,
+	}
+	return &r
+}
+
+func (h *httpRequest) setClient(client http.Client) *httpRequest {
+	h.client = client
+	return h
+}
+
+func (h *httpRequest) setRoute(route string, params ...interface{}) *httpRequest {
+	h.route = srv.URL + c.Web.Reverse(route, params)
+	return h
+}
+
+func (h *httpRequest) setBody(body url.Values) *httpRequest {
+	h.body = body
+	return h
+}
+
+func (h *httpRequest) get() *httpResponse {
+	resp, err := h.client.Get(h.route)
+	require.NoError(h.t, err)
+	r := httpResponse{
+		t:        h.t,
+		Response: resp,
+	}
+	return &r
+}
+
+func (h *httpRequest) post() *httpResponse {
+	resp, err := h.client.PostForm(h.route, h.body)
+	require.NoError(h.t, err)
+	r := httpResponse{
+		t:        h.t,
+		Response: resp,
+	}
+	return &r
+}
+
 type httpResponse struct {
 	*http.Response
 	t *testing.T
@@ -54,26 +104,4 @@ func (h *httpResponse) toDoc() *goquery.Document {
 	err = h.Body.Close()
 	assert.NoError(h.t, err)
 	return doc
-}
-
-func getRequest(t *testing.T, route string, routeParams ...interface{}) *httpResponse {
-	cli := http.Client{}
-	resp, err := cli.Get(srv.URL + c.Web.Reverse(route, routeParams))
-	require.NoError(t, err)
-	h := httpResponse{
-		t:        t,
-		Response: resp,
-	}
-	return &h
-}
-
-func postRequest(t *testing.T, values url.Values, route string, routeParams ...interface{}) *httpResponse {
-	cli := http.Client{}
-	resp, err := cli.PostForm(srv.URL+c.Web.Reverse(route, routeParams), values)
-	require.NoError(t, err)
-	h := httpResponse{
-		t:        t,
-		Response: resp,
-	}
-	return &h
 }

@@ -8,7 +8,9 @@ import (
 )
 
 func TestAbout_Get(t *testing.T) {
-	doc := getRequest(t, "about").
+	doc := request(t).
+		setRoute("about").
+		get().
 		assertStatusCode(http.StatusOK).
 		toDoc()
 
