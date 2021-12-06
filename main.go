@@ -10,7 +10,7 @@ import (
 
 	"goweb/config"
 	"goweb/container"
-	"goweb/router"
+	"goweb/controllers"
 
 	"github.com/labstack/gommon/log"
 )
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// Build the router
-	router.BuildRouter(c)
+	controllers.BuildRouter(c)
 
 	// Start the server
 	go func() {

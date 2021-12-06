@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"path"
+	"path/filepath"
+	"runtime"
 	"sync"
 
 	"goweb/config"
@@ -25,6 +28,8 @@ var (
 
 	// Template function map
 	funcMap = funcmap.GetFuncMap()
+
+	templatePath = getTemplatesDirectoryPath()
 )
 
 type Controller struct {
@@ -74,15 +79,15 @@ func (t *Controller) parsePageTemplates(p Page) error {
 			template.New(p.Layout+TemplateExt).
 				Funcs(funcMap).
 				ParseFiles(
-					fmt.Sprintf("%s/layouts/%s%s", TemplateDir, p.Layout, TemplateExt),
-					fmt.Sprintf("%s/pages/%s%s", TemplateDir, p.Name, TemplateExt),
+					fmt.Sprintf("%s/layouts/%s%s", templatePath, p.Layout, TemplateExt),
+					fmt.Sprintf("%s/pages/%s%s", templatePath, p.Name, TemplateExt),
 				)
 
 		if err != nil {
 			return err
 		}
 
-		parsed, err = parsed.ParseGlob(fmt.Sprintf("%s/components/*%s", TemplateDir, TemplateExt))
+		parsed, err = parsed.ParseGlob(fmt.Sprintf("%s/components/*%s", templatePath, TemplateExt))
 
 		if err != nil {
 			return err
@@ -97,4 +102,13 @@ func (t *Controller) parsePageTemplates(p Page) error {
 
 func (t *Controller) Redirect(c echo.Context, route string, routeParams ...interface{}) error {
 	return c.Redirect(http.StatusFound, c.Echo().Reverse(route, routeParams))
+}
+
+// getTemplatesDirectoryPath gets the templates directory path
+// This is needed incase this is called from a package outside of main,
+// such as testing
+func getTemplatesDirectoryPath() string {
+	_, b, _, _ := runtime.Caller(0)
+	d := path.Join(path.Dir(b))
+	return filepath.Join(filepath.Dir(d), TemplateDir)
 }

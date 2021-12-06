@@ -1,4 +1,4 @@
-package router
+package controllers
 
 import (
 	"net/http"
@@ -11,7 +11,6 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 
 	"goweb/container"
-	"goweb/controllers"
 )
 
 const StaticDir = "static"
@@ -37,10 +36,10 @@ func BuildRouter(c *container.Container) {
 		Static("/", StaticDir)
 
 	// Base controller
-	ctr := controllers.NewController(c)
+	ctr := NewController(c)
 
 	// Error handler
-	err := controllers.Error{Controller: ctr}
+	err := Error{Controller: ctr}
 	c.Web.HTTPErrorHandler = err.Get
 
 	// Routes
@@ -48,24 +47,24 @@ func BuildRouter(c *container.Container) {
 	userRoutes(c.Web, ctr)
 }
 
-func navRoutes(e *echo.Echo, ctr controllers.Controller) {
-	home := controllers.Home{Controller: ctr}
+func navRoutes(e *echo.Echo, ctr Controller) {
+	home := Home{Controller: ctr}
 	e.GET("/", home.Get).Name = "home"
 
-	about := controllers.About{Controller: ctr}
+	about := About{Controller: ctr}
 	e.GET("/about", about.Get).Name = "about"
 
-	contact := controllers.Contact{Controller: ctr}
+	contact := Contact{Controller: ctr}
 	e.GET("/contact", contact.Get).Name = "contact"
 	e.POST("/contact", contact.Post).Name = "contact.post"
 }
 
-func userRoutes(e *echo.Echo, ctr controllers.Controller) {
-	login := controllers.Login{Controller: ctr}
+func userRoutes(e *echo.Echo, ctr Controller) {
+	login := Login{Controller: ctr}
 	e.GET("/user/login", login.Get).Name = "login"
 	e.POST("/user/login", login.Post).Name = "login.post"
 
-	register := controllers.Register{Controller: ctr}
+	register := Register{Controller: ctr}
 	e.GET("/user/register", register.Get).Name = "register"
 	e.POST("/user/register", register.Post).Name = "register.post"
 }
