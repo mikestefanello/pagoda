@@ -28,7 +28,9 @@ func BuildRouter(c *container.Container) {
 	c.Web.Use(echomw.CSRFWithConfig(echomw.CSRFConfig{
 		TokenLookup: "form:csrf",
 	}))
-
+	c.Web.Use(echomw.TimeoutWithConfig(echomw.TimeoutConfig{
+		Timeout: c.Config.App.Timeout,
+	}))
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart

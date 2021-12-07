@@ -34,9 +34,10 @@ type HTTPConfig struct {
 
 // AppConfig stores application configuration
 type AppConfig struct {
-	Name          string `env:"APP_NAME,default=Goweb"`
-	Environment   Env    `env:"APP_ENV,default=local"`
-	EncryptionKey string `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
+	Name          string        `env:"APP_NAME,default=Goweb"`
+	Environment   Env           `env:"APP_ENV,default=local"`
+	EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
+	Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`
 }
 
 type CacheConfig struct {
@@ -45,7 +46,7 @@ type CacheConfig struct {
 	Password string `env:"CACHE_PASSWORD"`
 	MaxAge   struct {
 		StaticFile time.Duration `env:"CACHE_MAX_AGE_STATIC_FILE,default=4380h"`
-		Page       time.Duration `env:"CACHE_STATIC_FILE_MAX_AGE,default=24h"`
+		Page       time.Duration `env:"CACHE_MAX_PAGE_PAGE,default=24h"`
 	}
 }
 

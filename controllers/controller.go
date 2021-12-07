@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -45,6 +44,8 @@ func NewController(c *container.Container) Controller {
 	}
 }
 
+// TODO: Audit error handling (ie NewHTTPError)
+
 func (t *Controller) RenderPage(c echo.Context, p Page) error {
 	if p.Name == "" {
 		c.Logger().Error("Page render failed due to missing name")
@@ -78,13 +79,12 @@ func (t *Controller) cachePage(c echo.Context, p Page) {
 		p.Cache.MaxAge = t.Container.Config.Cache.MaxAge.Page
 	}
 
-	ctx := context.Background() // TODO: make this real
 	key := c.Request().URL.String()
 	opts := &store.Options{
 		Expiration: p.Cache.MaxAge,
 		Tags:       p.Cache.Tags,
 	}
-	err := t.Container.Cache.Set(ctx, key, "my-value", opts)
+	err := t.Container.Cache.Set(c.Request().Context(), key, "my-value", opts)
 	if err != nil {
 		c.Logger().Errorf("Failed to cache page: %s", key)
 		c.Logger().Error(err)

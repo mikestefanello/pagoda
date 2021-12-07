@@ -8,7 +8,7 @@ import (
 	"goweb/msg"
 	"goweb/pager"
 
-	"github.com/labstack/echo/v4/middleware"
+	echomw "github.com/labstack/echo/v4/middleware"
 
 	"github.com/labstack/echo/v4"
 )
@@ -53,7 +53,7 @@ func NewPage(c echo.Context) Page {
 
 	p.IsHome = p.Path == "/"
 
-	if csrf := c.Get(middleware.DefaultCSRFConfig.ContextKey); csrf != nil {
+	if csrf := c.Get(echomw.DefaultCSRFConfig.ContextKey); csrf != nil {
 		p.CSRF = csrf.(string)
 	}
 
