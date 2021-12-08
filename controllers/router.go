@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
+
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
 
@@ -16,6 +17,12 @@ import (
 const StaticDir = "static"
 
 func BuildRouter(c *container.Container) {
+	// Static files with proper cache control
+	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
+	// after each server restart
+	c.Web.Group("", middleware.CacheControl(c.Config.Cache.MaxAge.StaticFile)).
+		Static("/", StaticDir)
+
 	// Middleware
 	c.Web.Use(echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
 		RedirectCode: http.StatusMovedPermanently,
@@ -24,18 +31,14 @@ func BuildRouter(c *container.Container) {
 	c.Web.Use(echomw.Recover())
 	c.Web.Use(echomw.Gzip())
 	c.Web.Use(echomw.Logger())
+	c.Web.Use(echomw.TimeoutWithConfig(echomw.TimeoutConfig{
+		Timeout: c.Config.App.Timeout,
+	}))
+	c.Web.Use(middleware.PageCache(c.Cache))
 	c.Web.Use(session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))))
 	c.Web.Use(echomw.CSRFWithConfig(echomw.CSRFConfig{
 		TokenLookup: "form:csrf",
 	}))
-	c.Web.Use(echomw.TimeoutWithConfig(echomw.TimeoutConfig{
-		Timeout: c.Config.App.Timeout,
-	}))
-	// Static files with proper cache control
-	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
-	// after each server restart
-	c.Web.Group("", middleware.CacheControl(c.Config.Cache.MaxAge.StaticFile)).
-		Static("/", StaticDir)
 
 	// Base controller
 	ctr := NewController(c)

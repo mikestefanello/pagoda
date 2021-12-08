@@ -33,9 +33,10 @@ type Page struct {
 		Description string
 		Keywords    []string
 	}
-	Pager pager.Pager
-	CSRF  string
-	Cache struct {
+	Pager   pager.Pager
+	CSRF    string
+	Headers map[string]string
+	Cache   struct {
 		Enabled bool
 		MaxAge  time.Duration
 		Tags    []string
@@ -49,6 +50,7 @@ func NewPage(c echo.Context) Page {
 		Path:       c.Request().URL.Path,
 		StatusCode: http.StatusOK,
 		Pager:      pager.NewPager(c, DefaultItemsPerPage),
+		Headers:    make(map[string]string),
 	}
 
 	p.IsHome = p.Path == "/"

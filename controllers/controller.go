@@ -13,6 +13,9 @@ import (
 	"goweb/config"
 	"goweb/container"
 	"goweb/funcmap"
+	"goweb/middleware"
+
+	"github.com/eko/gocache/v2/marshaler"
 
 	"github.com/eko/gocache/v2/store"
 
@@ -48,7 +51,7 @@ func NewController(c *container.Container) Controller {
 
 func (t *Controller) RenderPage(c echo.Context, p Page) error {
 	if p.Name == "" {
-		c.Logger().Error("Page render failed due to missing name")
+		c.Logger().Error("page render failed due to missing name")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
@@ -65,12 +68,17 @@ func (t *Controller) RenderPage(c echo.Context, p Page) error {
 		return err
 	}
 
-	t.cachePage(c, p)
+	t.cachePage(c, p, buf)
+
+	// Set any headers
+	for k, v := range p.Headers {
+		c.Response().Header().Set(k, v)
+	}
 
 	return c.HTMLBlob(p.StatusCode, buf.Bytes())
 }
 
-func (t *Controller) cachePage(c echo.Context, p Page) {
+func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 	if !p.Cache.Enabled {
 		return
 	}
@@ -84,12 +92,19 @@ func (t *Controller) cachePage(c echo.Context, p Page) {
 		Expiration: p.Cache.MaxAge,
 		Tags:       p.Cache.Tags,
 	}
-	err := t.Container.Cache.Set(c.Request().Context(), key, "my-value", opts)
+	cp := middleware.CachedPage{
+		HTML:       html.Bytes(),
+		Headers:    p.Headers,
+		StatusCode: p.StatusCode,
+	}
+	err := marshaler.New(t.Container.Cache).Set(c.Request().Context(), key, cp, opts)
 	if err != nil {
-		c.Logger().Errorf("Failed to cache page: %s", key)
+		c.Logger().Errorf("failed to cache page: %s", key)
 		c.Logger().Error(err)
 		return
 	}
+
+	c.Logger().Infof("cached page for: %s", key)
 }
 
 func (t *Controller) parsePageTemplates(p Page) error {
@@ -124,7 +139,7 @@ func (t *Controller) parsePageTemplates(p Page) error {
 func (t *Controller) executeTemplates(c echo.Context, p Page) (*bytes.Buffer, error) {
 	tmpl, ok := templates.Load(p.Name)
 	if !ok {
-		c.Logger().Error("Uncached page template requested")
+		c.Logger().Error("uncached page template requested")
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
