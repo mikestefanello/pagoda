@@ -32,7 +32,11 @@ func PageCache(ch *cache.Cache) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			page := res.(*CachedPage)
+			page, ok := res.(*CachedPage)
+			if !ok {
+				c.Logger().Errorf("failed casting cached page: %s", key)
+				return next(c)
+			}
 
 			if page.Headers != nil {
 				for k, v := range page.Headers {

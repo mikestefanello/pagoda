@@ -45,7 +45,7 @@ func HasField(v interface{}, name string) bool {
 
 // File appends a cache key to a given filepath so it can remain cached until the app is restarted
 func File(filepath string) string {
-	return fmt.Sprintf("%s?v=%s", filepath, CacheKey)
+	return fmt.Sprintf("/files/%s?v=%s", filepath, CacheKey)
 }
 
 func Link(url, text, currentPath string, classes ...string) template.HTML {

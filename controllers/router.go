@@ -14,31 +14,36 @@ import (
 	"goweb/container"
 )
 
-const StaticDir = "static"
+const (
+	StaticDir    = "static"
+	StaticPrefix = "files"
+)
 
 func BuildRouter(c *container.Container) {
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.MaxAge.StaticFile)).
-		Static("/", StaticDir)
+		Static(StaticPrefix, StaticDir)
 
 	// Middleware
-	c.Web.Use(echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
-		RedirectCode: http.StatusMovedPermanently,
-	}))
-	c.Web.Use(echomw.RequestID())
-	c.Web.Use(echomw.Recover())
-	c.Web.Use(echomw.Gzip())
-	c.Web.Use(echomw.Logger())
-	c.Web.Use(echomw.TimeoutWithConfig(echomw.TimeoutConfig{
-		Timeout: c.Config.App.Timeout,
-	}))
-	c.Web.Use(middleware.PageCache(c.Cache))
-	c.Web.Use(session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))))
-	c.Web.Use(echomw.CSRFWithConfig(echomw.CSRFConfig{
-		TokenLookup: "form:csrf",
-	}))
+	g := c.Web.Group("",
+		echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
+			RedirectCode: http.StatusMovedPermanently,
+		}),
+		echomw.RequestID(),
+		echomw.Recover(),
+		echomw.Gzip(),
+		echomw.Logger(),
+		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
+			Timeout: c.Config.App.Timeout,
+		}),
+		middleware.PageCache(c.Cache),
+		session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
+		echomw.CSRFWithConfig(echomw.CSRFConfig{
+			TokenLookup: "form:csrf",
+		}),
+	)
 
 	// Base controller
 	ctr := NewController(c)
@@ -48,28 +53,28 @@ func BuildRouter(c *container.Container) {
 	c.Web.HTTPErrorHandler = err.Get
 
 	// Routes
-	navRoutes(c.Web, ctr)
-	userRoutes(c.Web, ctr)
+	navRoutes(g, ctr)
+	userRoutes(g, ctr)
 }
 
-func navRoutes(e *echo.Echo, ctr Controller) {
+func navRoutes(g *echo.Group, ctr Controller) {
 	home := Home{Controller: ctr}
-	e.GET("/", home.Get).Name = "home"
+	g.GET("/", home.Get).Name = "home"
 
 	about := About{Controller: ctr}
-	e.GET("/about", about.Get).Name = "about"
+	g.GET("/about", about.Get).Name = "about"
 
 	contact := Contact{Controller: ctr}
-	e.GET("/contact", contact.Get).Name = "contact"
-	e.POST("/contact", contact.Post).Name = "contact.post"
+	g.GET("/contact", contact.Get).Name = "contact"
+	g.POST("/contact", contact.Post).Name = "contact.post"
 }
 
-func userRoutes(e *echo.Echo, ctr Controller) {
+func userRoutes(g *echo.Group, ctr Controller) {
 	login := Login{Controller: ctr}
-	e.GET("/user/login", login.Get).Name = "login"
-	e.POST("/user/login", login.Post).Name = "login.post"
+	g.GET("/user/login", login.Get).Name = "login"
+	g.POST("/user/login", login.Post).Name = "login.post"
 
 	register := Register{Controller: ctr}
-	e.GET("/user/register", register.Get).Name = "register"
-	e.POST("/user/register", register.Post).Name = "register.post"
+	g.GET("/user/register", register.Get).Name = "register"
+	g.POST("/user/register", register.Post).Name = "register.post"
 }
