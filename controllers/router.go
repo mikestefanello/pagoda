@@ -31,8 +31,9 @@ func BuildRouter(c *container.Container) {
 		echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
 			RedirectCode: http.StatusMovedPermanently,
 		}),
-		echomw.RequestID(),
 		echomw.Recover(),
+		echomw.Secure(),
+		echomw.RequestID(),
 		echomw.Gzip(),
 		echomw.Logger(),
 		middleware.LogRequestID(),
