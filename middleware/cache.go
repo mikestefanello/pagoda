@@ -20,21 +20,19 @@ type CachedPage struct {
 func PageCache(ch *cache.Cache) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			key := c.Request().URL.String()
-			res, err := marshaler.New(ch).Get(c.Request().Context(), key, new(CachedPage))
+			res, err := marshaler.New(ch).Get(c.Request().Context(), c.Request().URL.String(), new(CachedPage))
 			if err != nil {
 				if err == redis.Nil {
-					c.Logger().Infof("no cached page for: %s", key)
+					c.Logger().Infof("no cached page found")
 				} else {
-					c.Logger().Errorf("failed getting cached page: %s", key)
-					c.Logger().Error(err)
+					c.Logger().Errorf("failed getting cached page: %v", err)
 				}
 				return next(c)
 			}
 
 			page, ok := res.(*CachedPage)
 			if !ok {
-				c.Logger().Errorf("failed casting cached page: %s", key)
+				c.Logger().Errorf("failed casting cached page")
 				return next(c)
 			}
 
@@ -43,7 +41,7 @@ func PageCache(ch *cache.Cache) echo.MiddlewareFunc {
 					c.Response().Header().Set(k, v)
 				}
 			}
-			c.Logger().Infof("serving cached page for: %s", key)
+			c.Logger().Infof("serving cached page")
 
 			return c.HTMLBlob(page.StatusCode, page.HTML)
 		}

@@ -35,6 +35,7 @@ func BuildRouter(c *container.Container) {
 		echomw.Recover(),
 		echomw.Gzip(),
 		echomw.Logger(),
+		middleware.LogRequestID(),
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),

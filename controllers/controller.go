@@ -99,12 +99,11 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 	}
 	err := marshaler.New(t.Container.Cache).Set(c.Request().Context(), key, cp, opts)
 	if err != nil {
-		c.Logger().Errorf("failed to cache page: %s", key)
-		c.Logger().Error(err)
+		c.Logger().Errorf("failed to cache page: %v", err)
 		return
 	}
 
-	c.Logger().Infof("cached page for: %s", key)
+	c.Logger().Infof("cached page")
 }
 
 func (t *Controller) parsePageTemplates(p Page) error {

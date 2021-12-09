@@ -45,6 +45,7 @@ func HasField(v interface{}, name string) bool {
 
 // File appends a cache key to a given filepath so it can remain cached until the app is restarted
 func File(filepath string) string {
+	// TODO: Use const for path prefix
 	return fmt.Sprintf("/files/%s?v=%s", filepath, CacheKey)
 }
 
