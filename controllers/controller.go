@@ -22,11 +22,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	TemplateDir = "views"
-	TemplateExt = ".gohtml"
-)
-
 var (
 	// Cache of compiled page templates
 	templates = sync.Map{}
@@ -111,18 +106,18 @@ func (t *Controller) parsePageTemplates(p Page) error {
 	// changes without having the restart the server
 	if _, ok := templates.Load(p.Name); !ok || t.Container.Config.App.Environment == config.EnvLocal {
 		parsed, err :=
-			template.New(p.Layout+TemplateExt).
+			template.New(p.Layout+config.TemplateExt).
 				Funcs(funcMap).
 				ParseFiles(
-					fmt.Sprintf("%s/layouts/%s%s", templatePath, p.Layout, TemplateExt),
-					fmt.Sprintf("%s/pages/%s%s", templatePath, p.Name, TemplateExt),
+					fmt.Sprintf("%s/layouts/%s%s", templatePath, p.Layout, config.TemplateExt),
+					fmt.Sprintf("%s/pages/%s%s", templatePath, p.Name, config.TemplateExt),
 				)
 
 		if err != nil {
 			return err
 		}
 
-		parsed, err = parsed.ParseGlob(fmt.Sprintf("%s/components/*%s", templatePath, TemplateExt))
+		parsed, err = parsed.ParseGlob(fmt.Sprintf("%s/components/*%s", templatePath, config.TemplateExt))
 
 		if err != nil {
 			return err
@@ -143,7 +138,7 @@ func (t *Controller) executeTemplates(c echo.Context, p Page) (*bytes.Buffer, er
 	}
 
 	buf := new(bytes.Buffer)
-	err := tmpl.(*template.Template).ExecuteTemplate(buf, p.Layout+TemplateExt, p)
+	err := tmpl.(*template.Template).ExecuteTemplate(buf, p.Layout+config.TemplateExt, p)
 	if err != nil {
 		return nil, err
 	}
@@ -161,5 +156,5 @@ func (t *Controller) Redirect(c echo.Context, route string, routeParams ...inter
 func getTemplatesDirectoryPath() string {
 	_, b, _, _ := runtime.Caller(0)
 	d := path.Join(path.Dir(b))
-	return filepath.Join(filepath.Dir(d), TemplateDir)
+	return filepath.Join(filepath.Dir(d), config.TemplateDir)
 }

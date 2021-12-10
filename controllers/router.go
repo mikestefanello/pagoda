@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"goweb/config"
 	"goweb/middleware"
 
 	"github.com/gorilla/sessions"
@@ -14,17 +15,12 @@ import (
 	"goweb/container"
 )
 
-const (
-	StaticDir    = "static"
-	StaticPrefix = "files"
-)
-
 func BuildRouter(c *container.Container) {
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.MaxAge.StaticFile)).
-		Static(StaticPrefix, StaticDir)
+		Static(config.StaticPrefix, config.StaticDir)
 
 	// Middleware
 	g := c.Web.Group("",

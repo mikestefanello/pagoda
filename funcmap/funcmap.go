@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"goweb/config"
+
 	"github.com/Masterminds/sprig"
 	"github.com/labstack/gommon/random"
 )
@@ -45,8 +47,7 @@ func HasField(v interface{}, name string) bool {
 
 // File appends a cache key to a given filepath so it can remain cached until the app is restarted
 func File(filepath string) string {
-	// TODO: Use const for path prefix
-	return fmt.Sprintf("/files/%s?v=%s", filepath, CacheKey)
+	return fmt.Sprintf("/%s/%s?v=%s", config.StaticPrefix, filepath, CacheKey)
 }
 
 func Link(url, text, currentPath string, classes ...string) template.HTML {
