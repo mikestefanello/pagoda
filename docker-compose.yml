@@ -1,7 +1,15 @@
 version: "3"
 
 services:
-  redis:
+  cache:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+  db:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=app

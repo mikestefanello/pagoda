@@ -6,6 +6,13 @@ import (
 	"github.com/joeshaw/envdecode"
 )
 
+const (
+	TemplateDir  = "views"
+	TemplateExt  = ".gohtml"
+	StaticDir    = "static"
+	StaticPrefix = "files"
+)
+
 type Env string
 
 const (
@@ -18,9 +25,10 @@ const (
 
 // Config stores complete application configuration
 type Config struct {
-	HTTP  HTTPConfig
-	App   AppConfig
-	Cache CacheConfig
+	HTTP     HTTPConfig
+	App      AppConfig
+	Cache    CacheConfig
+	Database DatabaseConfig
 }
 
 // HTTPConfig stores HTTP configuration
@@ -48,6 +56,14 @@ type CacheConfig struct {
 		StaticFile time.Duration `env:"CACHE_MAX_AGE_STATIC_FILE,default=4380h"`
 		Page       time.Duration `env:"CACHE_MAX_PAGE_PAGE,default=24h"`
 	}
+}
+
+type DatabaseConfig struct {
+	Hostname string `env:"DB_HOSTNAME,default=localhost"`
+	Port     uint16 `env:"DB_PORT,default=5432"`
+	User     string `env:"DB_USER,default=admin"`
+	Password string `env:"DB_PASSWORD,default=admin"`
+	Database string `env:"DB_NAME,default=app"`
 }
 
 // GetConfig loads and returns application configuration
