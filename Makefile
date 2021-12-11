@@ -13,3 +13,12 @@ ent-new:
 .PHONY: ent-install
 ent-install:
 	go get -d entgo.io/ent/cmd/ent
+
+.PHONY: up
+up:
+	docker-compose up -d
+	sleep 3
+
+.PHONY: run
+run:
+	go run main.go

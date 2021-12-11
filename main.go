@@ -40,7 +40,7 @@ func main() {
 		}
 
 		if err := c.Web.StartServer(&srv); err != http.ErrServerClosed {
-			c.Web.Logger.Fatal("shutting down the server")
+			c.Web.Logger.Fatalf("shutting down the server: v", err)
 		}
 	}()
 
