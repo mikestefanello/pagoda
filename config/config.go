@@ -49,12 +49,12 @@ type AppConfig struct {
 }
 
 type CacheConfig struct {
-	Hostname string `env:"CACHE_HOSTNAME,default=localhost"`
-	Port     uint16 `env:"CACHE_PORT,default=6379"`
-	Password string `env:"CACHE_PASSWORD"`
-	MaxAge   struct {
-		StaticFile time.Duration `env:"CACHE_MAX_AGE_STATIC_FILE,default=4380h"`
-		Page       time.Duration `env:"CACHE_MAX_PAGE_PAGE,default=24h"`
+	Hostname   string `env:"CACHE_HOSTNAME,default=localhost"`
+	Port       uint16 `env:"CACHE_PORT,default=6379"`
+	Password   string `env:"CACHE_PASSWORD"`
+	Expiration struct {
+		StaticFile time.Duration `env:"CACHE_EXPIRATION_STATIC_FILE,default=4380h"`
+		Page       time.Duration `env:"CACHE_EXPIRATION_PAGE,default=24h"`
 	}
 }
 
