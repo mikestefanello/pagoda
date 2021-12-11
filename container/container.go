@@ -2,21 +2,27 @@ package container
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
+	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/eko/gocache/v2/cache"
 	"github.com/eko/gocache/v2/store"
 	"github.com/go-redis/redis/v8"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
 
 	"goweb/config"
+	"goweb/ent"
 )
 
 type Container struct {
-	Web    *echo.Echo
-	Config *config.Config
-	Cache  *cache.Cache
-	// DB
+	Web      *echo.Echo
+	Config   *config.Config
+	Cache    *cache.Cache
+	Database *sql.DB
+	Ent      *ent.Client
 }
 
 func NewContainer() *Container {
@@ -28,8 +34,7 @@ func NewContainer() *Container {
 	// Configuration
 	cfg, err := config.GetConfig()
 	if err != nil {
-		c.Web.Logger.Error(err)
-		c.Web.Logger.Fatal("Failed to load configuration")
+		c.Web.Logger.Fatalf("failed to load configuration: %v", err)
 	}
 	c.Config = &cfg
 
@@ -39,11 +44,29 @@ func NewContainer() *Container {
 		Password: c.Config.Cache.Password,
 	})
 	if _, err = cacheClient.Ping(context.Background()).Result(); err != nil {
-		c.Web.Logger.Error(err)
-		c.Web.Logger.Fatal("Failed to connect to cache server")
+		c.Web.Logger.Fatalf("failed to connect to cache server: %v", err)
 	}
 	cacheStore := store.NewRedis(cacheClient, nil)
 	c.Cache = cache.New(cacheStore)
+
+	// Database
+	addr := fmt.Sprintf("postgresql://%s:%s@%s/%s",
+		c.Config.Database.User,
+		c.Config.Database.Password,
+		c.Config.Database.Hostname,
+		c.Config.Database.Database,
+	)
+	c.Database, err = sql.Open("pgx", addr)
+	if err != nil {
+		c.Web.Logger.Fatalf("failed to connect to database: %v", err)
+	}
+
+	// Ent
+	drv := entsql.OpenDB(dialect.Postgres, c.Database)
+	c.Ent = ent.NewClient(ent.Driver(drv))
+	if err := c.Ent.Schema.Create(context.Background()); err != nil {
+		c.Web.Logger.Fatalf("failed to create database schema: %v", err)
+	}
 
 	return &c
 }
