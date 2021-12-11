@@ -34,7 +34,7 @@ func BuildRouter(c *container.Container) {
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart
-	c.Web.Group("", middleware.CacheControl(c.Config.Cache.MaxAge.StaticFile)).
+	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
 		Static(config.StaticPrefix, config.StaticDir)
 
 	// Middleware

@@ -79,7 +79,7 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 	}
 
 	if p.Cache.MaxAge == 0 {
-		p.Cache.MaxAge = t.Container.Config.Cache.MaxAge.Page
+		p.Cache.MaxAge = t.Container.Config.Cache.Expiration.Page
 	}
 
 	key := c.Request().URL.String()
