@@ -31,7 +31,7 @@ func (l *Login) Post(c echo.Context) error {
 		return l.Get(c)
 	}
 
-	u, err := l.Container.Ent.User.
+	u, err := l.Container.ORM.User.
 		Query().
 		Where(user.Username(name)).
 		First(c.Request().Context())

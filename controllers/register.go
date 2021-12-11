@@ -56,7 +56,7 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	// Attempt creating the user
-	u, err := r.Container.Ent.User.
+	u, err := r.Container.ORM.User.
 		Create().
 		SetUsername(form.Username).
 		SetPassword(string(pwHash)).
