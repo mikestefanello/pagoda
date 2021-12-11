@@ -16,9 +16,11 @@ type User struct {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").
-			Unique(),
+			Unique().
+			NotEmpty(),
 		field.String("password").
-			Sensitive(),
+			Sensitive().
+			NotEmpty(),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

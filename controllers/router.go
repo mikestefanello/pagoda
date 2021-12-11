@@ -6,6 +6,8 @@ import (
 	"goweb/config"
 	"goweb/middleware"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 
@@ -14,6 +16,19 @@ import (
 
 	"goweb/container"
 )
+
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i interface{}) error {
+	if err := v.validator.Struct(i); err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO: This is doing more than building the router
 
 func BuildRouter(c *container.Container) {
 	// Static files with proper cache control
@@ -49,6 +64,9 @@ func BuildRouter(c *container.Container) {
 	// Error handler
 	err := Error{Controller: ctr}
 	c.Web.HTTPErrorHandler = err.Get
+
+	// Validator
+	c.Web.Validator = &Validator{validator: validator.New()}
 
 	// Routes
 	navRoutes(g, ctr)
