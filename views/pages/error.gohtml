@@ -1,0 +1,11 @@
+{{define "content"}}
+    {{if gt .StatusCode 500}}
+        <p>Please try again. Request ID: {{.RequestID}}</p>
+    {{else if  or (eq .StatusCode 403) (eq .StatusCode 401)}}
+        <p>You are not authorized to view the requested page.</p>
+    {{else if eq .StatusCode 404}}
+        <p>Click {{link (call .Reverse "home") "here" .Path}} to return home</p>
+    {{else}}
+        <p>Something went wrong</p>
+    {{end}}
+{{end}}

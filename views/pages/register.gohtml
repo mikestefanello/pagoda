@@ -1,15 +1,15 @@
 {{define "content"}}
     <form method="post">
         <div class="field">
-            <label for="" class="label">Username</label>
+            <label for="username" class="label">Username</label>
             <div class="control">
-                <input type="textfield" name="username" class="input" value="{{.Data.Username}}" required>
+                <input type="text" id="username" name="username" class="input" value="{{.Data.Username}}" required>
             </div>
         </div>
         <div class="field">
-            <label for="" class="label">Password</label>
+            <label for="password" class="label">Password</label>
             <div class="control">
-                <input type="password" name="password" placeholder="*******" class="input" required>
+                <input type="password" id="password" name="password" placeholder="*******" class="input" required>
             </div>
         </div>
         <div class="field is-grouped">

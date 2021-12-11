@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -26,8 +25,7 @@ func (e *Error) Get(err error, c echo.Context) {
 	p := NewPage(c)
 	p.Layout = "main"
 	p.Title = http.StatusText(code)
-	// TODO: fallback if there is no error template
-	p.Name = fmt.Sprintf("errors/%d", code)
+	p.Name = "error"
 	p.StatusCode = code
 
 	if err = e.RenderPage(c, p); err != nil {

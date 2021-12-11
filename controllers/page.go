@@ -41,6 +41,7 @@ type Page struct {
 		MaxAge  time.Duration
 		Tags    []string
 	}
+	RequestID string
 }
 
 func NewPage(c echo.Context) Page {
@@ -51,6 +52,7 @@ func NewPage(c echo.Context) Page {
 		StatusCode: http.StatusOK,
 		Pager:      pager.NewPager(c, DefaultItemsPerPage),
 		Headers:    make(map[string]string),
+		RequestID:  c.Response().Header().Get(echo.HeaderXRequestID),
 	}
 
 	p.IsHome = p.Path == "/"

@@ -28,12 +28,12 @@
 
         <section class="section">
             <div class="container">
-            {{- if .Title}}
-                <h1 class="title">{{.Title}}</h1>
-            {{- end}}
+                {{- if .Title}}
+                    <h1 class="title">{{.Title}}</h1>
+                {{- end}}
 
-            {{template "messages" .}}
-            {{template "content" .}}
+                {{template "messages" .}}
+                {{template "content" .}}
             </div>
         </section>
     </body>

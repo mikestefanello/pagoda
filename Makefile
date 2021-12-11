@@ -21,4 +21,5 @@ up:
 
 .PHONY: run
 run:
+	clear
 	go run main.go
