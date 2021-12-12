@@ -90,6 +90,9 @@ func userRoutes(g *echo.Group, ctr Controller) {
 	g.GET("/user/login", login.Get).Name = "login"
 	g.POST("/user/login", login.Post).Name = "login.post"
 
+	logout := Logout{Controller: ctr}
+	g.GET("/user/logout", logout.Get).Name = "logout"
+
 	register := Register{Controller: ctr}
 	g.GET("/user/register", register.Get).Name = "register"
 	g.POST("/user/register", register.Post).Name = "register.post"

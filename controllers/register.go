@@ -1,9 +1,8 @@
 package controllers
 
 import (
+	"goweb/auth"
 	"goweb/msg"
-
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,20 +37,18 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	form := new(RegisterForm)
-	if err := c.Bind(form); err != nil {
+	if err := c.Bind(&r.form); err != nil {
 		return fail("unable to parse form values", err)
 	}
-	r.form = *form
 
 	// Validate the form
-	if err := c.Validate(form); err != nil {
+	if err := c.Validate(r.form); err != nil {
 		msg.Danger(c, "All fields are required.")
 		return r.Get(c)
 	}
 
 	// Hash the password
-	pwHash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+	pwHash, err := auth.HashPassword(r.form.Password)
 	if err != nil {
 		return fail("unable to hash password", err)
 	}
@@ -59,8 +56,8 @@ func (r *Register) Post(c echo.Context) error {
 	// Attempt creating the user
 	u, err := r.Container.ORM.User.
 		Create().
-		SetUsername(form.Username).
-		SetPassword(string(pwHash)).
+		SetUsername(r.form.Username).
+		SetPassword(pwHash).
 		Save(c.Request().Context())
 
 	if err != nil {
@@ -68,6 +65,12 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	c.Logger().Infof("user created: %s", u.Username)
+
+	err = auth.Login(c, u.ID)
+	if err != nil {
+		// TODO
+	}
+
 	msg.Info(c, "Your account has been created. You are now logged in.")
 	return r.Redirect(c, "home")
 }
