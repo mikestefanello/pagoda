@@ -26,6 +26,7 @@ func (r *Register) Get(c echo.Context) error {
 	p.Name = "register"
 	p.Title = "Register"
 	p.Data = r.form
+
 	return r.RenderPage(c, p)
 }
 

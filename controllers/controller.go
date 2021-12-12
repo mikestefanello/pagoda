@@ -78,16 +78,17 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 		return
 	}
 
-	if p.Cache.MaxAge == 0 {
-		p.Cache.MaxAge = t.Container.Config.Cache.Expiration.Page
+	if p.Cache.Expiration == 0 {
+		p.Cache.Expiration = t.Container.Config.Cache.Expiration.Page
 	}
 
 	key := c.Request().URL.String()
 	opts := &store.Options{
-		Expiration: p.Cache.MaxAge,
+		Expiration: p.Cache.Expiration,
 		Tags:       p.Cache.Tags,
 	}
 	cp := middleware.CachedPage{
+		URL:        key,
 		HTML:       html.Bytes(),
 		Headers:    p.Headers,
 		StatusCode: p.StatusCode,

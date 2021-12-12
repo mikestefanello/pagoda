@@ -37,9 +37,9 @@ type Page struct {
 	CSRF    string
 	Headers map[string]string
 	Cache   struct {
-		Enabled bool
-		MaxAge  time.Duration
-		Tags    []string
+		Enabled    bool
+		Expiration time.Duration
+		Tags       []string
 	}
 	RequestID string
 }

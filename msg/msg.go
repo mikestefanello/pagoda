@@ -43,6 +43,7 @@ func Set(c echo.Context, typ Type, message string) {
 // Get gets flash messages from the cookie storage.
 func Get(c echo.Context, typ Type) []string {
 	sess := getSession(c)
+
 	fm := sess.Flashes(string(typ))
 	// If we have some messages.
 	if len(fm) > 0 {
