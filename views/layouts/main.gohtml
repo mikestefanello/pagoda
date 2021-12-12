@@ -17,7 +17,7 @@
                         {{link (call .Reverse "about") "About" .Path "navbar-item"}}
                         {{link (call .Reverse "contact") "Contact" .Path "navbar-item"}}
                         {{- if .IsAuth}}
-
+                            {{link (call .Reverse "logout") "Logout" .Path "navbar-item"}}
                         {{- else}}
                             {{link (call .Reverse "login") "Login" .Path "navbar-item"}}
                         {{- end}}
