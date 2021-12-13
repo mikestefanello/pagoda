@@ -25,6 +25,16 @@ type Container struct {
 	ORM      *ent.Client
 }
 
+func NewContainer() *Container {
+	c := new(Container)
+	c.initWeb()
+	c.initConfig()
+	c.initCache()
+	c.initDatabase()
+	c.initORM()
+	return c
+}
+
 func (c *Container) initWeb() {
 	c.Web = echo.New()
 }
@@ -70,14 +80,4 @@ func (c *Container) initORM() {
 	if err := c.ORM.Schema.Create(context.Background()); err != nil {
 		c.Web.Logger.Fatalf("failed to create database schema: %v", err)
 	}
-}
-
-func NewContainer() *Container {
-	c := new(Container)
-	c.initWeb()
-	c.initConfig()
-	c.initCache()
-	c.initDatabase()
-	c.initORM()
-	return c
 }

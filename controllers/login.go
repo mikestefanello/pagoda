@@ -33,11 +33,15 @@ func (l *Login) Get(c echo.Context) error {
 }
 
 func (l *Login) Post(c echo.Context) error {
-	// Parse the form values
-	if err := c.Bind(&l.form); err != nil {
-		c.Logger().Errorf("unable to parse login form: %v", err)
+	fail := func(message string, err error) error {
+		c.Logger().Errorf("%s: %v", message, err)
 		msg.Danger(c, "An error occurred. Please try again.")
 		return l.Get(c)
+	}
+
+	// Parse the form values
+	if err := c.Bind(&l.form); err != nil {
+		return fail("unable to parse login form", err)
 	}
 
 	// Validate the form
@@ -58,11 +62,8 @@ func (l *Login) Post(c echo.Context) error {
 			msg.Danger(c, "Invalid credentials. Please try again.")
 			return l.Get(c)
 		default:
-			c.Logger().Errorf("error querying user during login: %v", err)
-			msg.Danger(c, "An error occurred. Please try again.")
-			return l.Get(c)
+			return fail("error querying user during login", err)
 		}
-
 	}
 
 	// Check if the password is correct
@@ -75,9 +76,7 @@ func (l *Login) Post(c echo.Context) error {
 	// Log the user in
 	err = auth.Login(c, u.ID)
 	if err != nil {
-		c.Logger().Errorf("unable to log in user %d: %v", u.ID, err)
-		msg.Danger(c, "An error occurred. Please try again.")
-		return l.Get(c)
+		return fail("unable to log in user", err)
 	}
 
 	msg.Success(c, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Username))
