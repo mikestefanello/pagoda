@@ -3,11 +3,13 @@ package controllers
 import (
 	"net/http"
 
+	"goweb/controller"
+
 	"github.com/labstack/echo/v4"
 )
 
 type Error struct {
-	Controller
+	controller.Controller
 }
 
 func (e *Error) Get(err error, c echo.Context) {
@@ -26,7 +28,7 @@ func (e *Error) Get(err error, c echo.Context) {
 		c.Logger().Info(err)
 	}
 
-	p := NewPage(c)
+	p := controller.NewPage(c)
 	p.Layout = "main"
 	p.Title = http.StatusText(code)
 	p.Name = "error"

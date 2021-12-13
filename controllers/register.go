@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"goweb/auth"
+	"goweb/controller"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
@@ -9,7 +10,7 @@ import (
 
 type (
 	Register struct {
-		Controller
+		controller.Controller
 		form RegisterForm
 	}
 
@@ -20,7 +21,7 @@ type (
 )
 
 func (r *Register) Get(c echo.Context) error {
-	p := NewPage(c)
+	p := controller.NewPage(c)
 	p.Layout = "auth"
 	p.Name = "register"
 	p.Title = "Register"

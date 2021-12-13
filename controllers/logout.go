@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"goweb/auth"
+	"goweb/controller"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
 )
 
 type Logout struct {
-	Controller
+	controller.Controller
 }
 
 func (l *Logout) Get(c echo.Context) error {

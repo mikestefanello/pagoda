@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"goweb/config"
+	"goweb/controller"
 	"goweb/middleware"
 
 	"github.com/go-playground/validator/v10"
@@ -60,7 +61,7 @@ func BuildRouter(c *container.Container) {
 	)
 
 	// Base controller
-	ctr := NewController(c)
+	ctr := controller.NewController(c)
 
 	// Error handler
 	err := Error{Controller: ctr}
@@ -74,7 +75,7 @@ func BuildRouter(c *container.Container) {
 	userRoutes(g, ctr)
 }
 
-func navRoutes(g *echo.Group, ctr Controller) {
+func navRoutes(g *echo.Group, ctr controller.Controller) {
 	home := Home{Controller: ctr}
 	g.GET("/", home.Get).Name = "home"
 
@@ -86,7 +87,7 @@ func navRoutes(g *echo.Group, ctr Controller) {
 	g.POST("/contact", contact.Post).Name = "contact.post"
 }
 
-func userRoutes(g *echo.Group, ctr Controller) {
+func userRoutes(g *echo.Group, ctr controller.Controller) {
 	logout := Logout{Controller: ctr}
 	g.GET("/logout", logout.Get, middleware.RequireAuthentication()).Name = "logout"
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"goweb/auth"
+	"goweb/controller"
 	"goweb/ent"
 	"goweb/ent/user"
 	"goweb/msg"
@@ -13,7 +14,7 @@ import (
 
 type (
 	Login struct {
-		Controller
+		controller.Controller
 		form LoginForm
 	}
 
@@ -24,7 +25,7 @@ type (
 )
 
 func (l *Login) Get(c echo.Context) error {
-	p := NewPage(c)
+	p := controller.NewPage(c)
 	p.Layout = "auth"
 	p.Name = "login"
 	p.Title = "Log in"

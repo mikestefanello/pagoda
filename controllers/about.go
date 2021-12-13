@@ -1,15 +1,17 @@
 package controllers
 
 import (
+	"goweb/controller"
+
 	"github.com/labstack/echo/v4"
 )
 
 type About struct {
-	Controller
+	controller.Controller
 }
 
 func (a *About) Get(c echo.Context) error {
-	p := NewPage(c)
+	p := controller.NewPage(c)
 	p.Layout = "main"
 	p.Name = "about"
 	p.Title = "About"
