@@ -2,6 +2,10 @@
 pg:
 	 psql postgresql://admin:admin@localhost:5432/app
 
+.PHONY: pg-test
+pg-test:
+	 psql postgresql://admin:admin@localhost:5432/app_test
+
 .PHONY: ent-gen
 ent-gen:
 	go generate ./ent

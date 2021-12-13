@@ -7,12 +7,12 @@ import (
 	"os"
 	"testing"
 
+	"goweb/config"
 	"goweb/container"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/labstack/gommon/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,10 +22,14 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// Set the environment to test
+	if err := os.Setenv("APP_ENV", string(config.EnvTest)); err != nil {
+		panic(err)
+	}
+
 	// Start a test HTTP server
 	c = container.NewContainer()
 	BuildRouter(c)
-	c.Web.Logger.SetLevel(log.DEBUG)
 	srv = httptest.NewServer(c.Web)
 
 	exitVal := m.Run()

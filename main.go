@@ -8,23 +8,12 @@ import (
 	"os/signal"
 	"time"
 
-	"goweb/config"
 	"goweb/container"
 	"goweb/controllers"
-
-	"github.com/labstack/gommon/log"
 )
 
 func main() {
 	c := container.NewContainer()
-
-	// Configure logging
-	switch c.Config.App.Environment {
-	case config.EnvProduction:
-		c.Web.Logger.SetLevel(log.WARN)
-	default:
-		c.Web.Logger.SetLevel(log.DEBUG)
-	}
 
 	// Build the router
 	controllers.BuildRouter(c)

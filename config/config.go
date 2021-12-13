@@ -17,6 +17,7 @@ type Env string
 
 const (
 	EnvLocal      Env = "local"
+	EnvTest       Env = "test"
 	EnvDevelop    Env = "dev"
 	EnvStaging    Env = "staging"
 	EnvQA         Env = "qa"
@@ -60,11 +61,12 @@ type (
 	}
 
 	DatabaseConfig struct {
-		Hostname string `env:"DB_HOSTNAME,default=localhost"`
-		Port     uint16 `env:"DB_PORT,default=5432"`
-		User     string `env:"DB_USER,default=admin"`
-		Password string `env:"DB_PASSWORD,default=admin"`
-		Database string `env:"DB_NAME,default=app"`
+		Hostname     string `env:"DB_HOSTNAME,default=localhost"`
+		Port         uint16 `env:"DB_PORT,default=5432"`
+		User         string `env:"DB_USER,default=admin"`
+		Password     string `env:"DB_PASSWORD,default=admin"`
+		Database     string `env:"DB_NAME,default=app"`
+		TestDatabase string `env:"DB_NAME_TEST,default=app_test"`
 	}
 )
 

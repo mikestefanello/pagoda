@@ -12,6 +12,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 
 	"goweb/config"
 	"goweb/ent"
@@ -27,24 +28,32 @@ type Container struct {
 
 func NewContainer() *Container {
 	c := new(Container)
-	c.initWeb()
 	c.initConfig()
+	c.initWeb()
 	c.initCache()
 	c.initDatabase()
 	c.initORM()
 	return c
 }
 
-func (c *Container) initWeb() {
-	c.Web = echo.New()
-}
-
 func (c *Container) initConfig() {
 	cfg, err := config.GetConfig()
 	if err != nil {
-		c.Web.Logger.Fatalf("failed to load configuration: %v", err)
+		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 	c.Config = &cfg
+}
+
+func (c *Container) initWeb() {
+	c.Web = echo.New()
+
+	// Configure logging
+	switch c.Config.App.Environment {
+	case config.EnvProduction:
+		c.Web.Logger.SetLevel(log.WARN)
+	default:
+		c.Web.Logger.SetLevel(log.DEBUG)
+	}
 }
 
 func (c *Container) initCache() {
@@ -53,7 +62,7 @@ func (c *Container) initCache() {
 		Password: c.Config.Cache.Password,
 	})
 	if _, err := cacheClient.Ping(context.Background()).Result(); err != nil {
-		c.Web.Logger.Fatalf("failed to connect to cache server: %v", err)
+		panic(fmt.Sprintf("failed to connect to cache server: %v", err))
 	}
 	cacheStore := store.NewRedis(cacheClient, nil)
 	c.Cache = cache.New(cacheStore)
@@ -62,15 +71,38 @@ func (c *Container) initCache() {
 func (c *Container) initDatabase() {
 	var err error
 
-	addr := fmt.Sprintf("postgresql://%s:%s@%s/%s",
-		c.Config.Database.User,
-		c.Config.Database.Password,
-		c.Config.Database.Hostname,
-		c.Config.Database.Database,
-	)
-	c.Database, err = sql.Open("pgx", addr)
+	getAddr := func(dbName string) string {
+		return fmt.Sprintf("postgresql://%s:%s@%s/%s",
+			c.Config.Database.User,
+			c.Config.Database.Password,
+			c.Config.Database.Hostname,
+			dbName,
+		)
+	}
+
+	c.Database, err = sql.Open("pgx", getAddr(c.Config.Database.Database))
 	if err != nil {
-		c.Web.Logger.Fatalf("failed to connect to database: %v", err)
+		panic(fmt.Sprintf("failed to connect to database: %v", err))
+	}
+
+	// Check if this is a test environment
+	if c.Config.App.Environment == config.EnvTest {
+		// Drop the test database, ignoring errors in case it doesn't yet exist
+		_, _ = c.Database.Exec("DROP DATABASE " + c.Config.Database.TestDatabase)
+
+		// Create the test database
+		if _, err = c.Database.Exec("CREATE DATABASE " + c.Config.Database.TestDatabase); err != nil {
+			panic(fmt.Sprintf("failed to create test database: %v", err))
+		}
+
+		// Connect to the test database
+		if err = c.Database.Close(); err != nil {
+			panic(fmt.Sprintf("failed to close database connection: %v", err))
+		}
+		c.Database, err = sql.Open("pgx", getAddr(c.Config.Database.TestDatabase))
+		if err != nil {
+			panic(fmt.Sprintf("failed to connect to database: %v", err))
+		}
 	}
 }
 
@@ -78,6 +110,6 @@ func (c *Container) initORM() {
 	drv := entsql.OpenDB(dialect.Postgres, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
 	if err := c.ORM.Schema.Create(context.Background()); err != nil {
-		c.Web.Logger.Fatalf("failed to create database schema: %v", err)
+		panic(fmt.Sprintf("failed to create database schema: %v", err))
 	}
 }
