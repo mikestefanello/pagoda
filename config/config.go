@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	TemplateDir  = "views"
+	TemplateDir  = "templates"
 	TemplateExt  = ".gohtml"
 	StaticDir    = "static"
 	StaticPrefix = "files"
