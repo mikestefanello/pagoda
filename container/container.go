@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"goweb/mail"
+
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/eko/gocache/v2/cache"
@@ -24,6 +26,7 @@ type Container struct {
 	Cache    *cache.Cache
 	Database *sql.DB
 	ORM      *ent.Client
+	Mail     *mail.Client
 }
 
 func NewContainer() *Container {
@@ -33,6 +36,7 @@ func NewContainer() *Container {
 	c.initCache()
 	c.initDatabase()
 	c.initORM()
+	c.initMail()
 	return c
 }
 
@@ -111,5 +115,13 @@ func (c *Container) initORM() {
 	c.ORM = ent.NewClient(ent.Driver(drv))
 	if err := c.ORM.Schema.Create(context.Background()); err != nil {
 		panic(fmt.Sprintf("failed to create database schema: %v", err))
+	}
+}
+
+func (c *Container) initMail() {
+	var err error
+	c.Mail, err = mail.NewClient(c.Config)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}
 }

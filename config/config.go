@@ -31,6 +31,7 @@ type (
 		App      AppConfig
 		Cache    CacheConfig
 		Database DatabaseConfig
+		Mail     MailConfig
 	}
 
 	// HTTPConfig stores HTTP configuration
@@ -67,6 +68,14 @@ type (
 		Password     string `env:"DB_PASSWORD,default=admin"`
 		Database     string `env:"DB_NAME,default=app"`
 		TestDatabase string `env:"DB_NAME_TEST,default=app_test"`
+	}
+
+	MailConfig struct {
+		Hostname    string `env:"MAIL_HOSTNAME,default=localhost"`
+		Port        uint16 `env:"MAIL_PORT,default=25"`
+		User        string `env:"MAIL_USER,default=admin"`
+		Password    string `env:"MAIL_PASSWORD,default=admin"`
+		FromAddress string `env:"MAIL_FROM_ADDRESS,default=admin@localhost"`
 	}
 )
 
