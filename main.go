@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"goweb/container"
-	"goweb/controllers"
+	"goweb/routes"
 )
 
 func main() {
 	c := container.NewContainer()
 
 	// Build the router
-	controllers.BuildRouter(c)
+	routes.BuildRouter(c)
 
 	// Start the server
 	go func() {
