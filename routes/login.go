@@ -19,8 +19,8 @@ type (
 	}
 
 	LoginForm struct {
-		Username string `form:"username" validate:"required"`
-		Password string `form:"password" validate:"required"`
+		Username string `form:"username" validate:"required" label:"Username"`
+		Password string `form:"password" validate:"required" label:"Password"`
 	}
 )
 
@@ -47,7 +47,7 @@ func (l *Login) Post(c echo.Context) error {
 
 	// Validate the form
 	if err := c.Validate(l.form); err != nil {
-		msg.Danger(c, "All fields are required.")
+		l.SetValidationErrorMessages(c, err, l.form)
 		return l.Get(c)
 	}
 

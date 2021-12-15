@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"sync"
 
@@ -14,6 +15,9 @@ import (
 	"goweb/container"
 	"goweb/funcmap"
 	"goweb/middleware"
+	"goweb/msg"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/eko/gocache/v2/marshaler"
 
@@ -149,6 +153,32 @@ func (t *Controller) executeTemplates(c echo.Context, p Page) (*bytes.Buffer, er
 
 func (t *Controller) Redirect(c echo.Context, route string, routeParams ...interface{}) error {
 	return c.Redirect(http.StatusFound, c.Echo().Reverse(route, routeParams))
+}
+
+func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data interface{}) {
+	for _, ve := range err.(validator.ValidationErrors) {
+		var message string
+
+		// Default the field label to the name of the struct field
+		label := ve.StructField()
+
+		// Attempt to get a label from the field's struct tag
+		if field, ok := reflect.TypeOf(data).FieldByName(ve.Field()); ok {
+			if labelTag := field.Tag.Get("label"); labelTag != "" {
+				label = labelTag
+			}
+		}
+
+		// Provide better error messages depending on the failed validation tag
+		switch ve.Tag() {
+		case "required":
+			message = "%s is required."
+		default:
+			message = "%s is not a valid value."
+		}
+
+		msg.Danger(c, fmt.Sprintf(message, label))
+	}
 }
 
 // getTemplatesDirectoryPath gets the templates directory path
