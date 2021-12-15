@@ -99,4 +99,8 @@ func userRoutes(g *echo.Group, ctr controller.Controller) {
 	register := Register{Controller: ctr}
 	noAuth.GET("/register", register.Get).Name = "register"
 	noAuth.POST("/register", register.Post).Name = "register.post"
+
+	forgot := ForgotPassword{Controller: ctr}
+	noAuth.GET("/password", forgot.Get).Name = "forgot_password"
+	noAuth.POST("/password", forgot.Post).Name = "forgot_password.post"
 }

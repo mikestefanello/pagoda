@@ -18,7 +18,7 @@ type (
 		Name            string `form:"name" validate:"required" label:"Name"`
 		Email           string `form:"email" validate:"required,email" label:"Email address"`
 		Password        string `form:"password" validate:"required" label:"Password"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password" label:"Confirm password"` // TODO validate same
+		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password" label:"Confirm password"`
 	}
 )
 
@@ -72,7 +72,9 @@ func (r *Register) Post(c echo.Context) error {
 
 	err = auth.Login(c, u.ID)
 	if err != nil {
-		// TODO
+		c.Logger().Errorf("unable to log in: %v", err)
+		msg.Info(c, "Your account has been created.")
+		return r.Redirect(c, "login")
 	}
 
 	msg.Info(c, "Your account has been created. You are now logged in.")
