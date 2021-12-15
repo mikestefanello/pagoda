@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"goweb/ent/passwordtoken"
 	"goweb/ent/schema"
 	"goweb/ent/user"
 	"time"
@@ -12,6 +13,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	passwordtokenFields := schema.PasswordToken{}.Fields()
+	_ = passwordtokenFields
+	// passwordtokenDescHash is the schema descriptor for hash field.
+	passwordtokenDescHash := passwordtokenFields[0].Descriptor()
+	// passwordtoken.HashValidator is a validator for the "hash" field. It is called by the builders before save.
+	passwordtoken.HashValidator = passwordtokenDescHash.Validators[0].(func(string) error)
+	// passwordtokenDescCreatedAt is the schema descriptor for created_at field.
+	passwordtokenDescCreatedAt := passwordtokenFields[1].Descriptor()
+	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	passwordtoken.DefaultCreatedAt = passwordtokenDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.

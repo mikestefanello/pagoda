@@ -24,6 +24,27 @@ type User struct {
 	Password string `json:"-"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Owner holds the value of the owner edge.
+	Owner []*PasswordToken `json:"owner,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// OwnerOrErr returns the Owner value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OwnerOrErr() ([]*PasswordToken, error) {
+	if e.loadedTypes[0] {
+		return e.Owner, nil
+	}
+	return nil, &NotLoadedError{edge: "owner"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -85,6 +106,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
+}
+
+// QueryOwner queries the "owner" edge of the User entity.
+func (u *User) QueryOwner() *PasswordTokenQuery {
+	return (&UserClient{config: u.config}).QueryOwner(u)
 }
 
 // Update returns a builder for updating this User.

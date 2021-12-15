@@ -9,10 +9,12 @@ import (
 
 	"goweb/ent/migrate"
 
+	"goweb/ent/passwordtoken"
 	"goweb/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -20,6 +22,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// PasswordToken is the client for interacting with the PasswordToken builders.
+	PasswordToken *PasswordTokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -35,6 +39,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.PasswordToken = NewPasswordTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -67,9 +72,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		PasswordToken: NewPasswordTokenClient(cfg),
+		User:          NewUserClient(cfg),
 	}, nil
 }
 
@@ -87,15 +93,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config: cfg,
-		User:   NewUserClient(cfg),
+		config:        cfg,
+		PasswordToken: NewPasswordTokenClient(cfg),
+		User:          NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		PasswordToken.
 //		Query().
 //		Count(ctx)
 //
@@ -118,7 +125,114 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.PasswordToken.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// PasswordTokenClient is a client for the PasswordToken schema.
+type PasswordTokenClient struct {
+	config
+}
+
+// NewPasswordTokenClient returns a client for the PasswordToken from the given config.
+func NewPasswordTokenClient(c config) *PasswordTokenClient {
+	return &PasswordTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `passwordtoken.Hooks(f(g(h())))`.
+func (c *PasswordTokenClient) Use(hooks ...Hook) {
+	c.hooks.PasswordToken = append(c.hooks.PasswordToken, hooks...)
+}
+
+// Create returns a create builder for PasswordToken.
+func (c *PasswordTokenClient) Create() *PasswordTokenCreate {
+	mutation := newPasswordTokenMutation(c.config, OpCreate)
+	return &PasswordTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PasswordToken entities.
+func (c *PasswordTokenClient) CreateBulk(builders ...*PasswordTokenCreate) *PasswordTokenCreateBulk {
+	return &PasswordTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PasswordToken.
+func (c *PasswordTokenClient) Update() *PasswordTokenUpdate {
+	mutation := newPasswordTokenMutation(c.config, OpUpdate)
+	return &PasswordTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PasswordTokenClient) UpdateOne(pt *PasswordToken) *PasswordTokenUpdateOne {
+	mutation := newPasswordTokenMutation(c.config, OpUpdateOne, withPasswordToken(pt))
+	return &PasswordTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PasswordTokenClient) UpdateOneID(id int) *PasswordTokenUpdateOne {
+	mutation := newPasswordTokenMutation(c.config, OpUpdateOne, withPasswordTokenID(id))
+	return &PasswordTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PasswordToken.
+func (c *PasswordTokenClient) Delete() *PasswordTokenDelete {
+	mutation := newPasswordTokenMutation(c.config, OpDelete)
+	return &PasswordTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *PasswordTokenClient) DeleteOne(pt *PasswordToken) *PasswordTokenDeleteOne {
+	return c.DeleteOneID(pt.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *PasswordTokenClient) DeleteOneID(id int) *PasswordTokenDeleteOne {
+	builder := c.Delete().Where(passwordtoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PasswordTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for PasswordToken.
+func (c *PasswordTokenClient) Query() *PasswordTokenQuery {
+	return &PasswordTokenQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a PasswordToken entity by its id.
+func (c *PasswordTokenClient) Get(ctx context.Context, id int) (*PasswordToken, error) {
+	return c.Query().Where(passwordtoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PasswordTokenClient) GetX(ctx context.Context, id int) *PasswordToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a PasswordToken.
+func (c *PasswordTokenClient) QueryUser(pt *PasswordToken) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(passwordtoken.Table, passwordtoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, passwordtoken.UserTable, passwordtoken.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(pt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PasswordTokenClient) Hooks() []Hook {
+	return c.hooks.PasswordToken
 }
 
 // UserClient is a client for the User schema.
@@ -204,6 +318,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryOwner queries the owner edge of a User.
+func (c *UserClient) QueryOwner(u *User) *PasswordTokenQuery {
+	query := &PasswordTokenQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(passwordtoken.Table, passwordtoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.OwnerTable, user.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

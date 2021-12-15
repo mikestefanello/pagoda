@@ -19,8 +19,17 @@ const (
 	FieldPassword = "password"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeOwner holds the string denoting the owner edge name in mutations.
+	EdgeOwner = "owner"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// OwnerTable is the table that holds the owner relation/edge.
+	OwnerTable = "password_tokens"
+	// OwnerInverseTable is the table name for the PasswordToken entity.
+	// It exists in this package in order to avoid circular dependency with the "passwordtoken" package.
+	OwnerInverseTable = "password_tokens"
+	// OwnerColumn is the table column denoting the owner relation/edge.
+	OwnerColumn = "password_token_user"
 )
 
 // Columns holds all SQL columns for user fields.

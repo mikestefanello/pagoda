@@ -8,6 +8,27 @@ import (
 )
 
 var (
+	// PasswordTokensColumns holds the columns for the "password_tokens" table.
+	PasswordTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hash", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "password_token_user", Type: field.TypeInt, Nullable: true},
+	}
+	// PasswordTokensTable holds the schema information for the "password_tokens" table.
+	PasswordTokensTable = &schema.Table{
+		Name:       "password_tokens",
+		Columns:    PasswordTokensColumns,
+		PrimaryKey: []*schema.Column{PasswordTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "password_tokens_users_user",
+				Columns:    []*schema.Column{PasswordTokensColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -24,9 +45,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		PasswordTokensTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	PasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 }

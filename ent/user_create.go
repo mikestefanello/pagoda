@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"goweb/ent/passwordtoken"
 	"goweb/ent/user"
 	"time"
 
@@ -50,6 +51,21 @@ func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 		uc.SetCreatedAt(*t)
 	}
 	return uc
+}
+
+// AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
+func (uc *UserCreate) AddOwnerIDs(ids ...int) *UserCreate {
+	uc.mutation.AddOwnerIDs(ids...)
+	return uc
+}
+
+// AddOwner adds the "owner" edges to the PasswordToken entity.
+func (uc *UserCreate) AddOwner(p ...*PasswordToken) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddOwnerIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -216,6 +232,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if nodes := uc.mutation.OwnerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OwnerTable,
+			Columns: []string{user.OwnerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: passwordtoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
