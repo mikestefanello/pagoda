@@ -23,7 +23,7 @@ var (
 
 func TestMain(m *testing.M) {
 	// Set the environment to test
-	config.SwitchEnv(config.EnvTest)
+	config.SwitchEnvironment(config.EnvTest)
 
 	// Start a test HTTP server
 	c = container.NewContainer()

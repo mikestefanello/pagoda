@@ -14,15 +14,15 @@ const (
 	StaticPrefix = "files"
 )
 
-type Env string
+type Environment string
 
 const (
-	EnvLocal      Env = "local"
-	EnvTest       Env = "test"
-	EnvDevelop    Env = "dev"
-	EnvStaging    Env = "staging"
-	EnvQA         Env = "qa"
-	EnvProduction Env = "prod"
+	EnvLocal      Environment = "local"
+	EnvTest       Environment = "test"
+	EnvDevelop    Environment = "dev"
+	EnvStaging    Environment = "staging"
+	EnvQA         Environment = "qa"
+	EnvProduction Environment = "prod"
 )
 
 type (
@@ -47,7 +47,7 @@ type (
 	// AppConfig stores application configuration
 	AppConfig struct {
 		Name          string        `env:"APP_NAME,default=Goweb"`
-		Environment   Env           `env:"APP_ENV,default=local"`
+		Environment   Environment   `env:"APP_ENVIRONMENT,default=local"`
 		EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
 		Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`
 	}
@@ -87,8 +87,8 @@ func GetConfig() (Config, error) {
 	return cfg, err
 }
 
-func SwitchEnv(env Env) {
-	if err := os.Setenv("APP_ENV", string(env)); err != nil {
+func SwitchEnvironment(env Environment) {
+	if err := os.Setenv("APP_ENVIRONMENT", string(env)); err != nil {
 		panic(err)
 	}
 }
