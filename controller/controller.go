@@ -173,11 +173,15 @@ func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data 
 		switch ve.Tag() {
 		case "required":
 			message = "%s is required."
+		case "email":
+			message = "%s must be a valid email address."
+		case "eqfield":
+			message = "%s must match."
 		default:
 			message = "%s is not a valid value."
 		}
 
-		msg.Danger(c, fmt.Sprintf(message, label))
+		msg.Danger(c, fmt.Sprintf(message, "<strong>"+label+"</strong>"))
 	}
 }
 

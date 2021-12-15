@@ -15,8 +15,10 @@ type (
 	}
 
 	RegisterForm struct {
-		Username string `form:"username" validate:"required"`
-		Password string `form:"password" validate:"required"`
+		Name            string `form:"name" validate:"required" label:"Name"`
+		Email           string `form:"email" validate:"required,email" label:"Email address"`
+		Password        string `form:"password" validate:"required" label:"Password"`
+		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password" label:"Confirm password"` // TODO validate same
 	}
 )
 
@@ -44,7 +46,7 @@ func (r *Register) Post(c echo.Context) error {
 
 	// Validate the form
 	if err := c.Validate(r.form); err != nil {
-		msg.Danger(c, "All fields are required.")
+		r.SetValidationErrorMessages(c, err, r.form)
 		return r.Get(c)
 	}
 
@@ -57,7 +59,8 @@ func (r *Register) Post(c echo.Context) error {
 	// Attempt creating the user
 	u, err := r.Container.ORM.User.
 		Create().
-		SetUsername(r.form.Username).
+		SetName(r.form.Name).
+		SetEmail(r.form.Email).
 		SetPassword(pwHash).
 		Save(c.Request().Context())
 
@@ -65,7 +68,7 @@ func (r *Register) Post(c echo.Context) error {
 		return fail("unable to create user", err)
 	}
 
-	c.Logger().Infof("user created: %s", u.Username)
+	c.Logger().Infof("user created: %s", u.Name)
 
 	err = auth.Login(c, u.ID)
 	if err != nil {

@@ -19,7 +19,7 @@ type (
 	}
 
 	LoginForm struct {
-		Username string `form:"username" validate:"required" label:"Username"`
+		Email    string `form:"email" validate:"required,email" label:"Email address"`
 		Password string `form:"password" validate:"required" label:"Password"`
 	}
 )
@@ -54,7 +54,7 @@ func (l *Login) Post(c echo.Context) error {
 	// Attempt to load the user
 	u, err := l.Container.ORM.User.
 		Query().
-		Where(user.Username(l.form.Username)).
+		Where(user.Email(l.form.Email)).
 		First(c.Request().Context())
 
 	if err != nil {
@@ -80,6 +80,6 @@ func (l *Login) Post(c echo.Context) error {
 		return fail("unable to log in user", err)
 	}
 
-	msg.Success(c, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Username))
+	msg.Success(c, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
 	return l.Redirect(c, "home")
 }

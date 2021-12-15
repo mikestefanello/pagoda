@@ -1,9 +1,9 @@
 {{define "content"}}
     <form method="post">
         <div class="field">
-            <label for="login" class="label">Username</label>
+            <label for="email" class="label">Email address</label>
             <div class="control">
-                <input id="login" type="text" name="username" class="input" value="{{.Data.Username}}" required>
+                <input id="email" type="email" name="email" class="input" value="{{.Data.Email}}" required>
             </div>
         </div>
         <div class="field">

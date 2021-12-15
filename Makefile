@@ -1,9 +1,9 @@
-.PHONY: pg
-pg:
+.PHONY: db
+db:
 	 psql postgresql://admin:admin@localhost:5432/app
 
-.PHONY: pg-test
-pg-test:
+.PHONY: db-test
+db-test:
 	 psql postgresql://admin:admin@localhost:5432/app_test
 
 .PHONY: ent-gen
