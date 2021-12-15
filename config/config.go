@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 
 	"github.com/joeshaw/envdecode"
@@ -84,4 +85,10 @@ func GetConfig() (Config, error) {
 	var cfg Config
 	err := envdecode.StrictDecode(&cfg)
 	return cfg, err
+}
+
+func SwitchEnv(env Env) {
+	if err := os.Setenv("APP_ENV", string(env)); err != nil {
+		panic(err)
+	}
 }

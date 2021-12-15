@@ -23,15 +23,14 @@ var (
 
 func TestMain(m *testing.M) {
 	// Set the environment to test
-	if err := os.Setenv("APP_ENV", string(config.EnvTest)); err != nil {
-		panic(err)
-	}
+	config.SwitchEnv(config.EnvTest)
 
 	// Start a test HTTP server
 	c = container.NewContainer()
 	BuildRouter(c)
 	srv = httptest.NewServer(c.Web)
 
+	// Run tests
 	exitVal := m.Run()
 	srv.Close()
 	os.Exit(exitVal)
