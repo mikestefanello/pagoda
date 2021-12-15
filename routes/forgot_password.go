@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"goweb/context"
 	"goweb/controller"
 	"goweb/msg"
 
@@ -10,7 +11,6 @@ import (
 type (
 	ForgotPassword struct {
 		controller.Controller
-		form ForgotPasswordForm
 	}
 
 	ForgotPasswordForm struct {
@@ -23,7 +23,12 @@ func (f *ForgotPassword) Get(c echo.Context) error {
 	p.Layout = "auth"
 	p.Name = "forgot-password"
 	p.Title = "Forgot password"
-	p.Data = f.form
+	p.Data = ForgotPasswordForm{}
+
+	if form := c.Get(context.FormKey); form != nil {
+		p.Data = form.(ForgotPasswordForm)
+	}
+
 	return f.RenderPage(c, p)
 }
 
@@ -35,16 +40,19 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	if err := c.Bind(&f.form); err != nil {
+	form := new(ForgotPasswordForm)
+	if err := c.Bind(form); err != nil {
 		return fail("unable to parse forgot password form", err)
 	}
+	c.Set(context.FormKey, *form)
 
 	// Validate the form
-	if err := c.Validate(f.form); err != nil {
-		f.SetValidationErrorMessages(c, err, f.form)
+	if err := c.Validate(form); err != nil {
+		f.SetValidationErrorMessages(c, err, form)
 		return f.Get(c)
 	}
 
-	// TODO
+	// TODO: generate and email a token
+
 	return f.Redirect(c, "home")
 }

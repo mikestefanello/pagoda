@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"goweb/auth"
+	"goweb/context"
 	"goweb/controller"
 	"goweb/ent"
 	"goweb/ent/user"
@@ -15,7 +16,6 @@ import (
 type (
 	Login struct {
 		controller.Controller
-		form LoginForm
 	}
 
 	LoginForm struct {
@@ -29,7 +29,12 @@ func (l *Login) Get(c echo.Context) error {
 	p.Layout = "auth"
 	p.Name = "login"
 	p.Title = "Log in"
-	p.Data = l.form
+	p.Data = LoginForm{}
+
+	if form := c.Get(context.FormKey); form != nil {
+		p.Data = form.(LoginForm)
+	}
+
 	return l.RenderPage(c, p)
 }
 
@@ -41,20 +46,22 @@ func (l *Login) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	if err := c.Bind(&l.form); err != nil {
+	form := new(LoginForm)
+	if err := c.Bind(form); err != nil {
 		return fail("unable to parse login form", err)
 	}
+	c.Set(context.FormKey, *form)
 
 	// Validate the form
-	if err := c.Validate(l.form); err != nil {
-		l.SetValidationErrorMessages(c, err, l.form)
+	if err := c.Validate(form); err != nil {
+		l.SetValidationErrorMessages(c, err, form)
 		return l.Get(c)
 	}
 
 	// Attempt to load the user
 	u, err := l.Container.ORM.User.
 		Query().
-		Where(user.Email(l.form.Email)).
+		Where(user.Email(form.Email)).
 		First(c.Request().Context())
 
 	if err != nil {
@@ -68,7 +75,7 @@ func (l *Login) Post(c echo.Context) error {
 	}
 
 	// Check if the password is correct
-	err = auth.CheckPassword(l.form.Password, u.Password)
+	err = auth.CheckPassword(form.Password, u.Password)
 	if err != nil {
 		msg.Danger(c, "Invalid credentials. Please try again.")
 		return l.Get(c)

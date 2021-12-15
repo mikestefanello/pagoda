@@ -2,6 +2,7 @@ package routes
 
 import (
 	"goweb/auth"
+	"goweb/context"
 	"goweb/controller"
 	"goweb/msg"
 
@@ -11,7 +12,6 @@ import (
 type (
 	Register struct {
 		controller.Controller
-		form RegisterForm
 	}
 
 	RegisterForm struct {
@@ -27,7 +27,11 @@ func (r *Register) Get(c echo.Context) error {
 	p.Layout = "auth"
 	p.Name = "register"
 	p.Title = "Register"
-	p.Data = r.form
+	p.Data = RegisterForm{}
+
+	if form := c.Get(context.FormKey); form != nil {
+		p.Data = form.(RegisterForm)
+	}
 
 	return r.RenderPage(c, p)
 }
@@ -40,18 +44,20 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	if err := c.Bind(&r.form); err != nil {
+	form := new(RegisterForm)
+	if err := c.Bind(form); err != nil {
 		return fail("unable to parse form values", err)
 	}
+	c.Set(context.FormKey, *form)
 
 	// Validate the form
-	if err := c.Validate(r.form); err != nil {
-		r.SetValidationErrorMessages(c, err, r.form)
+	if err := c.Validate(form); err != nil {
+		r.SetValidationErrorMessages(c, err, form)
 		return r.Get(c)
 	}
 
 	// Hash the password
-	pwHash, err := auth.HashPassword(r.form.Password)
+	pwHash, err := auth.HashPassword(form.Password)
 	if err != nil {
 		return fail("unable to hash password", err)
 	}
@@ -59,8 +65,8 @@ func (r *Register) Post(c echo.Context) error {
 	// Attempt creating the user
 	u, err := r.Container.ORM.User.
 		Create().
-		SetName(r.form.Name).
-		SetEmail(r.form.Email).
+		SetName(form.Name).
+		SetEmail(form.Email).
 		SetPassword(pwHash).
 		Save(c.Request().Context())
 
