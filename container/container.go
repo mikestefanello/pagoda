@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"goweb/auth"
 	"goweb/mail"
 
 	"entgo.io/ent/dialect"
@@ -27,6 +28,7 @@ type Container struct {
 	Database *sql.DB
 	ORM      *ent.Client
 	Mail     *mail.Client
+	Auth     *auth.Client
 }
 
 func NewContainer() *Container {
@@ -37,6 +39,7 @@ func NewContainer() *Container {
 	c.initDatabase()
 	c.initORM()
 	c.initMail()
+	c.initAuth()
 	return c
 }
 
@@ -124,4 +127,8 @@ func (c *Container) initMail() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}
+}
+
+func (c *Container) initAuth() {
+	c.Auth = auth.NewClient(c.Config, c.ORM)
 }

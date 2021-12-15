@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"goweb/auth"
 	"goweb/context"
 	"goweb/controller"
 	"goweb/msg"
@@ -57,7 +56,7 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	// Hash the password
-	pwHash, err := auth.HashPassword(form.Password)
+	pwHash, err := r.Container.Auth.HashPassword(form.Password)
 	if err != nil {
 		return fail("unable to hash password", err)
 	}
@@ -76,7 +75,7 @@ func (r *Register) Post(c echo.Context) error {
 
 	c.Logger().Infof("user created: %s", u.Name)
 
-	err = auth.Login(c, u.ID)
+	err = r.Container.Auth.Login(c, u.ID)
 	if err != nil {
 		c.Logger().Errorf("unable to log in: %v", err)
 		msg.Info(c, "Your account has been created.")

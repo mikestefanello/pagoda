@@ -3,7 +3,6 @@ package routes
 import (
 	"fmt"
 
-	"goweb/auth"
 	"goweb/context"
 	"goweb/controller"
 	"goweb/ent"
@@ -75,14 +74,14 @@ func (l *Login) Post(c echo.Context) error {
 	}
 
 	// Check if the password is correct
-	err = auth.CheckPassword(form.Password, u.Password)
+	err = l.Container.Auth.CheckPassword(form.Password, u.Password)
 	if err != nil {
 		msg.Danger(c, "Invalid credentials. Please try again.")
 		return l.Get(c)
 	}
 
 	// Log the user in
-	err = auth.Login(c, u.ID)
+	err = l.Container.Auth.Login(c, u.ID)
 	if err != nil {
 		return fail("unable to log in user", err)
 	}

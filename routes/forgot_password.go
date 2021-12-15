@@ -3,6 +3,8 @@ package routes
 import (
 	"goweb/context"
 	"goweb/controller"
+	"goweb/ent"
+	"goweb/ent/user"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
@@ -39,6 +41,11 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 		return f.Get(c)
 	}
 
+	succeed := func() error {
+		msg.Success(c, "An email containing a link to reset your password will be sent to this address if it exists in our system.")
+		return f.Get(c)
+	}
+
 	// Parse the form values
 	form := new(ForgotPasswordForm)
 	if err := c.Bind(form); err != nil {
@@ -52,7 +59,25 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 		return f.Get(c)
 	}
 
+	// Attempt to load the user
+	u, err := f.Container.ORM.User.
+		Query().
+		Where(user.Email(form.Email)).
+		First(c.Request().Context())
+
+	if err != nil {
+		switch err.(type) {
+		case *ent.NotFoundError:
+			return succeed()
+		default:
+			return fail("error querying user during forgot password", err)
+		}
+	}
+
 	// TODO: generate and email a token
+	if u != nil {
+
+	}
 
 	return f.Redirect(c, "home")
 }

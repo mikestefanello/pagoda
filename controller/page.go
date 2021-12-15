@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"goweb/auth"
+	"goweb/context"
 	"goweb/msg"
 	"goweb/pager"
 
@@ -62,7 +62,7 @@ func NewPage(c echo.Context) Page {
 		p.CSRF = csrf.(string)
 	}
 
-	if _, err := auth.GetUserID(c); err == nil {
+	if u := c.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 	}
 
