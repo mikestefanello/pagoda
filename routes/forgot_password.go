@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"fmt"
+
 	"goweb/context"
 	"goweb/controller"
 	"goweb/ent"
@@ -42,6 +44,7 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 	}
 
 	succeed := func() error {
+		c.Set(context.FormKey, nil)
 		msg.Success(c, "An email containing a link to reset your password will be sent to this address if it exists in our system.")
 		return f.Get(c)
 	}
@@ -74,10 +77,18 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 		}
 	}
 
-	// TODO: generate and email a token
-	if u != nil {
+	// Generate the token
+	token, _, err := f.Container.Auth.GeneratePasswordResetToken(c, u.ID)
+	if err != nil {
+		return fail("error generating password reset token", err)
+	}
+	c.Logger().Infof("generated password reset token for user %d", u.ID)
 
+	// Email the user
+	err = f.Container.Mail.Send(c, u.Email, fmt.Sprintf("Go here to reset your password: %s", token)) // TODO: route
+	if err != nil {
+		return fail("error sending password reset email", err)
 	}
 
-	return f.Redirect(c, "home")
+	return succeed()
 }

@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 
 	"goweb/config"
@@ -82,4 +84,32 @@ func (c *Client) HashPassword(password string) (string, error) {
 
 func (c *Client) CheckPassword(password, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
+func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
+	// Generate the token, which is what will go in the URL, but not the database
+	token := c.RandomToken(64)
+
+	// Hash the token, which is what will be stored in the database
+	hash, err := c.HashPassword(token)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// Create and save the password reset token
+	pt, err := c.orm.PasswordToken.
+		Create().
+		SetHash(hash).
+		SetUserID(userID).
+		Save(ctx.Request().Context())
+
+	return token, pt, err
+}
+
+func (c *Client) RandomToken(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
 }

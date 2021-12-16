@@ -62,6 +62,7 @@ func NewPage(c echo.Context) Page {
 		p.CSRF = csrf.(string)
 	}
 
+	// TODO: Use container?
 	if u := c.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 	}
