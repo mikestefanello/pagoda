@@ -71,11 +71,11 @@ func BuildRouter(c *container.Container) {
 	c.Web.Validator = &Validator{validator: validator.New()}
 
 	// Routes
-	navRoutes(g, ctr)
-	userRoutes(g, ctr)
+	navRoutes(c, g, ctr)
+	userRoutes(c, g, ctr)
 }
 
-func navRoutes(g *echo.Group, ctr controller.Controller) {
+func navRoutes(c *container.Container, g *echo.Group, ctr controller.Controller) {
 	home := Home{Controller: ctr}
 	g.GET("/", home.Get).Name = "home"
 
@@ -87,7 +87,7 @@ func navRoutes(g *echo.Group, ctr controller.Controller) {
 	g.POST("/contact", contact.Post).Name = "contact.post"
 }
 
-func userRoutes(g *echo.Group, ctr controller.Controller) {
+func userRoutes(c *container.Container, g *echo.Group, ctr controller.Controller) {
 	logout := Logout{Controller: ctr}
 	g.GET("/logout", logout.Get, middleware.RequireAuthentication()).Name = "logout"
 
@@ -103,4 +103,9 @@ func userRoutes(g *echo.Group, ctr controller.Controller) {
 	forgot := ForgotPassword{Controller: ctr}
 	noAuth.GET("/password", forgot.Get).Name = "forgot_password"
 	noAuth.POST("/password", forgot.Post).Name = "forgot_password.post"
+
+	resetGroup := noAuth.Group("/password/reset", middleware.LoadValidPasswordToken(c.Auth))
+	reset := ResetPassword{Controller: ctr}
+	resetGroup.GET("/token/:password_token", reset.Get).Name = "reset_password"
+	resetGroup.POST("/token/:password_token", reset.Post).Name = "reset_password.post"
 }

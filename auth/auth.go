@@ -4,9 +4,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"time"
 
 	"goweb/config"
 	"goweb/ent"
+	"goweb/ent/passwordtoken"
 	"goweb/ent/user"
 
 	"github.com/labstack/echo-contrib/session"
@@ -19,6 +21,13 @@ const (
 	sessionKeyUserID        = "user_id"
 	sessionKeyAuthenticated = "authenticated"
 )
+
+type NotAuthenticatedError struct{}
+
+// Error implements the error interface.
+func (e NotAuthenticatedError) Error() string {
+	return "user not authenticated"
+}
 
 type Client struct {
 	config *config.Config
@@ -61,7 +70,7 @@ func (c *Client) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
 		return sess.Values[sessionKeyUserID].(int), nil
 	}
 
-	return 0, errors.New("user not authenticated")
+	return 0, NotAuthenticatedError{}
 }
 
 func (c *Client) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
@@ -71,7 +80,7 @@ func (c *Client) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
 			First(ctx.Request().Context())
 	}
 
-	return nil, errors.New("user not authenticated")
+	return nil, NotAuthenticatedError{}
 }
 
 func (c *Client) HashPassword(password string) (string, error) {
@@ -104,6 +113,32 @@ func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (strin
 		Save(ctx.Request().Context())
 
 	return token, pt, err
+}
+
+func (c *Client) GetValidPasswordToken(ctx echo.Context, token string) (*ent.PasswordToken, error) {
+	// Hash the token in order to match in the database
+	hash, err := c.HashPassword(token)
+	if err != nil {
+		return nil, err
+	}
+
+	// Query to find a matching token
+	pt, err := c.orm.PasswordToken.
+		Query().
+		Where(passwordtoken.Hash(hash)).
+		First(ctx.Request().Context())
+
+	if err != nil {
+		ctx.Logger().Error(err)
+		return nil, err
+	}
+
+	// Check if the token is no longer valid
+	if pt.CreatedAt.Before(time.Now().Add(-c.config.App.PasswordTokenExpiration)) {
+		return nil, errors.New("token has expired")
+	}
+
+	return pt, nil
 }
 
 func (c *Client) RandomToken(length int) string {
