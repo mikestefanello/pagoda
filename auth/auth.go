@@ -3,7 +3,6 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"time"
 
 	"goweb/config"
@@ -27,6 +26,13 @@ type NotAuthenticatedError struct{}
 // Error implements the error interface.
 func (e NotAuthenticatedError) Error() string {
 	return "user not authenticated"
+}
+
+type InvalidTokenError struct{}
+
+// Error implements the error interface.
+func (e InvalidTokenError) Error() string {
+	return "invalid token"
 }
 
 type Client struct {
@@ -115,30 +121,31 @@ func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (strin
 	return token, pt, err
 }
 
-func (c *Client) GetValidPasswordToken(ctx echo.Context, token string) (*ent.PasswordToken, error) {
-	// Hash the token in order to match in the database
-	hash, err := c.HashPassword(token)
-	if err != nil {
-		return nil, err
-	}
+func (c *Client) GetValidPasswordToken(ctx echo.Context, token string, userID int) (*ent.PasswordToken, error) {
+	// Ensure expired tokens are never returned
+	expiration := time.Now().Add(-c.config.App.PasswordTokenExpiration)
 
-	// Query to find a matching token
-	pt, err := c.orm.PasswordToken.
+	// Query to find all tokens for te user that haven't expired
+	// We need to get all of them in order to properly match the token to the hashes
+	pts, err := c.orm.PasswordToken.
 		Query().
-		Where(passwordtoken.Hash(hash)).
-		First(ctx.Request().Context())
+		Where(passwordtoken.HasUserWith(user.ID(userID))).
+		Where(passwordtoken.CreatedAtGTE(expiration)).
+		All(ctx.Request().Context())
 
 	if err != nil {
 		ctx.Logger().Error(err)
 		return nil, err
 	}
 
-	// Check if the token is no longer valid
-	if pt.CreatedAt.Before(time.Now().Add(-c.config.App.PasswordTokenExpiration)) {
-		return nil, errors.New("token has expired")
+	// Check all tokens for a hash match
+	for _, pt := range pts {
+		if err := c.CheckPassword(token, pt.Hash); err == nil {
+			return pt, nil
+		}
 	}
 
-	return pt, nil
+	return nil, InvalidTokenError{}
 }
 
 func (c *Client) RandomToken(length int) string {

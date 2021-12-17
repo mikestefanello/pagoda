@@ -61,7 +61,7 @@ func (l *Login) Post(c echo.Context) error {
 	u, err := l.Container.ORM.User.
 		Query().
 		Where(user.Email(form.Email)).
-		First(c.Request().Context())
+		Only(c.Request().Context())
 
 	if err != nil {
 		switch err.(type) {

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 
 	"goweb/auth"
 	"goweb/context"
@@ -34,16 +35,22 @@ func LoadAuthenticatedUser(authClient *auth.Client) echo.MiddlewareFunc {
 func LoadValidPasswordToken(authClient *auth.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			tokenParam := c.Param("password_token")
-			if tokenParam == "" {
-				c.Logger().Warn("missing password token path parameter")
+			userID, err := strconv.Atoi(c.Param("user"))
+			if err != nil {
 				return echo.NewHTTPError(http.StatusNotFound, "Not found")
 			}
 
-			token, err := authClient.GetValidPasswordToken(c, tokenParam)
-			if err != nil {
+			tokenParam := c.Param("password_token")
+
+			token, err := authClient.GetValidPasswordToken(c, tokenParam, userID)
+			switch err.(type) {
+			case nil:
+			case auth.InvalidTokenError:
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
 				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
+			default:
+				c.Logger().Error(err)
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 			}
 
 			c.Set(context.PasswordTokenKey, token)

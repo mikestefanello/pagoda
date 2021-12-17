@@ -66,7 +66,7 @@ func (f *ForgotPassword) Post(c echo.Context) error {
 	u, err := f.Container.ORM.User.
 		Query().
 		Where(user.Email(form.Email)).
-		First(c.Request().Context())
+		Only(c.Request().Context())
 
 	if err != nil {
 		switch err.(type) {

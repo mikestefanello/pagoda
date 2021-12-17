@@ -42,6 +42,8 @@ func (r *Register) Post(c echo.Context) error {
 		return r.Get(c)
 	}
 
+	// TODO: Validation for dupe email addresses
+
 	// Parse the form values
 	form := new(RegisterForm)
 	if err := c.Bind(form); err != nil {
