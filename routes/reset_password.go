@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"goweb/context"
 	"goweb/controller"
+	"goweb/ent"
+	"goweb/ent/user"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
@@ -33,13 +36,8 @@ func (r *ResetPassword) Post(c echo.Context) error {
 		return r.Get(c)
 	}
 
-	succeed := func() error {
-		msg.Success(c, "Your password has been updated.")
-		return r.Redirect(c, "login")
-	}
-
 	// Parse the form values
-	form := new(ResetPassword)
+	form := new(ResetPasswordForm)
 	if err := c.Bind(form); err != nil {
 		return fail("unable to parse forgot password form", err)
 	}
@@ -50,33 +48,32 @@ func (r *ResetPassword) Post(c echo.Context) error {
 		return r.Get(c)
 	}
 
-	// Attempt to load the user
-	//u, err := f.Container.ORM.User.
-	//	Query().
-	//	Where(user.Email(form.Email)).
-	//	First(c.Request().Context())
-	//
-	//if err != nil {
-	//	switch err.(type) {
-	//	case *ent.NotFoundError:
-	//		return succeed()
-	//	default:
-	//		return fail("error querying user during forgot password", err)
-	//	}
-	//}
-	//
-	//// Generate the token
-	//token, _, err := f.Container.Auth.GeneratePasswordResetToken(c, u.ID)
-	//if err != nil {
-	//	return fail("error generating password reset token", err)
-	//}
-	//c.Logger().Infof("generated password reset token for user %d", u.ID)
-	//
-	//// Email the user
-	//err = f.Container.Mail.Send(c, u.Email, fmt.Sprintf("Go here to reset your password: %s", token)) // TODO: route
-	//if err != nil {
-	//	return fail("error sending password reset email", err)
-	//}
+	// Hash the new password
+	hash, err := r.Container.Auth.HashPassword(form.Password)
+	if err != nil {
+		return fail("unable to hash password", err)
+	}
 
-	return succeed()
+	// Get the requesting user
+	usr := c.Get(context.UserKey).(*ent.User)
+
+	// Update the user
+	_, err = r.Container.ORM.User.
+		Update().
+		SetPassword(hash).
+		Where(user.ID(usr.ID)).
+		Save(c.Request().Context())
+
+	if err != nil {
+		return fail("unable to update password", err)
+	}
+
+	// Delete all password tokens for this user
+	err = r.Container.Auth.DeletePasswordTokens(c, usr.ID)
+	if err != nil {
+		return fail("unable to delete password tokens", err)
+	}
+
+	msg.Success(c, "Your password has been updated.")
+	return r.Redirect(c, "login")
 }

@@ -104,7 +104,10 @@ func userRoutes(c *container.Container, g *echo.Group, ctr controller.Controller
 	noAuth.GET("/password", forgot.Get).Name = "forgot_password"
 	noAuth.POST("/password", forgot.Post).Name = "forgot_password.post"
 
-	resetGroup := noAuth.Group("/password/reset", middleware.LoadValidPasswordToken(c.Auth))
+	resetGroup := noAuth.Group("/password/reset",
+		middleware.LoadUser(c.ORM),
+		middleware.LoadValidPasswordToken(c.Auth),
+	)
 	reset := ResetPassword{Controller: ctr}
 	resetGroup.GET("/token/:user/:password_token", reset.Get).Name = "reset_password"
 	resetGroup.POST("/token/:user/:password_token", reset.Post).Name = "reset_password.post"

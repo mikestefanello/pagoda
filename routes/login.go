@@ -63,14 +63,13 @@ func (l *Login) Post(c echo.Context) error {
 		Where(user.Email(form.Email)).
 		Only(c.Request().Context())
 
-	if err != nil {
-		switch err.(type) {
-		case *ent.NotFoundError:
-			msg.Danger(c, "Invalid credentials. Please try again.")
-			return l.Get(c)
-		default:
-			return fail("error querying user during login", err)
-		}
+	switch err.(type) {
+	case *ent.NotFoundError:
+		msg.Danger(c, "Invalid credentials. Please try again.")
+		return l.Get(c)
+	case nil:
+	default:
+		return fail("error querying user during login", err)
 	}
 
 	// Check if the password is correct

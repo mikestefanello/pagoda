@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strconv"
 
 	"goweb/auth"
 	"goweb/context"
@@ -35,14 +34,16 @@ func LoadAuthenticatedUser(authClient *auth.Client) echo.MiddlewareFunc {
 func LoadValidPasswordToken(authClient *auth.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			userID, err := strconv.Atoi(c.Param("user"))
-			if err != nil {
-				return echo.NewHTTPError(http.StatusNotFound, "Not found")
+			var usr *ent.User
+
+			if c.Get(context.UserKey) == nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 			}
+			usr = c.Get(context.UserKey).(*ent.User)
 
 			tokenParam := c.Param("password_token")
+			token, err := authClient.GetValidPasswordToken(c, tokenParam, usr.ID)
 
-			token, err := authClient.GetValidPasswordToken(c, tokenParam, userID)
 			switch err.(type) {
 			case nil:
 			case auth.InvalidTokenError:

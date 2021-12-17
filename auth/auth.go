@@ -152,6 +152,15 @@ func (c *Client) GetValidPasswordToken(ctx echo.Context, token string, userID in
 	return nil, InvalidTokenError{}
 }
 
+func (c *Client) DeletePasswordTokens(ctx echo.Context, userID int) error {
+	_, err := c.orm.PasswordToken.
+		Delete().
+		Where(passwordtoken.HasUserWith(user.ID(userID))).
+		Exec(ctx.Request().Context())
+
+	return err
+}
+
 func (c *Client) RandomToken(length int) (string, error) {
 	b := make([]byte, length)
 	if _, err := rand.Read(b); err != nil {
