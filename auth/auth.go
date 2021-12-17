@@ -19,6 +19,7 @@ const (
 	sessionName             = "ua"
 	sessionKeyUserID        = "user_id"
 	sessionKeyAuthenticated = "authenticated"
+	passwordTokenLength     = 64
 )
 
 type NotAuthenticatedError struct{}
@@ -83,7 +84,7 @@ func (c *Client) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
 	if userID, err := c.GetAuthenticatedUserID(ctx); err == nil {
 		return c.orm.User.Query().
 			Where(user.ID(userID)).
-			First(ctx.Request().Context())
+			Only(ctx.Request().Context())
 	}
 
 	return nil, NotAuthenticatedError{}
@@ -103,7 +104,10 @@ func (c *Client) CheckPassword(password, hash string) error {
 
 func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
 	// Generate the token, which is what will go in the URL, but not the database
-	token := c.RandomToken(64)
+	token, err := c.RandomToken(passwordTokenLength)
+	if err != nil {
+		return "", nil, err
+	}
 
 	// Hash the token, which is what will be stored in the database
 	hash, err := c.HashPassword(token)
@@ -148,10 +152,10 @@ func (c *Client) GetValidPasswordToken(ctx echo.Context, token string, userID in
 	return nil, InvalidTokenError{}
 }
 
-func (c *Client) RandomToken(length int) string {
+func (c *Client) RandomToken(length int) (string, error) {
 	b := make([]byte, length)
 	if _, err := rand.Read(b); err != nil {
-		return ""
+		return "", err
 	}
-	return hex.EncodeToString(b)
+	return hex.EncodeToString(b), nil
 }

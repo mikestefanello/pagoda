@@ -3,6 +3,7 @@ package routes
 import (
 	"goweb/context"
 	"goweb/controller"
+	"goweb/ent/user"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
@@ -42,8 +43,6 @@ func (r *Register) Post(c echo.Context) error {
 		return r.Get(c)
 	}
 
-	// TODO: Validation for dupe email addresses
-
 	// Parse the form values
 	form := new(RegisterForm)
 	if err := c.Bind(form); err != nil {
@@ -55,6 +54,20 @@ func (r *Register) Post(c echo.Context) error {
 	if err := c.Validate(form); err != nil {
 		r.SetValidationErrorMessages(c, err, form)
 		return r.Get(c)
+	}
+
+	// Check if the email address is taken
+	exists, err := r.Container.ORM.User.
+		Query().
+		Where(user.Email(form.Email)).
+		Exist(c.Request().Context())
+
+	switch {
+	case err != nil:
+		return fail("unable to query to see if email is taken", err)
+	case exists:
+		msg.Warning(c, "A user with this email address already exists. Please log in.")
+		return r.Redirect(c, "login")
 	}
 
 	// Hash the password
@@ -77,6 +90,7 @@ func (r *Register) Post(c echo.Context) error {
 
 	c.Logger().Infof("user created: %s", u.Name)
 
+	// Log the user in
 	err = r.Container.Auth.Login(c, u.ID)
 	if err != nil {
 		c.Logger().Errorf("unable to log in: %v", err)
