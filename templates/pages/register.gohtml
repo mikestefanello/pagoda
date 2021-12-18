@@ -29,7 +29,7 @@
                 <button class="button is-primary">Register</button>
             </p>
             <p class="control">
-                <a href="{{call .Reverse "home"}}" class="button is-light">Cancel</a>
+                <a href="{{call .ToURL "home"}}" class="button is-light">Cancel</a>
             </p>
         </div>
         {{template "csrf" .}}

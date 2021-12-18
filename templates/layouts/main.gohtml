@@ -9,17 +9,17 @@
         <nav class="navbar is-dark">
             <div class="container">
                 <div class="navbar-brand">
-                    <a href="{{call .Reverse "home"}}" class="navbar-item">{{.AppName}}</a>
+                    <a href="{{call .ToURL "home"}}" class="navbar-item">{{.AppName}}</a>
                 </div>
                 <div id="navbarMenu" class="navbar-menu">
                     <div class="navbar-end">
-                        {{link (call .Reverse "home") "Home" .Path "navbar-item"}}
-                        {{link (call .Reverse "about") "About" .Path "navbar-item"}}
-                        {{link (call .Reverse "contact") "Contact" .Path "navbar-item"}}
+                        {{link (call .ToURL "home") "Home" .Path "navbar-item"}}
+                        {{link (call .ToURL "about") "About" .Path "navbar-item"}}
+                        {{link (call .ToURL "contact") "Contact" .Path "navbar-item"}}
                         {{- if .IsAuth}}
-                            {{link (call .Reverse "logout") "Logout" .Path "navbar-item"}}
+                            {{link (call .ToURL "logout") "Logout" .Path "navbar-item"}}
                         {{- else}}
-                            {{link (call .Reverse "login") "Login" .Path "navbar-item"}}
+                            {{link (call .ToURL "login") "Login" .Path "navbar-item"}}
                         {{- end}}
                     </div>
                 </div>

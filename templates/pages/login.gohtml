@@ -17,10 +17,10 @@
                 <button class="button is-primary">Log in</button>
             </p>
             <p class="control">
-                <a href="{{call .Reverse "home"}}" class="button is-light">Cancel</a>
+                <a href="{{call .ToURL "home"}}" class="button is-light">Cancel</a>
             </p>
         </div>
         {{template "csrf" .}}
     </form>
-    <div class="content is-small"><a href="{{call .Reverse "register"}}">Create an account</a> - <a href="{{call .Reverse "forgot_password"}}">Forgot password?</a></div>
+    <div class="content is-small"><a href="{{call .ToURL "register"}}">Create an account</a> - <a href="{{call .ToURL "forgot_password"}}">Forgot password?</a></div>
 {{end}}
