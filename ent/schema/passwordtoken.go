@@ -20,8 +20,7 @@ func (PasswordToken) Fields() []ent.Field {
 			Sensitive().
 			NotEmpty(),
 		field.Time("created_at").
-			Default(time.Now).
-			Immutable(),
+			Default(time.Now),
 	}
 }
 

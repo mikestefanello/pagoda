@@ -9,6 +9,7 @@ import (
 	"goweb/ent/passwordtoken"
 	"goweb/ent/predicate"
 	"goweb/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -31,6 +32,20 @@ func (ptu *PasswordTokenUpdate) Where(ps ...predicate.PasswordToken) *PasswordTo
 // SetHash sets the "hash" field.
 func (ptu *PasswordTokenUpdate) SetHash(s string) *PasswordTokenUpdate {
 	ptu.mutation.SetHash(s)
+	return ptu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ptu *PasswordTokenUpdate) SetCreatedAt(t time.Time) *PasswordTokenUpdate {
+	ptu.mutation.SetCreatedAt(t)
+	return ptu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ptu *PasswordTokenUpdate) SetNillableCreatedAt(t *time.Time) *PasswordTokenUpdate {
+	if t != nil {
+		ptu.SetCreatedAt(*t)
+	}
 	return ptu
 }
 
@@ -154,6 +169,13 @@ func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Column: passwordtoken.FieldHash,
 		})
 	}
+	if value, ok := ptu.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: passwordtoken.FieldCreatedAt,
+		})
+	}
 	if ptu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -211,6 +233,20 @@ type PasswordTokenUpdateOne struct {
 // SetHash sets the "hash" field.
 func (ptuo *PasswordTokenUpdateOne) SetHash(s string) *PasswordTokenUpdateOne {
 	ptuo.mutation.SetHash(s)
+	return ptuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ptuo *PasswordTokenUpdateOne) SetCreatedAt(t time.Time) *PasswordTokenUpdateOne {
+	ptuo.mutation.SetCreatedAt(t)
+	return ptuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ptuo *PasswordTokenUpdateOne) SetNillableCreatedAt(t *time.Time) *PasswordTokenUpdateOne {
+	if t != nil {
+		ptuo.SetCreatedAt(*t)
+	}
 	return ptuo
 }
 
@@ -356,6 +392,13 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 			Type:   field.TypeString,
 			Value:  value,
 			Column: passwordtoken.FieldHash,
+		})
+	}
+	if value, ok := ptuo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: passwordtoken.FieldCreatedAt,
 		})
 	}
 	if ptuo.mutation.UserCleared() {

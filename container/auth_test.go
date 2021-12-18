@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"goweb/ent/passwordtoken"
 	"goweb/ent/user"
@@ -65,25 +66,42 @@ func TestGeneratePasswordResetToken(t *testing.T) {
 }
 
 func TestGetValidPasswordToken(t *testing.T) {
+	// Check that a fake token is not valid
 	_, err := c.Auth.GetValidPasswordToken(ctx, "faketoken", usr.ID)
 	assert.Error(t, err)
 
+	// Generate a valid token and check that it is returned
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
 	pt2, err := c.Auth.GetValidPasswordToken(ctx, token, usr.ID)
 	require.NoError(t, err)
 	assert.Equal(t, pt.ID, pt2.ID)
+
+	// Expire the token by pushed the date far enough back
+	_, err = c.ORM.PasswordToken.
+		Update().
+		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + 10))).
+		Where(passwordtoken.ID(pt.ID)).
+		Save(context.Background())
+	require.NoError(t, err)
+
+	// Expired tokens should not be valid
+	_, err = c.Auth.GetValidPasswordToken(ctx, token, usr.ID)
+	assert.Error(t, err)
 }
 
 func TestDeletePasswordTokens(t *testing.T) {
+	// Create three tokens for the user
 	for i := 0; i < 3; i++ {
 		_, _, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 		require.NoError(t, err)
 	}
 
+	// Delete all tokens for the user
 	err := c.Auth.DeletePasswordTokens(ctx, usr.ID)
 	require.NoError(t, err)
 
+	// Check that no tokens remain
 	count, err := c.ORM.PasswordToken.
 		Query().
 		Where(passwordtoken.HasUserWith(user.ID(usr.ID))).
