@@ -27,3 +27,7 @@ up:
 run:
 	clear
 	go run main.go
+
+.PHONY: test
+run:
+	go test ./...

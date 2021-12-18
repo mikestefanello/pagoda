@@ -46,11 +46,14 @@ type (
 
 	// AppConfig stores application configuration
 	AppConfig struct {
-		Name                    string        `env:"APP_NAME,default=Goweb"`
-		Environment             Environment   `env:"APP_ENVIRONMENT,default=local"`
-		EncryptionKey           string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
-		Timeout                 time.Duration `env:"APP_TIMEOUT,default=20s"`
-		PasswordTokenExpiration time.Duration `env:"APP_PASSWORD_TOKEN_EXPIRATION,default=60m"`
+		Name          string        `env:"APP_NAME,default=Goweb"`
+		Environment   Environment   `env:"APP_ENVIRONMENT,default=local"`
+		EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
+		Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`
+		PasswordToken struct {
+			Expiration time.Duration `env:"APP_PASSWORD_TOKEN_EXPIRATION,default=60m"`
+			Length     int           `env:"APP_PASSWORD_TOKEN_LENGTH,default=64"`
+		}
 	}
 
 	CacheConfig struct {
