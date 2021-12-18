@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"goweb/auth"
+	"goweb/container"
 	"goweb/context"
 	"goweb/ent"
 	"goweb/msg"
@@ -11,14 +11,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func LoadAuthenticatedUser(authClient *auth.Client) echo.MiddlewareFunc {
+func LoadAuthenticatedUser(authClient *container.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			u, err := authClient.GetAuthenticatedUser(c)
 			switch err.(type) {
 			case *ent.NotFoundError:
 				c.Logger().Debug("auth user not found")
-			case auth.NotAuthenticatedError:
+			case container.NotAuthenticatedError:
 			case nil:
 				c.Set(context.AuthenticatedUserKey, u)
 				c.Logger().Info("auth user loaded in to context: %d", u.ID)
@@ -31,7 +31,7 @@ func LoadAuthenticatedUser(authClient *auth.Client) echo.MiddlewareFunc {
 	}
 }
 
-func LoadValidPasswordToken(authClient *auth.Client) echo.MiddlewareFunc {
+func LoadValidPasswordToken(authClient *container.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var usr *ent.User
@@ -46,7 +46,7 @@ func LoadValidPasswordToken(authClient *auth.Client) echo.MiddlewareFunc {
 
 			switch err.(type) {
 			case nil:
-			case auth.InvalidTokenError:
+			case container.InvalidTokenError:
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
 				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
 			default:

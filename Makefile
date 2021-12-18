@@ -29,5 +29,5 @@ run:
 	go run main.go
 
 .PHONY: test
-run:
+test:
 	go test ./...

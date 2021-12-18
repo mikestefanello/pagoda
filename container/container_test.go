@@ -54,7 +54,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewContainer(t *testing.T) {
-	c := NewContainer()
 	assert.NotNil(t, c.Web)
 	assert.NotNil(t, c.Config)
 	assert.NotNil(t, c.Cache)
