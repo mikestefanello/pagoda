@@ -8,9 +8,16 @@ import (
 )
 
 const (
-	TemplateDir  = "templates"
-	TemplateExt  = ".gohtml"
-	StaticDir    = "static"
+	// TemplateDir stores the name of the directory that contains templates
+	TemplateDir = "templates"
+
+	// TemplateExt stores the extension used for the template files
+	TemplateExt = ".gohtml"
+
+	// StaticDir stores the name of the directory that will serve static files
+	StaticDir = "static"
+
+	// StaticPrefix stores the URL prefix used when serving static files
 	StaticPrefix = "files"
 )
 
@@ -25,8 +32,17 @@ const (
 	EnvProduction Environment = "prod"
 )
 
+// SwitchEnvironment sets the environment variable used to dictate which environment the application is
+// currently running in.
+// This must be called prior to loading the configuration in order for it to take effect.
+func SwitchEnvironment(env Environment) {
+	if err := os.Setenv("APP_ENVIRONMENT", string(env)); err != nil {
+		panic(err)
+	}
+}
+
 type (
-	// Config stores complete application configuration
+	// Config stores complete configuration
 	Config struct {
 		HTTP     HTTPConfig
 		App      AppConfig
@@ -56,6 +72,7 @@ type (
 		}
 	}
 
+	// CacheConfig stores the cache configuration
 	CacheConfig struct {
 		Hostname   string `env:"CACHE_HOSTNAME,default=localhost"`
 		Port       uint16 `env:"CACHE_PORT,default=6379"`
@@ -66,6 +83,7 @@ type (
 		}
 	}
 
+	// DatabaseConfig stores the database configuration
 	DatabaseConfig struct {
 		Hostname     string `env:"DB_HOSTNAME,default=localhost"`
 		Port         uint16 `env:"DB_PORT,default=5432"`
@@ -75,6 +93,7 @@ type (
 		TestDatabase string `env:"DB_NAME_TEST,default=app_test"`
 	}
 
+	// MailConfig stores the mail configuration
 	MailConfig struct {
 		Hostname    string `env:"MAIL_HOSTNAME,default=localhost"`
 		Port        uint16 `env:"MAIL_PORT,default=25"`
@@ -84,15 +103,9 @@ type (
 	}
 )
 
-// GetConfig loads and returns application configuration
+// GetConfig loads and returns configuration
 func GetConfig() (Config, error) {
 	var cfg Config
 	err := envdecode.StrictDecode(&cfg)
 	return cfg, err
-}
-
-func SwitchEnvironment(env Environment) {
-	if err := os.Setenv("APP_ENVIRONMENT", string(env)); err != nil {
-		panic(err)
-	}
 }
