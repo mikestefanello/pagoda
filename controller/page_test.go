@@ -23,7 +23,7 @@ func TestNewPage(t *testing.T) {
 	assert.Equal(t, "/", p.Path)
 	assert.Equal(t, "/", p.URL)
 	assert.Equal(t, http.StatusOK, p.StatusCode)
-	assert.Equal(t, NewPager(ctx), p.Pager)
+	assert.Equal(t, NewPager(ctx, DefaultItemsPerPage), p.Pager)
 	assert.Empty(t, p.Headers)
 	assert.True(t, p.IsHome)
 	assert.False(t, p.IsAuth)

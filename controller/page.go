@@ -104,26 +104,26 @@ type Page struct {
 	}
 }
 
-// NewPage creates and initiatizes a new page for a given request context
-func NewPage(c echo.Context) Page {
+// NewPage creates and initiatizes a new Page for a given request context
+func NewPage(ctx echo.Context) Page {
 	p := Page{
-		Context:    c,
-		ToURL:      c.Echo().Reverse,
-		Path:       c.Request().URL.Path,
-		URL:        c.Request().URL.String(),
+		Context:    ctx,
+		ToURL:      ctx.Echo().Reverse,
+		Path:       ctx.Request().URL.Path,
+		URL:        ctx.Request().URL.String(),
 		StatusCode: http.StatusOK,
-		Pager:      NewPager(c),
+		Pager:      NewPager(ctx, DefaultItemsPerPage),
 		Headers:    make(map[string]string),
-		RequestID:  c.Response().Header().Get(echo.HeaderXRequestID),
+		RequestID:  ctx.Response().Header().Get(echo.HeaderXRequestID),
 	}
 
 	p.IsHome = p.Path == "/"
 
-	if csrf := c.Get(echomw.DefaultCSRFConfig.ContextKey); csrf != nil {
+	if csrf := ctx.Get(echomw.DefaultCSRFConfig.ContextKey); csrf != nil {
 		p.CSRF = csrf.(string)
 	}
 
-	if u := c.Get(context.AuthenticatedUserKey); u != nil {
+	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 	}
 

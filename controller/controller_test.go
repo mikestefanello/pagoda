@@ -30,6 +30,6 @@ func TestMain(m *testing.M) {
 }
 
 func newContext(url string) echo.Context {
-	req := httptest.NewRequest(http.MethodPost, url, strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	return c.Web.NewContext(req, httptest.NewRecorder())
 }
