@@ -6,6 +6,7 @@ import (
 	"goweb/config"
 	"goweb/controller"
 	"goweb/middleware"
+	"goweb/services"
 
 	"github.com/go-playground/validator/v10"
 
@@ -14,8 +15,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
-
-	"goweb/container"
 )
 
 type Validator struct {
@@ -31,7 +30,7 @@ func (v *Validator) Validate(i interface{}) error {
 
 // TODO: This is doing more than building the router
 
-func BuildRouter(c *container.Container) {
+func BuildRouter(c *services.Container) {
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
 	// after each server restart
@@ -75,7 +74,7 @@ func BuildRouter(c *container.Container) {
 	userRoutes(c, g, ctr)
 }
 
-func navRoutes(c *container.Container, g *echo.Group, ctr controller.Controller) {
+func navRoutes(c *services.Container, g *echo.Group, ctr controller.Controller) {
 	home := Home{Controller: ctr}
 	g.GET("/", home.Get).Name = "home"
 
@@ -87,7 +86,7 @@ func navRoutes(c *container.Container, g *echo.Group, ctr controller.Controller)
 	g.POST("/contact", contact.Post).Name = "contact.post"
 }
 
-func userRoutes(c *container.Container, g *echo.Group, ctr controller.Controller) {
+func userRoutes(c *services.Container, g *echo.Group, ctr controller.Controller) {
 	logout := Logout{Controller: ctr}
 	g.GET("/logout", logout.Get, middleware.RequireAuthentication()).Name = "logout"
 

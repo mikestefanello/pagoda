@@ -8,12 +8,12 @@ import (
 	"os/signal"
 	"time"
 
-	"goweb/container"
 	"goweb/routes"
+	"goweb/services"
 )
 
 func main() {
-	c := container.NewContainer()
+	c := services.NewContainer()
 
 	// Build the router
 	routes.BuildRouter(c)

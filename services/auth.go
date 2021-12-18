@@ -1,4 +1,4 @@
-package container
+package services
 
 import (
 	"crypto/rand"
@@ -16,14 +16,14 @@ import (
 )
 
 const (
-	// sessionName stores the name of the session which contains authentication data
-	sessionName = "ua"
+	// authSessionName stores the name of the session which contains authentication data
+	authSessionName = "ua"
 
-	// sessionKeyUserID stores the key used to store the user ID in the session
-	sessionKeyUserID = "user_id"
+	// authSessionKeyUserID stores the key used to store the user ID in the session
+	authSessionKeyUserID = "user_id"
 
-	// sessionKeyAuthenticated stores the key used to store the authentication status in the session
-	sessionKeyAuthenticated = "authenticated"
+	// authSessionKeyAuthenticated stores the key used to store the authentication status in the session
+	authSessionKeyAuthenticated = "authenticated"
 )
 
 // NotAuthenticatedError is an error returned when a user is not authenticated
@@ -34,21 +34,21 @@ func (e NotAuthenticatedError) Error() string {
 	return "user not authenticated"
 }
 
-// InvalidTokenError is an error returned when an invalid token is provided
-type InvalidTokenError struct{}
+// InvalidPasswordTokenError is an error returned when an invalid token is provided
+type InvalidPasswordTokenError struct{}
 
 // Error implements the error interface.
-func (e InvalidTokenError) Error() string {
-	return "invalid token"
+func (e InvalidPasswordTokenError) Error() string {
+	return "invalid password token"
 }
 
-// AuthClient is the AuthClient that handles authentication requests
+// AuthClient is the client that handles authentication requests
 type AuthClient struct {
 	config *config.Config
 	orm    *ent.Client
 }
 
-// NewAuthClient creates a new authentication AuthClient
+// NewAuthClient creates a new authentication client
 func NewAuthClient(cfg *config.Config, orm *ent.Client) *AuthClient {
 	return &AuthClient{
 		config: cfg,
@@ -58,34 +58,34 @@ func NewAuthClient(cfg *config.Config, orm *ent.Client) *AuthClient {
 
 // Login logs in a user of a given ID
 func (c *AuthClient) Login(ctx echo.Context, userID int) error {
-	sess, err := session.Get(sessionName, ctx)
+	sess, err := session.Get(authSessionName, ctx)
 	if err != nil {
 		return err
 	}
-	sess.Values[sessionKeyUserID] = userID
-	sess.Values[sessionKeyAuthenticated] = true
+	sess.Values[authSessionKeyUserID] = userID
+	sess.Values[authSessionKeyAuthenticated] = true
 	return sess.Save(ctx.Request(), ctx.Response())
 }
 
 // Logout logs the requesting user out
 func (c *AuthClient) Logout(ctx echo.Context) error {
-	sess, err := session.Get(sessionName, ctx)
+	sess, err := session.Get(authSessionName, ctx)
 	if err != nil {
 		return err
 	}
-	sess.Values[sessionKeyAuthenticated] = false
+	sess.Values[authSessionKeyAuthenticated] = false
 	return sess.Save(ctx.Request(), ctx.Response())
 }
 
 // GetAuthenticatedUserID returns the authenticated user's ID, if the user is logged in
 func (c *AuthClient) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
-	sess, err := session.Get(sessionName, ctx)
+	sess, err := session.Get(authSessionName, ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	if sess.Values[sessionKeyAuthenticated] == true {
-		return sess.Values[sessionKeyUserID].(int), nil
+	if sess.Values[authSessionKeyAuthenticated] == true {
+		return sess.Values[authSessionKeyUserID].(int), nil
 	}
 
 	return 0, NotAuthenticatedError{}
@@ -171,7 +171,7 @@ func (c *AuthClient) GetValidPasswordToken(ctx echo.Context, token string, userI
 		}
 	}
 
-	return nil, InvalidTokenError{}
+	return nil, InvalidPasswordTokenError{}
 }
 
 // DeletePasswordTokens deletes all password tokens in the database for a belonging to a given user.

@@ -12,10 +12,10 @@ import (
 	"sync"
 
 	"goweb/config"
-	"goweb/container"
 	"goweb/funcmap"
 	"goweb/middleware"
 	"goweb/msg"
+	"goweb/services"
 
 	"github.com/go-playground/validator/v10"
 
@@ -37,10 +37,10 @@ var (
 )
 
 type Controller struct {
-	Container *container.Container
+	Container *services.Container
 }
 
-func NewController(c *container.Container) Controller {
+func NewController(c *services.Container) Controller {
 	return Controller{
 		Container: c,
 	}

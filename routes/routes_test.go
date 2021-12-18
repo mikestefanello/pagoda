@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"goweb/config"
-	"goweb/container"
+	"goweb/services"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ import (
 
 var (
 	srv *httptest.Server
-	c   *container.Container
+	c   *services.Container
 )
 
 func TestMain(m *testing.M) {
@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	config.SwitchEnvironment(config.EnvTest)
 
 	// Start a test HTTP server
-	c = container.NewContainer()
+	c = services.NewContainer()
 	BuildRouter(c)
 	srv = httptest.NewServer(c.Web)
 
