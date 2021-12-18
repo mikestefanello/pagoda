@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"goweb/auth"
 	"goweb/mail"
 
 	"entgo.io/ent/dialect"
@@ -28,7 +27,7 @@ type Container struct {
 	Database *sql.DB
 	ORM      *ent.Client
 	Mail     *mail.Client
-	Auth     *auth.Client
+	Auth     *AuthClient
 }
 
 func NewContainer() *Container {
@@ -130,5 +129,5 @@ func (c *Container) initMail() {
 }
 
 func (c *Container) initAuth() {
-	c.Auth = auth.NewClient(c.Config, c.ORM)
+	c.Auth = NewAuthClient(c.Config, c.ORM)
 }

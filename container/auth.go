@@ -1,4 +1,4 @@
-package auth
+package container
 
 import (
 	"crypto/rand"
@@ -26,22 +26,38 @@ const (
 	sessionKeyAuthenticated = "authenticated"
 )
 
-// Client is the client that handles authentication requests
-type Client struct {
+// NotAuthenticatedError is an error returned when a user is not authenticated
+type NotAuthenticatedError struct{}
+
+// Error implements the error interface.
+func (e NotAuthenticatedError) Error() string {
+	return "user not authenticated"
+}
+
+// InvalidTokenError is an error returned when an invalid token is provided
+type InvalidTokenError struct{}
+
+// Error implements the error interface.
+func (e InvalidTokenError) Error() string {
+	return "invalid token"
+}
+
+// AuthClient is the AuthClient that handles authentication requests
+type AuthClient struct {
 	config *config.Config
 	orm    *ent.Client
 }
 
-// NewClient creates a new authentication client
-func NewClient(cfg *config.Config, orm *ent.Client) *Client {
-	return &Client{
+// NewAuthClient creates a new authentication AuthClient
+func NewAuthClient(cfg *config.Config, orm *ent.Client) *AuthClient {
+	return &AuthClient{
 		config: cfg,
 		orm:    orm,
 	}
 }
 
 // Login logs in a user of a given ID
-func (c *Client) Login(ctx echo.Context, userID int) error {
+func (c *AuthClient) Login(ctx echo.Context, userID int) error {
 	sess, err := session.Get(sessionName, ctx)
 	if err != nil {
 		return err
@@ -52,7 +68,7 @@ func (c *Client) Login(ctx echo.Context, userID int) error {
 }
 
 // Logout logs the requesting user out
-func (c *Client) Logout(ctx echo.Context) error {
+func (c *AuthClient) Logout(ctx echo.Context) error {
 	sess, err := session.Get(sessionName, ctx)
 	if err != nil {
 		return err
@@ -62,7 +78,7 @@ func (c *Client) Logout(ctx echo.Context) error {
 }
 
 // GetAuthenticatedUserID returns the authenticated user's ID, if the user is logged in
-func (c *Client) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
+func (c *AuthClient) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
 	sess, err := session.Get(sessionName, ctx)
 	if err != nil {
 		return 0, err
@@ -76,7 +92,7 @@ func (c *Client) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
 }
 
 // GetAuthenticatedUser returns the authenticated user if the user is logged in
-func (c *Client) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
+func (c *AuthClient) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
 	if userID, err := c.GetAuthenticatedUserID(ctx); err == nil {
 		return c.orm.User.Query().
 			Where(user.ID(userID)).
@@ -87,7 +103,7 @@ func (c *Client) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
 }
 
 // HashPassword returns a hash of a given password
-func (c *Client) HashPassword(password string) (string, error) {
+func (c *AuthClient) HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -96,7 +112,7 @@ func (c *Client) HashPassword(password string) (string, error) {
 }
 
 // CheckPassword check if a given password matches a given hash
-func (c *Client) CheckPassword(password, hash string) error {
+func (c *AuthClient) CheckPassword(password, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
@@ -104,7 +120,7 @@ func (c *Client) CheckPassword(password, hash string) error {
 // For security purposes, the token itself is not stored in the database but rather
 // a hash of the token, exactly how passwords are handled. This method returns both
 // the generated token as well as the token entity which only contains the hash.
-func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
+func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
 	// Generate the token, which is what will go in the URL, but not the database
 	token, err := c.RandomToken(c.config.App.PasswordToken.Length)
 	if err != nil {
@@ -131,7 +147,7 @@ func (c *Client) GeneratePasswordResetToken(ctx echo.Context, userID int) (strin
 // Since the actual token is not stored in the database for security purposes, all non-expired token entities
 // are fetched from the database belonging to the requesting user and a hash of the provided token is compared
 // with the hash stored in the database.
-func (c *Client) GetValidPasswordToken(ctx echo.Context, token string, userID int) (*ent.PasswordToken, error) {
+func (c *AuthClient) GetValidPasswordToken(ctx echo.Context, token string, userID int) (*ent.PasswordToken, error) {
 	// Ensure expired tokens are never returned
 	expiration := time.Now().Add(-c.config.App.PasswordToken.Expiration)
 
@@ -160,7 +176,7 @@ func (c *Client) GetValidPasswordToken(ctx echo.Context, token string, userID in
 
 // DeletePasswordTokens deletes all password tokens in the database for a belonging to a given user.
 // This should be called after a successful password reset.
-func (c *Client) DeletePasswordTokens(ctx echo.Context, userID int) error {
+func (c *AuthClient) DeletePasswordTokens(ctx echo.Context, userID int) error {
 	_, err := c.orm.PasswordToken.
 		Delete().
 		Where(passwordtoken.HasUserWith(user.ID(userID))).
@@ -170,10 +186,11 @@ func (c *Client) DeletePasswordTokens(ctx echo.Context, userID int) error {
 }
 
 // RandomToken generates a random token string of a given length
-func (c *Client) RandomToken(length int) (string, error) {
-	b := make([]byte, length)
+func (c *AuthClient) RandomToken(length int) (string, error) {
+	b := make([]byte, (length/2)+1)
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(b), nil
+	token := hex.EncodeToString(b)
+	return token[:length], nil
 }
