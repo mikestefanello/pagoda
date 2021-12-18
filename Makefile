@@ -23,6 +23,11 @@ up:
 	docker-compose up -d
 	sleep 3
 
+.PHONY: reset
+reset:
+	docker-compose down
+	make up
+
 .PHONY: run
 run:
 	clear

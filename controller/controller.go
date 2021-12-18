@@ -27,12 +27,13 @@ import (
 )
 
 var (
-	// Cache of compiled page templates
+	// templates stores a cache of parsed page templates
 	templates = sync.Map{}
 
-	// Template function map
+	// funcMap stores the Template function map
 	funcMap = funcmap.GetFuncMap()
 
+	// templatePath stores the complete path to the templates directory
 	templatePath = getTemplatesDirectoryPath()
 )
 
@@ -170,6 +171,7 @@ func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data 
 		}
 
 		// Provide better error messages depending on the failed validation tag
+		// This should be expanded as you use additional tags in your validation
 		switch ve.Tag() {
 		case "required":
 			message = "%s is required."
@@ -187,7 +189,7 @@ func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data 
 
 // getTemplatesDirectoryPath gets the templates directory path
 // This is needed incase this is called from a package outside of main,
-// such as testing
+// such as within tests
 func getTemplatesDirectoryPath() string {
 	_, b, _, _ := runtime.Caller(0)
 	d := path.Join(path.Dir(b))

@@ -1,10 +1,15 @@
-package pager
+package controller
 
 import (
 	"math"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+)
+
+const (
+	// DefaultItemsPerPage stores the default amount of items per page
+	DefaultItemsPerPage = 20
 )
 
 type Pager struct {
@@ -14,9 +19,9 @@ type Pager struct {
 	Pages        int
 }
 
-func NewPager(c echo.Context, itemsPerPage int) Pager {
+func NewPager(c echo.Context) Pager {
 	p := Pager{
-		ItemsPerPage: itemsPerPage,
+		ItemsPerPage: DefaultItemsPerPage,
 		Page:         1,
 	}
 
