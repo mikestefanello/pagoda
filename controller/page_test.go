@@ -12,7 +12,7 @@ import (
 )
 
 func TestNewPage(t *testing.T) {
-	ctx := newContext("/")
+	ctx, _ := newContext("/")
 	p := NewPage(ctx)
 	assert.Same(t, ctx, p.Context)
 	assert.NotNil(t, p.ToURL)
@@ -27,7 +27,7 @@ func TestNewPage(t *testing.T) {
 	assert.Empty(t, p.RequestID)
 	assert.False(t, p.Cache.Enabled)
 
-	ctx = newContext("/abc?def=123")
+	ctx, _ = newContext("/abc?def=123")
 	ctx.Set(context.AuthenticatedUserKey, 1)
 	ctx.Set(echomw.DefaultCSRFConfig.ContextKey, "csrf")
 	p = NewPage(ctx)
@@ -39,7 +39,7 @@ func TestNewPage(t *testing.T) {
 }
 
 func TestPage_GetMessages(t *testing.T) {
-	ctx := newContext("/")
+	ctx, _ := newContext("/")
 	p := NewPage(ctx)
 	initSesssion(t, ctx)
 

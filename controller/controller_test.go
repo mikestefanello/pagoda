@@ -1,6 +1,9 @@
 package controller
 
 import (
+	"context"
+	"html/template"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -8,8 +11,13 @@ import (
 	"testing"
 
 	"goweb/config"
+	"goweb/middleware"
 	"goweb/msg"
 	"goweb/services"
+
+	"github.com/eko/gocache/v2/store"
+
+	"github.com/eko/gocache/v2/marshaler"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -43,9 +51,10 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func newContext(url string) echo.Context {
+func newContext(url string) (echo.Context, *httptest.ResponseRecorder) {
 	req := httptest.NewRequest(http.MethodGet, url, strings.NewReader(""))
-	return c.Web.NewContext(req, httptest.NewRecorder())
+	rec := httptest.NewRecorder()
+	return c.Web.NewContext(req, rec), rec
 }
 
 func initSesssion(t *testing.T, ctx echo.Context) {
@@ -56,7 +65,7 @@ func initSesssion(t *testing.T, ctx echo.Context) {
 }
 
 func TestController_Redirect(t *testing.T) {
-	ctx := newContext("/abc")
+	ctx, _ := newContext("/abc")
 	ctr := NewController(c)
 	err := ctr.Redirect(ctx, "home")
 	require.NoError(t, err)
@@ -73,7 +82,7 @@ func TestController_SetValidationErrorMessages(t *testing.T) {
 	err := v.Struct(e)
 	require.Error(t, err)
 
-	ctx := newContext("/")
+	ctx, _ := newContext("/")
 	initSesssion(t, ctx)
 	ctr := NewController(c)
 	ctr.SetValidationErrorMessages(ctx, err, e)
@@ -81,4 +90,94 @@ func TestController_SetValidationErrorMessages(t *testing.T) {
 	msgs := msg.Get(ctx, msg.TypeDanger)
 	require.Len(t, msgs, 1)
 	assert.Equal(t, "<strong>Label test</strong> is required.", msgs[0])
+}
+
+func TestController_RenderPage(t *testing.T) {
+	setup := func() (echo.Context, *httptest.ResponseRecorder, Controller, Page) {
+		ctx, rec := newContext("/test/TestController_RenderPage")
+		initSesssion(t, ctx)
+		ctr := NewController(c)
+
+		p := NewPage(ctx)
+		p.Name = "home"
+		p.Layout = "main"
+		p.Cache.Enabled = false
+		p.Headers["a"] = "b"
+		p.Headers["c"] = "d"
+		p.StatusCode = http.StatusCreated
+		return ctx, rec, ctr, p
+	}
+
+	t.Run("missing name", func(t *testing.T) {
+		// Rendering should fail if the Page has no name
+		ctx, _, ctr, p := setup()
+		p.Name = ""
+		err := ctr.RenderPage(ctx, p)
+		assert.Error(t, err)
+	})
+
+	t.Run("no page cache", func(t *testing.T) {
+		ctx, _, ctr, p := setup()
+		err := ctr.RenderPage(ctx, p)
+		require.NoError(t, err)
+
+		// Check status code and headers
+		assert.Equal(t, http.StatusCreated, ctx.Response().Status)
+		for k, v := range p.Headers {
+			assert.Equal(t, v, ctx.Response().Header().Get(k))
+		}
+
+		// Check the template cache
+		parsed, ok := templates.Load(p.Name)
+		assert.True(t, ok)
+
+		// Check that all expected templates were parsed.
+		// This includes the name, layout and all components
+		expectedTemplates := make(map[string]bool)
+		expectedTemplates[p.Name+config.TemplateExt] = true
+		expectedTemplates[p.Layout+config.TemplateExt] = true
+		components, err := ioutil.ReadDir(getTemplatesDirectoryPath() + "/components")
+		require.NoError(t, err)
+		for _, f := range components {
+			expectedTemplates[f.Name()] = true
+		}
+		tmpl, ok := parsed.(*template.Template)
+		require.True(t, ok)
+		for _, v := range tmpl.Templates() {
+			delete(expectedTemplates, v.Name())
+		}
+		assert.Empty(t, expectedTemplates)
+	})
+
+	t.Run("page cache", func(t *testing.T) {
+		ctx, rec, ctr, p := setup()
+		p.Cache.Enabled = true
+		p.Cache.Tags = []string{"tag1"}
+		err := ctr.RenderPage(ctx, p)
+		require.NoError(t, err)
+
+		// Fetch from the cache
+		res, err := marshaler.New(c.Cache).
+			Get(context.Background(), p.URL, new(middleware.CachedPage))
+		require.NoError(t, err)
+
+		// Compare the cached page
+		cp, ok := res.(*middleware.CachedPage)
+		require.True(t, ok)
+		assert.Equal(t, p.URL, cp.URL)
+		assert.Equal(t, p.Headers, cp.Headers)
+		assert.Equal(t, p.StatusCode, cp.StatusCode)
+		assert.Equal(t, rec.Body.Bytes(), cp.HTML)
+
+		// Clear the tag
+		err = c.Cache.Invalidate(context.Background(), store.InvalidateOptions{
+			Tags: []string{p.Cache.Tags[0]},
+		})
+		require.NoError(t, err)
+
+		// Refetch from the cache and expect no results
+		_, err = marshaler.New(c.Cache).
+			Get(context.Background(), p.URL, new(middleware.CachedPage))
+		assert.Error(t, err)
+	})
 }
