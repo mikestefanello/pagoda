@@ -73,7 +73,7 @@ func (t *Controller) RenderPage(c echo.Context, p Page) error {
 	}
 
 	// Execute the parsed templates to render the page
-	buf, err := t.executeTemplates(c, p)
+	buf, err := t.executeTemplates(p)
 	if err != nil {
 		c.Logger().Errorf("failed to execute templates: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -164,7 +164,7 @@ func (t *Controller) parsePageTemplates(p Page) error {
 }
 
 // executeTemplates executes the cached templates belonging to Page and renders the Page within them
-func (t *Controller) executeTemplates(c echo.Context, p Page) (*bytes.Buffer, error) {
+func (t *Controller) executeTemplates(p Page) (*bytes.Buffer, error) {
 	tmpl, ok := templates.Load(p.Name)
 	if !ok {
 		return nil, errors.New("uncached page template requested")

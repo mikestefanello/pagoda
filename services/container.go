@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"goweb/mail"
-
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/eko/gocache/v2/cache"
@@ -27,7 +25,7 @@ type Container struct {
 	cacheClient *redis.Client
 	Database    *sql.DB
 	ORM         *ent.Client
-	Mail        *mail.Client
+	Mail        *MailClient
 	Auth        *AuthClient
 }
 
@@ -137,7 +135,7 @@ func (c *Container) initORM() {
 
 func (c *Container) initMail() {
 	var err error
-	c.Mail, err = mail.NewClient(c.Config)
+	c.Mail, err = NewMailClient(c.Config)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}
