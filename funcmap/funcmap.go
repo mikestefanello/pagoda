@@ -12,14 +12,19 @@ import (
 	"github.com/labstack/gommon/random"
 )
 
-// CacheKey stores a random string used as a cache key for static files
-var CacheKey = random.String(10)
+var (
+	// CacheBuster stores a random string used as a cache buster for static files.
+	CacheBuster = random.String(10)
+)
 
+// GetFuncMap provides a template function map
 func GetFuncMap() template.FuncMap {
 	// See http://masterminds.github.io/sprig/ for available funcs
 	funcMap := sprig.FuncMap()
 
 	// Provide a list of custom functions
+	// Expand this as you add more functions to this package
+	// Avoid using a name already in use by sprig
 	f := template.FuncMap{
 		"hasField": HasField,
 		"file":     File,
@@ -45,11 +50,12 @@ func HasField(v interface{}, name string) bool {
 	return rv.FieldByName(name).IsValid()
 }
 
-// File appends a cache key to a given filepath so it can remain cached until the app is restarted
+// File appends a cache buster to a given filepath so it can remain cached until the app is restarted
 func File(filepath string) string {
-	return fmt.Sprintf("/%s/%s?v=%s", config.StaticPrefix, filepath, CacheKey)
+	return fmt.Sprintf("/%s/%s?v=%s", config.StaticPrefix, filepath, CacheBuster)
 }
 
+// Link outputs HTML for a link element, providing the ability to dynamically set the active class
 func Link(url, text, currentPath string, classes ...string) template.HTML {
 	if currentPath == url {
 		classes = append(classes, "is-active")

@@ -131,11 +131,12 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 // 1. The layout/based template specified in Page.Layout
 // 2. The content template specified in Page.Name
 // 3. All templates within the components directory
+// Also included is the function map provided by the funcmap package
 func (t *Controller) parsePageTemplates(p Page) error {
 	// Check if the template has not yet been parsed or if the app environment is local, so that templates reflect
 	// changes without having the restart the server
 	if _, ok := templates.Load(p.Name); !ok || t.Container.Config.App.Environment == config.EnvLocal {
-		// Parse the Layout and Name templates
+		// Parse the Layout and Name templates along with the function map
 		parsed, err :=
 			template.New(p.Layout+config.TemplateExt).
 				Funcs(funcMap).
