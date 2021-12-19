@@ -54,7 +54,7 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 					c.Response().Header().Set(k, v)
 				}
 			}
-			c.Logger().Infof("serving cached page")
+			c.Logger().Info("serving cached page")
 
 			return c.HTMLBlob(page.StatusCode, page.HTML)
 		}

@@ -25,17 +25,21 @@ func TestMain(m *testing.M) {
 	// Set the environment to test
 	config.SwitchEnvironment(config.EnvTest)
 
-	// Start a test HTTP server
+	// Start a new container
 	c = services.NewContainer()
+	defer func() {
+		if err := c.Shutdown(); err != nil {
+			c.Web.Logger.Fatal(err)
+		}
+	}()
+
+	// Start a test HTTP server
 	BuildRouter(c)
 	srv = httptest.NewServer(c.Web)
 
 	// Run tests
 	exitVal := m.Run()
 	srv.Close()
-	if err := c.Shutdown(); err != nil {
-		panic(err)
-	}
 	os.Exit(exitVal)
 }
 

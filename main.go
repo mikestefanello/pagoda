@@ -13,7 +13,13 @@ import (
 )
 
 func main() {
+	// Start a new container
 	c := services.NewContainer()
+	defer func() {
+		if err := c.Shutdown(); err != nil {
+			c.Web.Logger.Fatal(err)
+		}
+	}()
 
 	// Build the router
 	routes.BuildRouter(c)
