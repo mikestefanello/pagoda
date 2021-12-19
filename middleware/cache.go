@@ -2,7 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"time"
+
+	"goweb/context"
 
 	"github.com/eko/gocache/v2/cache"
 	"github.com/eko/gocache/v2/marshaler"
@@ -17,9 +20,19 @@ type CachedPage struct {
 	Headers    map[string]string
 }
 
-func PageCache(ch *cache.Cache) echo.MiddlewareFunc {
+func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			// Skip non GET requests
+			if c.Request().Method != http.MethodGet {
+				return next(c)
+			}
+
+			// Skip if the user is authenticated
+			if c.Get(context.AuthenticatedUserKey) != nil {
+				return next(c)
+			}
+
 			res, err := marshaler.New(ch).Get(c.Request().Context(), c.Request().URL.String(), new(CachedPage))
 			if err != nil {
 				if err == redis.Nil {
