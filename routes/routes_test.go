@@ -33,6 +33,9 @@ func TestMain(m *testing.M) {
 	// Run tests
 	exitVal := m.Run()
 	srv.Close()
+	if err := c.Shutdown(); err != nil {
+		panic(err)
+	}
 	os.Exit(exitVal)
 }
 

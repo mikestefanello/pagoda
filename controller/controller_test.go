@@ -35,6 +35,9 @@ func TestMain(m *testing.M) {
 
 	// Run tests
 	exitVal := m.Run()
+	if err := c.Shutdown(); err != nil {
+		panic(err)
+	}
 	os.Exit(exitVal)
 }
 

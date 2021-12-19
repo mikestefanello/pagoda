@@ -21,13 +21,14 @@ import (
 )
 
 type Container struct {
-	Web      *echo.Echo
-	Config   *config.Config
-	Cache    *cache.Cache
-	Database *sql.DB
-	ORM      *ent.Client
-	Mail     *mail.Client
-	Auth     *AuthClient
+	Web         *echo.Echo
+	Config      *config.Config
+	Cache       *cache.Cache
+	cacheClient *redis.Client
+	Database    *sql.DB
+	ORM         *ent.Client
+	Mail        *mail.Client
+	Auth        *AuthClient
 }
 
 func NewContainer() *Container {
@@ -40,6 +41,20 @@ func NewContainer() *Container {
 	c.initMail()
 	c.initAuth()
 	return c
+}
+
+func (c *Container) Shutdown() error {
+	if err := c.cacheClient.Close(); err != nil {
+		return err
+	}
+	if err := c.ORM.Close(); err != nil {
+		return err
+	}
+	if err := c.Database.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Container) initConfig() {
@@ -63,14 +78,14 @@ func (c *Container) initWeb() {
 }
 
 func (c *Container) initCache() {
-	cacheClient := redis.NewClient(&redis.Options{
+	c.cacheClient = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", c.Config.Cache.Hostname, c.Config.Cache.Port),
 		Password: c.Config.Cache.Password,
 	})
-	if _, err := cacheClient.Ping(context.Background()).Result(); err != nil {
+	if _, err := c.cacheClient.Ping(context.Background()).Result(); err != nil {
 		panic(fmt.Sprintf("failed to connect to cache server: %v", err))
 	}
-	cacheStore := store.NewRedis(cacheClient, nil)
+	cacheStore := store.NewRedis(c.cacheClient, nil)
 	c.Cache = cache.New(cacheStore)
 }
 
