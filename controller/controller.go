@@ -192,7 +192,12 @@ func (t *Controller) Redirect(c echo.Context, route string, routeParams ...inter
 //  - FirstName string `form:"first-name" validate:"required" label:"First name"`
 // Only a few validator tags are supported below. Expand them as needed.
 func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data interface{}) {
-	for _, ve := range err.(validator.ValidationErrors) {
+	ves, ok := err.(validator.ValidationErrors)
+	if !ok {
+		return
+	}
+
+	for _, ve := range ves {
 		var message string
 
 		// Default the field label to the name of the struct field

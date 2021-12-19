@@ -7,10 +7,6 @@ import (
 	"goweb/context"
 	"goweb/msg"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
-
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 )
@@ -45,11 +41,7 @@ func TestNewPage(t *testing.T) {
 func TestPage_GetMessages(t *testing.T) {
 	ctx := newContext("/")
 	p := NewPage(ctx)
-
-	// Simulate an HTTP request through the session middleware to initiate the session
-	mw := session.Middleware(sessions.NewCookieStore([]byte("secret")))
-	handler := mw(echo.NotFoundHandler)
-	assert.Error(t, handler(ctx))
+	initSesssion(t, ctx)
 
 	// Set messages
 	msgTests := make(map[msg.Type][]string)
