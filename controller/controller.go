@@ -35,74 +35,74 @@ func NewController(c *services.Container) Controller {
 }
 
 // RenderPage renders a Page as an HTTP response
-func (t *Controller) RenderPage(c echo.Context, p Page) error {
+func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 	// Page name is required
-	if p.Name == "" {
-		c.Logger().Error("page render failed due to missing name")
+	if page.Name == "" {
+		ctx.Logger().Error("page render failed due to missing name")
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	// Use the app name in configuration if a value was not set
-	if p.AppName == "" {
-		p.AppName = t.Container.Config.App.Name
+	if page.AppName == "" {
+		page.AppName = c.Container.Config.App.Name
 	}
 
 	// Parse the templates in the page and store them in a cache, if not yet done
-	if err := t.parsePageTemplates(p); err != nil {
-		c.Logger().Errorf("failed to parse templates: %v", err)
+	if err := c.parsePageTemplates(page); err != nil {
+		ctx.Logger().Errorf("failed to parse templates: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	// Execute the parsed templates to render the page
-	buf, err := t.executeTemplates(p)
+	buf, err := c.executeTemplates(page)
 	if err != nil {
-		c.Logger().Errorf("failed to execute templates: %v", err)
+		ctx.Logger().Errorf("failed to execute templates: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	// Cache this page, if caching was enabled
-	t.cachePage(c, p, buf)
+	c.cachePage(ctx, page, buf)
 
 	// Set any headers
-	for k, v := range p.Headers {
-		c.Response().Header().Set(k, v)
+	for k, v := range page.Headers {
+		ctx.Response().Header().Set(k, v)
 	}
 
-	return c.HTMLBlob(p.StatusCode, buf.Bytes())
+	return ctx.HTMLBlob(page.StatusCode, buf.Bytes())
 }
 
 // cachePage caches the HTML for a given Page if the Page has caching enabled
-func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
-	if !p.Cache.Enabled {
+func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) {
+	if !page.Cache.Enabled {
 		return
 	}
 
 	// If no expiration time was provided, default to the configuration value
-	if p.Cache.Expiration == 0 {
-		p.Cache.Expiration = t.Container.Config.Cache.Expiration.Page
+	if page.Cache.Expiration == 0 {
+		page.Cache.Expiration = c.Container.Config.Cache.Expiration.Page
 	}
 
 	// The request URL is used as the cache key so the middleware can serve the
 	// cached page on matching requests
-	key := c.Request().URL.String()
+	key := ctx.Request().URL.String()
 	opts := &store.Options{
-		Expiration: p.Cache.Expiration,
-		Tags:       p.Cache.Tags,
+		Expiration: page.Cache.Expiration,
+		Tags:       page.Cache.Tags,
 	}
 	cp := middleware.CachedPage{
 		URL:        key,
 		HTML:       html.Bytes(),
-		Headers:    p.Headers,
-		StatusCode: p.StatusCode,
+		Headers:    page.Headers,
+		StatusCode: page.StatusCode,
 	}
 
-	err := marshaler.New(t.Container.Cache).Set(c.Request().Context(), key, cp, opts)
+	err := marshaler.New(c.Container.Cache).Set(ctx.Request().Context(), key, cp, opts)
 	if err != nil {
-		c.Logger().Errorf("failed to cache page: %v", err)
+		ctx.Logger().Errorf("failed to cache page: %v", err)
 		return
 	}
 
-	c.Logger().Infof("cached page")
+	ctx.Logger().Infof("cached page")
 }
 
 // parsePageTemplates parses the templates for the given Page and caches them to avoid duplicate operations
@@ -113,26 +113,26 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 // 2. The content template specified in Page.Name
 // 3. All templates within the components directory
 // Also included is the function map provided by the funcmap package
-func (t *Controller) parsePageTemplates(p Page) error {
-	return t.Container.Templates.Parse(
+func (c *Controller) parsePageTemplates(page Page) error {
+	return c.Container.Templates.Parse(
 		"controller",
-		p.Name,
-		p.Layout,
+		page.Name,
+		page.Layout,
 		[]string{
-			fmt.Sprintf("layouts/%s", p.Layout),
-			fmt.Sprintf("pages/%s", p.Name),
+			fmt.Sprintf("layouts/%s", page.Layout),
+			fmt.Sprintf("pages/%s", page.Name),
 		},
 		[]string{"components"})
 }
 
 // executeTemplates executes the cached templates belonging to Page and renders the Page within them
-func (t *Controller) executeTemplates(p Page) (*bytes.Buffer, error) {
-	return t.Container.Templates.Execute("controller", p.Name, p.Layout, p)
+func (c *Controller) executeTemplates(page Page) (*bytes.Buffer, error) {
+	return c.Container.Templates.Execute("controller", page.Name, page.Layout, page)
 }
 
 // Redirect redirects to a given route name with optional route parameters
-func (t *Controller) Redirect(c echo.Context, route string, routeParams ...interface{}) error {
-	return c.Redirect(http.StatusFound, c.Echo().Reverse(route, routeParams))
+func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
+	return ctx.Redirect(http.StatusFound, ctx.Echo().Reverse(route, routeParams))
 }
 
 // SetValidationErrorMessages sets error flash messages for validation failures of a given struct
@@ -143,7 +143,7 @@ func (t *Controller) Redirect(c echo.Context, route string, routeParams ...inter
 // of the field used in the error messages, for example:
 //  - FirstName string `form:"first-name" validate:"required" label:"First name"`
 // Only a few validator tags are supported below. Expand them as needed.
-func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data interface{}) {
+func (c *Controller) SetValidationErrorMessages(ctx echo.Context, err error, data interface{}) {
 	ves, ok := err.(validator.ValidationErrors)
 	if !ok {
 		return
@@ -175,6 +175,6 @@ func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data 
 			message = "%s is not a valid value."
 		}
 
-		msg.Danger(c, fmt.Sprintf(message, "<strong>"+label+"</strong>"))
+		msg.Danger(ctx, fmt.Sprintf(message, "<strong>"+label+"</strong>"))
 	}
 }
