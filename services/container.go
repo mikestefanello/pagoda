@@ -27,6 +27,7 @@ type Container struct {
 	ORM         *ent.Client
 	Mail        *MailClient
 	Auth        *AuthClient
+	Templates   *TemplateRenderer
 }
 
 func NewContainer() *Container {
@@ -38,6 +39,7 @@ func NewContainer() *Container {
 	c.initORM()
 	c.initMail()
 	c.initAuth()
+	c.initTemplateRenderer()
 	return c
 }
 
@@ -143,4 +145,8 @@ func (c *Container) initMail() {
 
 func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
+}
+
+func (c *Container) initTemplateRenderer() {
+	c.Templates = NewTemplateRenderer(c.Config)
 }

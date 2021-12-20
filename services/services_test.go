@@ -27,6 +27,11 @@ func TestMain(m *testing.M) {
 
 	// Create a new container
 	c = NewContainer()
+	defer func() {
+		if err := c.Shutdown(); err != nil {
+			c.Web.Logger.Fatal(err)
+		}
+	}()
 
 	// Create a web context
 	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
@@ -48,8 +53,5 @@ func TestMain(m *testing.M) {
 
 	// Run tests
 	exitVal := m.Run()
-	if err := c.Shutdown(); err != nil {
-		panic(err)
-	}
 	os.Exit(exitVal)
 }

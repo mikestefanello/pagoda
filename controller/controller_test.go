@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -128,22 +127,21 @@ func TestController_RenderPage(t *testing.T) {
 		}
 
 		// Check the template cache
-		parsed, ok := templates.Load(p.Name)
-		assert.True(t, ok)
+		parsed, err := c.Templates.Load("controller", p.Name)
+		assert.NoError(t, err)
 
 		// Check that all expected templates were parsed.
 		// This includes the name, layout and all components
 		expectedTemplates := make(map[string]bool)
 		expectedTemplates[p.Name+config.TemplateExt] = true
 		expectedTemplates[p.Layout+config.TemplateExt] = true
-		components, err := ioutil.ReadDir(getTemplatesDirectoryPath() + "/components")
+		components, err := ioutil.ReadDir(c.Templates.GetTemplatesPath() + "/components")
 		require.NoError(t, err)
 		for _, f := range components {
 			expectedTemplates[f.Name()] = true
 		}
-		tmpl, ok := parsed.(*template.Template)
-		require.True(t, ok)
-		for _, v := range tmpl.Templates() {
+
+		for _, v := range parsed.Templates() {
 			delete(expectedTemplates, v.Name())
 		}
 		assert.Empty(t, expectedTemplates)

@@ -2,18 +2,10 @@ package controller
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
-	"path"
-	"path/filepath"
 	"reflect"
-	"runtime"
-	"sync"
 
-	"goweb/config"
-	"goweb/funcmap"
 	"goweb/middleware"
 	"goweb/msg"
 	"goweb/services"
@@ -25,17 +17,6 @@ import (
 	"github.com/eko/gocache/v2/store"
 
 	"github.com/labstack/echo/v4"
-)
-
-var (
-	// templates stores a cache of parsed page templates
-	templates = sync.Map{}
-
-	// funcMap stores the Template function map
-	funcMap = funcmap.GetFuncMap()
-
-	// templatePath stores the complete path to the templates directory
-	templatePath = getTemplatesDirectoryPath()
 )
 
 // Controller provides base functionality and dependencies to routes.
@@ -133,50 +114,20 @@ func (t *Controller) cachePage(c echo.Context, p Page, html *bytes.Buffer) {
 // 3. All templates within the components directory
 // Also included is the function map provided by the funcmap package
 func (t *Controller) parsePageTemplates(p Page) error {
-	// Check if the template has not yet been parsed or if the app environment is local, so that templates reflect
-	// changes without having the restart the server
-	if _, ok := templates.Load(p.Name); !ok || t.Container.Config.App.Environment == config.EnvLocal {
-		// Parse the Layout and Name templates along with the function map
-		parsed, err :=
-			template.New(p.Layout+config.TemplateExt).
-				Funcs(funcMap).
-				ParseFiles(
-					fmt.Sprintf("%s/layouts/%s%s", templatePath, p.Layout, config.TemplateExt),
-					fmt.Sprintf("%s/pages/%s%s", templatePath, p.Name, config.TemplateExt),
-				)
-
-		if err != nil {
-			return err
-		}
-
-		// Parse all templates within the components directory
-		parsed, err = parsed.ParseGlob(fmt.Sprintf("%s/components/*%s", templatePath, config.TemplateExt))
-
-		if err != nil {
-			return err
-		}
-
-		// Store the template so this process only happens once
-		templates.Store(p.Name, parsed)
-	}
-
-	return nil
+	return t.Container.Templates.Parse(
+		"controller",
+		p.Name,
+		p.Layout,
+		[]string{
+			fmt.Sprintf("layouts/%s", p.Layout),
+			fmt.Sprintf("pages/%s", p.Name),
+		},
+		[]string{"components"})
 }
 
 // executeTemplates executes the cached templates belonging to Page and renders the Page within them
 func (t *Controller) executeTemplates(p Page) (*bytes.Buffer, error) {
-	tmpl, ok := templates.Load(p.Name)
-	if !ok {
-		return nil, errors.New("uncached page template requested")
-	}
-
-	buf := new(bytes.Buffer)
-	err := tmpl.(*template.Template).ExecuteTemplate(buf, p.Layout+config.TemplateExt, p)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf, nil
+	return t.Container.Templates.Execute("controller", p.Name, p.Layout, p)
 }
 
 // Redirect redirects to a given route name with optional route parameters
@@ -226,13 +177,4 @@ func (t *Controller) SetValidationErrorMessages(c echo.Context, err error, data 
 
 		msg.Danger(c, fmt.Sprintf(message, "<strong>"+label+"</strong>"))
 	}
-}
-
-// getTemplatesDirectoryPath gets the templates directory path
-// This is needed incase this is called from a package outside of main,
-// such as within tests
-func getTemplatesDirectoryPath() string {
-	_, b, _, _ := runtime.Caller(0)
-	d := path.Join(path.Dir(b))
-	return filepath.Join(filepath.Dir(d), config.TemplateDir)
 }
