@@ -47,9 +47,9 @@ func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
 func (t *TemplateRenderer) Parse(module, key, name string, files []string, directories []string) error {
 	cacheKey := t.getCacheKey(module, key)
 
-	// Check if the template has not yet been parsed or if the app environment is local, so that templates reflect
-	// changes without having the restart the server
-	if _, err := t.Load(module, key); err != nil {
+	// Check if the template has not yet been parsed or if the app environment is local, so that
+	// templates reflect changes without having the restart the server
+	if _, err := t.Load(module, key); err != nil || t.config.App.Environment == config.EnvLocal {
 		// Initialize the parsed template with the function map
 		parsed := template.New(name + config.TemplateExt).
 			Funcs(t.funcMap)

@@ -37,9 +37,9 @@ func NewContainer() *Container {
 	c.initCache()
 	c.initDatabase()
 	c.initORM()
-	c.initMail()
 	c.initAuth()
 	c.initTemplateRenderer()
+	c.initMail()
 	return c
 }
 
@@ -135,18 +135,18 @@ func (c *Container) initORM() {
 	}
 }
 
-func (c *Container) initMail() {
-	var err error
-	c.Mail, err = NewMailClient(c.Config)
-	if err != nil {
-		panic(fmt.Sprintf("failed to create mail client: %v", err))
-	}
-}
-
 func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
 }
 
 func (c *Container) initTemplateRenderer() {
 	c.Templates = NewTemplateRenderer(c.Config)
+}
+
+func (c *Container) initMail() {
+	var err error
+	c.Mail, err = NewMailClient(c.Config, c.Templates)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create mail client: %v", err))
+	}
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"goweb/config"
 
 	"github.com/labstack/echo/v4"
@@ -13,12 +15,15 @@ import (
 type MailClient struct {
 	// config stores application configuration
 	config *config.Config
+
+	templates *TemplateRenderer
 }
 
 // NewMailClient creates a new MailClient
-func NewMailClient(cfg *config.Config) (*MailClient, error) {
+func NewMailClient(cfg *config.Config, templates *TemplateRenderer) (*MailClient, error) {
 	return &MailClient{
-		config: cfg,
+		config:    cfg,
+		templates: templates,
 	}, nil
 }
 
@@ -38,6 +43,24 @@ func (c *MailClient) Send(ctx echo.Context, to, body string) error {
 func (c *MailClient) SendTemplate(ctx echo.Context, to, template string, data interface{}) error {
 	if c.skipSend() {
 		ctx.Logger().Debugf("skipping template email sent to: %s")
+	}
+
+	// Parse the template, if needed
+	if err := c.templates.Parse(
+		"mail",
+		template,
+		template,
+		[]string{fmt.Sprintf("email/%s", template)},
+		[]string{},
+	); err != nil {
+		return err
+	}
+
+	// Execute the template
+	// Uncomment the first variable when ready to use
+	_, err := c.templates.Execute("mail", template, template, data)
+	if err != nil {
+		return err
 	}
 
 	// TODO: Finish based on your mail sender of choice
