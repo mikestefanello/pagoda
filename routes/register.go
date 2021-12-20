@@ -3,7 +3,7 @@ package routes
 import (
 	"goweb/context"
 	"goweb/controller"
-	"goweb/ent/user"
+	"goweb/ent"
 	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
@@ -56,20 +56,6 @@ func (r *Register) Post(c echo.Context) error {
 		return r.Get(c)
 	}
 
-	// Check if the email address is taken
-	exists, err := r.Container.ORM.User.
-		Query().
-		Where(user.Email(form.Email)).
-		Exist(c.Request().Context())
-
-	switch {
-	case err != nil:
-		return fail("unable to query to see if email is taken", err)
-	case exists:
-		msg.Warning(c, "A user with this email address already exists. Please log in.")
-		return r.Redirect(c, "login")
-	}
-
 	// Hash the password
 	pwHash, err := r.Container.Auth.HashPassword(form.Password)
 	if err != nil {
@@ -84,11 +70,15 @@ func (r *Register) Post(c echo.Context) error {
 		SetPassword(pwHash).
 		Save(c.Request().Context())
 
-	if err != nil {
+	switch err.(type) {
+	case nil:
+		c.Logger().Infof("user created: %s", u.Name)
+	case *ent.ConstraintError:
+		msg.Warning(c, "A user with this email address already exists. Please log in.")
+		return r.Redirect(c, "login")
+	default:
 		return fail("unable to create user", err)
 	}
-
-	c.Logger().Infof("user created: %s", u.Name)
 
 	// Log the user in
 	err = r.Container.Auth.Login(c, u.ID)
