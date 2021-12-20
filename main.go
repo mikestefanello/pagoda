@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -32,6 +33,17 @@ func main() {
 			ReadTimeout:  c.Config.HTTP.ReadTimeout,
 			WriteTimeout: c.Config.HTTP.WriteTimeout,
 			IdleTimeout:  c.Config.HTTP.IdleTimeout,
+		}
+
+		if c.Config.HTTP.TLS.Enabled {
+			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key)
+			if err != nil {
+				c.Web.Logger.Fatalf("cannot load TLS certificate: %v", err)
+			}
+
+			srv.TLSConfig = &tls.Config{
+				Certificates: []tls.Certificate{certs},
+			}
 		}
 
 		if err := c.Web.StartServer(&srv); err != http.ErrServerClosed {

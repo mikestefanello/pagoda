@@ -58,6 +58,11 @@ type (
 		ReadTimeout  time.Duration `env:"HTTP_READ_TIMEOUT,default=5s"`
 		WriteTimeout time.Duration `env:"HTTP_WRITE_TIMEOUT,default=10s"`
 		IdleTimeout  time.Duration `env:"HTTP_IDLE_TIMEOUT,default=2m"`
+		TLS          struct {
+			Enabled     bool   `env:"HTTP_TLS_ENABLED,default=false"`
+			Certificate string `env:"HTTP_TLS_CERTIFICATE"`
+			Key         string `env:"HTTP_TLS_KEY"`
+		}
 	}
 
 	// AppConfig stores application configuration

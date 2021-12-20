@@ -37,8 +37,15 @@ func BuildRouter(c *services.Container) {
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
 		Static(config.StaticPrefix, config.StaticDir)
 
-	// Middleware
-	g := c.Web.Group("",
+	// Non static file route group
+	g := c.Web.Group("")
+
+	// Force HTTPS, if enabled
+	if c.Config.HTTP.TLS.Enabled {
+		g.Use(echomw.HTTPSRedirect())
+	}
+
+	g.Use(
 		echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
 			RedirectCode: http.StatusMovedPermanently,
 		}),
@@ -51,12 +58,12 @@ func BuildRouter(c *services.Container) {
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),
-		middleware.ServeCachedPage(c.Cache),
 		session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
+		middleware.LoadAuthenticatedUser(c.Auth),
+		middleware.ServeCachedPage(c.Cache),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup: "form:csrf",
 		}),
-		middleware.LoadAuthenticatedUser(c.Auth),
 	)
 
 	// Base controller
