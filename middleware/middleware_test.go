@@ -1,4 +1,4 @@
-package services
+package middleware
 
 import (
 	"os"
@@ -6,14 +6,12 @@ import (
 
 	"goweb/config"
 	"goweb/ent"
+	"goweb/services"
 	"goweb/tests"
-
-	"github.com/labstack/echo/v4"
 )
 
 var (
-	c   *Container
-	ctx echo.Context
+	c   *services.Container
 	usr *ent.User
 )
 
@@ -22,18 +20,14 @@ func TestMain(m *testing.M) {
 	config.SwitchEnvironment(config.EnvTest)
 
 	// Create a new container
-	c = NewContainer()
+	c = services.NewContainer()
 	defer func() {
 		if err := c.Shutdown(); err != nil {
 			c.Web.Logger.Fatal(err)
 		}
 	}()
 
-	// Create a web context
-	ctx, _ = tests.NewContext(c.Web, "/")
-	tests.InitSession(ctx)
-
-	// Create a test user
+	// Create a user
 	var err error
 	if usr, err = tests.CreateUser(c.ORM); err != nil {
 		panic(err)

@@ -45,20 +45,16 @@ func (c *MailClient) SendTemplate(ctx echo.Context, to, template string, data in
 		ctx.Logger().Debugf("skipping template email sent to: %s")
 	}
 
-	// Parse the template, if needed
-	if err := c.templates.Parse(
+	// Parse and execute template
+	// Uncomment the first variable when ready to use
+	_, err := c.templates.ParseAndExecute(
 		"mail",
 		template,
 		template,
 		[]string{fmt.Sprintf("email/%s", template)},
 		[]string{},
-	); err != nil {
-		return err
-	}
-
-	// Execute the template
-	// Uncomment the first variable when ready to use
-	_, err := c.templates.Execute("mail", template, template, data)
+		data,
+	)
 	if err != nil {
 		return err
 	}

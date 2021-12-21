@@ -6,20 +6,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"goweb/config"
 	"goweb/middleware"
 	"goweb/msg"
 	"goweb/services"
+	"goweb/tests"
 
 	"github.com/eko/gocache/v2/store"
 
 	"github.com/eko/gocache/v2/marshaler"
-
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 
 	"github.com/go-playground/validator/v10"
 
@@ -50,21 +47,8 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-func newContext(url string) (echo.Context, *httptest.ResponseRecorder) {
-	req := httptest.NewRequest(http.MethodGet, url, strings.NewReader(""))
-	rec := httptest.NewRecorder()
-	return c.Web.NewContext(req, rec), rec
-}
-
-func initSesssion(t *testing.T, ctx echo.Context) {
-	// Simulate an HTTP request through the session middleware to initiate the session
-	mw := session.Middleware(sessions.NewCookieStore([]byte("secret")))
-	handler := mw(echo.NotFoundHandler)
-	assert.Error(t, handler(ctx))
-}
-
 func TestController_Redirect(t *testing.T) {
-	ctx, _ := newContext("/abc")
+	ctx, _ := tests.NewContext(c.Web, "/abc")
 	ctr := NewController(c)
 	err := ctr.Redirect(ctx, "home")
 	require.NoError(t, err)
@@ -81,8 +65,8 @@ func TestController_SetValidationErrorMessages(t *testing.T) {
 	err := v.Struct(e)
 	require.Error(t, err)
 
-	ctx, _ := newContext("/")
-	initSesssion(t, ctx)
+	ctx, _ := tests.NewContext(c.Web, "/")
+	tests.InitSession(ctx)
 	ctr := NewController(c)
 	ctr.SetValidationErrorMessages(ctx, err, e)
 
@@ -93,8 +77,8 @@ func TestController_SetValidationErrorMessages(t *testing.T) {
 
 func TestController_RenderPage(t *testing.T) {
 	setup := func() (echo.Context, *httptest.ResponseRecorder, Controller, Page) {
-		ctx, rec := newContext("/test/TestController_RenderPage")
-		initSesssion(t, ctx)
+		ctx, rec := tests.NewContext(c.Web, "/test/TestController_RenderPage")
+		tests.InitSession(ctx)
 		ctr := NewController(c)
 
 		p := NewPage(ctx)

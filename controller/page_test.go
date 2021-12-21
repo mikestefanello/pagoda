@@ -6,13 +6,14 @@ import (
 
 	"goweb/context"
 	"goweb/msg"
+	"goweb/tests"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewPage(t *testing.T) {
-	ctx, _ := newContext("/")
+	ctx, _ := tests.NewContext(c.Web, "/")
 	p := NewPage(ctx)
 	assert.Same(t, ctx, p.Context)
 	assert.NotNil(t, p.ToURL)
@@ -27,7 +28,7 @@ func TestNewPage(t *testing.T) {
 	assert.Empty(t, p.RequestID)
 	assert.False(t, p.Cache.Enabled)
 
-	ctx, _ = newContext("/abc?def=123")
+	ctx, _ = tests.NewContext(c.Web, "/abc?def=123")
 	ctx.Set(context.AuthenticatedUserKey, 1)
 	ctx.Set(echomw.DefaultCSRFConfig.ContextKey, "csrf")
 	p = NewPage(ctx)
@@ -39,9 +40,9 @@ func TestNewPage(t *testing.T) {
 }
 
 func TestPage_GetMessages(t *testing.T) {
-	ctx, _ := newContext("/")
+	ctx, _ := tests.NewContext(c.Web, "/")
+	tests.InitSession(ctx)
 	p := NewPage(ctx)
-	initSesssion(t, ctx)
 
 	// Set messages
 	msgTests := make(map[msg.Type][]string)

@@ -9,20 +9,12 @@ import (
 	"goweb/ent/passwordtoken"
 	"goweb/ent/user"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuth(t *testing.T) {
-	// Simulate an HTTP request through the session middleware to initiate the session
-	mw := session.Middleware(sessions.NewCookieStore([]byte("secret")))
-	handler := mw(echo.NotFoundHandler)
-	assert.Error(t, handler(ctx))
-
 	assertNoAuth := func() {
 		_, err := c.Auth.GetAuthenticatedUserID(ctx)
 		assert.True(t, errors.Is(err, NotAuthenticatedError{}))
