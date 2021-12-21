@@ -44,6 +44,20 @@ func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
 	return t
 }
 
+func (t *TemplateRenderer) ParseAndExecute(module, key, name string, files []string, directories []string, data interface{}) (*bytes.Buffer, error) {
+	var buf *bytes.Buffer
+	var err error
+
+	if err = t.Parse(module, key, name, files, directories); err != nil {
+		return nil, err
+	}
+	if buf, err = t.Execute(module, key, name, data); err != nil {
+		return nil, err
+	}
+
+	return buf, nil
+}
+
 func (t *TemplateRenderer) Parse(module, key, name string, files []string, directories []string) error {
 	cacheKey := t.getCacheKey(module, key)
 

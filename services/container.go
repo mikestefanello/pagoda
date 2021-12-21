@@ -19,15 +19,15 @@ import (
 )
 
 type Container struct {
-	Web         *echo.Echo
-	Config      *config.Config
-	Cache       *cache.Cache
-	cacheClient *redis.Client
-	Database    *sql.DB
-	ORM         *ent.Client
-	Mail        *MailClient
-	Auth        *AuthClient
-	Templates   *TemplateRenderer
+	Web              *echo.Echo
+	Config           *config.Config
+	Cache            *cache.Cache
+	cacheClient      *redis.Client
+	Database         *sql.DB
+	ORM              *ent.Client
+	Mail             *MailClient
+	Auth             *AuthClient
+	TemplateRenderer *TemplateRenderer
 }
 
 func NewContainer() *Container {
@@ -140,12 +140,12 @@ func (c *Container) initAuth() {
 }
 
 func (c *Container) initTemplateRenderer() {
-	c.Templates = NewTemplateRenderer(c.Config)
+	c.TemplateRenderer = NewTemplateRenderer(c.Config)
 }
 
 func (c *Container) initMail() {
 	var err error
-	c.Mail, err = NewMailClient(c.Config, c.Templates)
+	c.Mail, err = NewMailClient(c.Config, c.TemplateRenderer)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}

@@ -127,7 +127,7 @@ func TestController_RenderPage(t *testing.T) {
 		}
 
 		// Check the template cache
-		parsed, err := c.Templates.Load("controller", p.Name)
+		parsed, err := c.TemplateRenderer.Load("controller", p.Name)
 		assert.NoError(t, err)
 
 		// Check that all expected templates were parsed.
@@ -135,7 +135,7 @@ func TestController_RenderPage(t *testing.T) {
 		expectedTemplates := make(map[string]bool)
 		expectedTemplates[p.Name+config.TemplateExt] = true
 		expectedTemplates[p.Layout+config.TemplateExt] = true
-		components, err := ioutil.ReadDir(c.Templates.GetTemplatesPath() + "/components")
+		components, err := ioutil.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
 		require.NoError(t, err)
 		for _, f := range components {
 			expectedTemplates[f.Name()] = true

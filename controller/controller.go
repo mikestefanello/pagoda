@@ -47,16 +47,26 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		page.AppName = c.Container.Config.App.Name
 	}
 
-	// Parse the templates in the page and store them in a cache, if not yet done
-	if err := c.parsePageTemplates(page); err != nil {
-		ctx.Logger().Errorf("failed to parse templates: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
+	// Parse and execute the templates for the Page
+	// As mentioned in the documentation for the Page struct, the templates used for the page will be:
+	// 1. The layout/base template specified in Page.Layout
+	// 2. The content template specified in Page.Name
+	// 3. All templates within the components directory
+	// Also included is the function map provided by the funcmap package
+	buf, err := c.Container.TemplateRenderer.ParseAndExecute(
+		"controller",
+		page.Name,
+		page.Layout,
+		[]string{
+			fmt.Sprintf("layouts/%s", page.Layout),
+			fmt.Sprintf("pages/%s", page.Name),
+		},
+		[]string{"components"},
+		page,
+	)
 
-	// Execute the parsed templates to render the page
-	buf, err := c.executeTemplates(page)
 	if err != nil {
-		ctx.Logger().Errorf("failed to execute templates: %v", err)
+		ctx.Logger().Errorf("failed to parse and execute templates: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
@@ -103,31 +113,6 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 	}
 
 	ctx.Logger().Infof("cached page")
-}
-
-// parsePageTemplates parses the templates for the given Page and caches them to avoid duplicate operations
-// If the configuration indicates that the environment is local, the cache is bypassed for template changes
-// can be seen without having to restart the application.
-// As mentioned in the documentation for the Page struct, the templates used for the page will be:
-// 1. The layout/based template specified in Page.Layout
-// 2. The content template specified in Page.Name
-// 3. All templates within the components directory
-// Also included is the function map provided by the funcmap package
-func (c *Controller) parsePageTemplates(page Page) error {
-	return c.Container.Templates.Parse(
-		"controller",
-		page.Name,
-		page.Layout,
-		[]string{
-			fmt.Sprintf("layouts/%s", page.Layout),
-			fmt.Sprintf("pages/%s", page.Name),
-		},
-		[]string{"components"})
-}
-
-// executeTemplates executes the cached templates belonging to Page and renders the Page within them
-func (c *Controller) executeTemplates(page Page) (*bytes.Buffer, error) {
-	return c.Container.Templates.Execute("controller", page.Name, page.Layout, page)
 }
 
 // Redirect redirects to a given route name with optional route parameters
