@@ -1,14 +1,13 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
 	"goweb/context"
 	"goweb/ent"
 	"goweb/tests"
-
-	"github.com/labstack/echo/v4"
 
 	"github.com/stretchr/testify/require"
 
@@ -42,9 +41,7 @@ func TestRequireAuthentication(t *testing.T) {
 
 	// Not logged in
 	err := tests.ExecuteMiddleware(ctx, RequireAuthentication())
-	httpError, ok := err.(*echo.HTTPError)
-	require.True(t, ok)
-	assert.Equal(t, http.StatusUnauthorized, httpError.Code)
+	tests.AssertHTTPErrorCode(t, err, http.StatusUnauthorized)
 
 	// Login
 	err = c.Auth.Login(ctx, usr.ID)
@@ -53,9 +50,7 @@ func TestRequireAuthentication(t *testing.T) {
 
 	// Logged in
 	err = tests.ExecuteMiddleware(ctx, RequireAuthentication())
-	httpError, ok = err.(*echo.HTTPError)
-	require.True(t, ok)
-	assert.NotEqual(t, http.StatusUnauthorized, httpError.Code)
+	tests.AssertHTTPErrorCodeNot(t, err, http.StatusUnauthorized)
 }
 
 func TestRequireNoAuthentication(t *testing.T) {
@@ -64,9 +59,7 @@ func TestRequireNoAuthentication(t *testing.T) {
 
 	// Not logged in
 	err := tests.ExecuteMiddleware(ctx, RequireNoAuthentication())
-	httpError, ok := err.(*echo.HTTPError)
-	require.True(t, ok)
-	assert.NotEqual(t, http.StatusForbidden, httpError.Code)
+	tests.AssertHTTPErrorCodeNot(t, err, http.StatusForbidden)
 
 	// Login
 	err = c.Auth.Login(ctx, usr.ID)
@@ -75,11 +68,44 @@ func TestRequireNoAuthentication(t *testing.T) {
 
 	// Logged in
 	err = tests.ExecuteMiddleware(ctx, RequireNoAuthentication())
-	httpError, ok = err.(*echo.HTTPError)
-	require.True(t, ok)
-	assert.Equal(t, http.StatusForbidden, httpError.Code)
+	tests.AssertHTTPErrorCode(t, err, http.StatusForbidden)
 }
 
 func TestLoadValidPasswordToken(t *testing.T) {
+	ctx, _ := tests.NewContext(c.Web, "/")
+	tests.InitSession(ctx)
 
+	// Missing user context
+	err := tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
+	tests.AssertHTTPErrorCode(t, err, http.StatusInternalServerError)
+
+	// Add user context but no password token and expect a redirect
+	ctx.SetParamNames("user")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID))
+	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
+	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusFound, ctx.Response().Status)
+
+	// Add user context and invalid password token and expect a redirect
+	ctx.SetParamNames("user", "password_token")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), "faketoken")
+	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
+	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusFound, ctx.Response().Status)
+
+	// Create a valid token
+	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
+	require.NoError(t, err)
+
+	// Add user and valid password token
+	ctx.SetParamNames("user", "password_token")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), token)
+	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
+	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
+	tests.AssertHTTPErrorCode(t, err, http.StatusNotFound)
+	ctxPt, ok := ctx.Get(context.PasswordTokenKey).(*ent.PasswordToken)
+	require.True(t, ok)
+	assert.Equal(t, pt.ID, ctxPt.ID)
 }
