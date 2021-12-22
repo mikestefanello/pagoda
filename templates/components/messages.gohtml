@@ -14,7 +14,8 @@
 {{end}}
 
 {{define "message"}}
-    <article class="message is-{{.Type}}">
-        <div class="message-body">{{.Text}}</div>
-    </article>
+    <div class="notification is-light is-{{.Type}}" x-data="{show: true}" x-show="show">
+        <button class="delete" x-on:click="show = false"></button>
+        {{.Text}}
+    </div>
 {{end}}
