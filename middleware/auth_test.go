@@ -50,7 +50,7 @@ func TestRequireAuthentication(t *testing.T) {
 
 	// Logged in
 	err = tests.ExecuteMiddleware(ctx, RequireAuthentication())
-	tests.AssertHTTPErrorCodeNot(t, err, http.StatusUnauthorized)
+	assert.Nil(t, err)
 }
 
 func TestRequireNoAuthentication(t *testing.T) {
@@ -59,7 +59,7 @@ func TestRequireNoAuthentication(t *testing.T) {
 
 	// Not logged in
 	err := tests.ExecuteMiddleware(ctx, RequireNoAuthentication())
-	tests.AssertHTTPErrorCodeNot(t, err, http.StatusForbidden)
+	assert.Nil(t, err)
 
 	// Login
 	err = c.Auth.Login(ctx, usr.ID)
@@ -104,7 +104,7 @@ func TestLoadValidPasswordToken(t *testing.T) {
 	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), token)
 	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
 	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
-	tests.AssertHTTPErrorCode(t, err, http.StatusNotFound)
+	assert.Nil(t, err)
 	ctxPt, ok := ctx.Get(context.PasswordTokenKey).(*ent.PasswordToken)
 	require.True(t, ok)
 	assert.Equal(t, pt.ID, ctxPt.ID)

@@ -33,7 +33,9 @@ func InitSession(ctx echo.Context) {
 }
 
 func ExecuteMiddleware(ctx echo.Context, mw echo.MiddlewareFunc) error {
-	handler := mw(echo.NotFoundHandler)
+	handler := mw(func(c echo.Context) error {
+		return nil
+	})
 	return handler(ctx)
 }
 
@@ -41,12 +43,6 @@ func AssertHTTPErrorCode(t *testing.T, err error, code int) {
 	httpError, ok := err.(*echo.HTTPError)
 	require.True(t, ok)
 	assert.Equal(t, code, httpError.Code)
-}
-
-func AssertHTTPErrorCodeNot(t *testing.T, err error, code int) {
-	httpError, ok := err.(*echo.HTTPError)
-	require.True(t, ok)
-	assert.NotEqual(t, code, httpError.Code)
 }
 
 func CreateUser(orm *ent.Client) (*ent.User, error) {

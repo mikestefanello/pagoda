@@ -43,7 +43,7 @@ func TestServeCachedPage(t *testing.T) {
 	require.NoError(t, err)
 	_ = tests.ExecuteMiddleware(ctx, LoadAuthenticatedUser(c.Auth))
 	err = tests.ExecuteMiddleware(ctx, ServeCachedPage(c.Cache))
-	tests.AssertHTTPErrorCode(t, err, http.StatusNotFound)
+	assert.Nil(t, err)
 }
 
 func TestCacheControl(t *testing.T) {
