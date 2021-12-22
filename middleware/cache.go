@@ -13,13 +13,24 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// CachedPage is what is used to store a rendered Page in the cache
 type CachedPage struct {
-	URL        string
-	HTML       []byte
+	// URL stores the URL of the requested page
+	URL string
+
+	// HTML stores the complete HTML of the rendered Page
+	HTML []byte
+
+	// StatusCode stores the HTTP status code
 	StatusCode int
-	Headers    map[string]string
+
+	// Headers stores the HTTP headers
+	Headers map[string]string
 }
 
+// ServeCachedPage attempts to load a page from the cache by matching on the complete request URL
+// If a page is cached for the requested URL, it will be served here and the request terminated.
+// Any request made by an authenticated user or that is not a GET will be skipped.
 func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -33,10 +44,15 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			res, err := marshaler.New(ch).Get(c.Request().Context(), c.Request().URL.String(), new(CachedPage))
+			// Attempt to load from cache
+			res, err := marshaler.New(ch).Get(
+				c.Request().Context(),
+				c.Request().URL.String(),
+				new(CachedPage),
+			)
 			if err != nil {
 				if err == redis.Nil {
-					c.Logger().Infof("no cached page found")
+					c.Logger().Info("no cached page found")
 				} else {
 					c.Logger().Errorf("failed getting cached page: %v", err)
 				}
@@ -49,11 +65,13 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 				return next(c)
 			}
 
+			// Set any headers
 			if page.Headers != nil {
 				for k, v := range page.Headers {
 					c.Response().Header().Set(k, v)
 				}
 			}
+
 			c.Logger().Info("serving cached page")
 
 			return c.HTMLBlob(page.StatusCode, page.HTML)
@@ -61,6 +79,7 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 	}
 }
 
+// CacheControl sets a Cache-Control header with a given max age
 func CacheControl(maxAge time.Duration) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
