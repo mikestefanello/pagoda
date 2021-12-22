@@ -15,52 +15,70 @@ const (
 	TypeDanger  Type = "danger"
 )
 
-// TODO: Error handling and cleanup
+const (
+	// sessionName stores the name of the session which contains flash messages
+	sessionName = "msg"
+)
 
-func Success(c echo.Context, message string) {
-	Set(c, TypeSuccess, message)
+// Success sets a success flash message
+func Success(ctx echo.Context, message string) {
+	Set(ctx, TypeSuccess, message)
 }
 
-func Info(c echo.Context, message string) {
-	Set(c, TypeInfo, message)
+// Info sets an info flash message
+func Info(ctx echo.Context, message string) {
+	Set(ctx, TypeInfo, message)
 }
 
-func Warning(c echo.Context, message string) {
-	Set(c, TypeWarning, message)
+// Warning sets a warning flash message
+func Warning(ctx echo.Context, message string) {
+	Set(ctx, TypeWarning, message)
 }
 
-func Danger(c echo.Context, message string) {
-	Set(c, TypeDanger, message)
+// Danger sets a danger flash message
+func Danger(ctx echo.Context, message string) {
+	Set(ctx, TypeDanger, message)
 }
 
-// Set adds a new message into the cookie storage.
-func Set(c echo.Context, typ Type, message string) {
-	sess := getSession(c)
-	sess.AddFlash(message, string(typ))
-	_ = sess.Save(c.Request(), c.Response())
-}
-
-// Get gets flash messages from the cookie storage.
-func Get(c echo.Context, typ Type) []string {
-	sess := getSession(c)
-
-	fm := sess.Flashes(string(typ))
-	// If we have some messages.
-	if len(fm) > 0 {
-		_ = sess.Save(c.Request(), c.Response())
-		// Initiate a strings slice to return messages.
-		var flashes []string
-		for _, fl := range fm {
-			// Add message to the slice.
-			flashes = append(flashes, fl.(string))
-		}
-
-		return flashes
+// Set adds a new flash message of a given type into the session storage
+// Errors will logged and not returned
+func Set(ctx echo.Context, typ Type, message string) {
+	if sess, err := getSession(ctx); err == nil {
+		sess.AddFlash(message, string(typ))
+		save(ctx, sess)
 	}
-	return nil
 }
 
-func getSession(c echo.Context) *sessions.Session {
-	sess, _ := session.Get("msg", c)
-	return sess
+// Get gets flash messages of a given type from the session storage
+// Errors will logged and not returned
+func Get(ctx echo.Context, typ Type) []string {
+	var msgs []string
+
+	if sess, err := getSession(ctx); err == nil {
+		if flash := sess.Flashes(string(typ)); len(flash) > 0 {
+			save(ctx, sess)
+
+			for _, m := range flash {
+				msgs = append(msgs, m.(string))
+			}
+		}
+	}
+
+	return msgs
+}
+
+// getSession gets the flash message session
+func getSession(ctx echo.Context) (*sessions.Session, error) {
+	sess, err := session.Get(sessionName, ctx)
+	if err != nil {
+		ctx.Logger().Errorf("cannot load flash message session: %v", err)
+	}
+	return sess, err
+}
+
+// save saves the flash message session
+func save(ctx echo.Context, sess *sessions.Session) {
+	if err := sess.Save(ctx.Request(), ctx.Response()); err != nil {
+		ctx.Logger().Errorf("failed to set flash message: %v", err)
+	}
 }
