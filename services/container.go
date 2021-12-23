@@ -18,18 +18,38 @@ import (
 	"goweb/ent"
 )
 
+// Container contains all services used by the application and provides an easy way to handle dependency
+// injection including within tests
 type Container struct {
-	Web              *echo.Echo
-	Config           *config.Config
-	Cache            *cache.Cache
-	cacheClient      *redis.Client
-	Database         *sql.DB
-	ORM              *ent.Client
-	Mail             *MailClient
-	Auth             *AuthClient
+	// Web stores the web framework
+	Web *echo.Echo
+
+	// Config stores the application configuration
+	Config *config.Config
+
+	// Cache contains the cache interface
+	Cache *cache.Cache
+
+	// cacheClient stores the client to the underlying cache service
+	cacheClient *redis.Client
+
+	// Database stores the connection to the database
+	Database *sql.DB
+
+	// ORM stores a client to the ORM
+	ORM *ent.Client
+
+	// Mail stores an email sending client
+	Mail *MailClient
+
+	// Auth stores an authentication client
+	Auth *AuthClient
+
+	// TemplateRenderer stores a service to easily render and cache templates
 	TemplateRenderer *TemplateRenderer
 }
 
+// NewContainer creates and initializes a new Container
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
@@ -43,6 +63,7 @@ func NewContainer() *Container {
 	return c
 }
 
+// Shutdown shuts the Container down and disconnects all connections
 func (c *Container) Shutdown() error {
 	if err := c.cacheClient.Close(); err != nil {
 		return err
@@ -57,6 +78,7 @@ func (c *Container) Shutdown() error {
 	return nil
 }
 
+// initConfig initializes configuration
 func (c *Container) initConfig() {
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -65,6 +87,7 @@ func (c *Container) initConfig() {
 	c.Config = &cfg
 }
 
+// initWeb initializes the web framework
 func (c *Container) initWeb() {
 	c.Web = echo.New()
 
@@ -77,6 +100,7 @@ func (c *Container) initWeb() {
 	}
 }
 
+// initCache initializes the cache
 func (c *Container) initCache() {
 	c.cacheClient = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", c.Config.Cache.Hostname, c.Config.Cache.Port),
@@ -89,6 +113,8 @@ func (c *Container) initCache() {
 	c.Cache = cache.New(cacheStore)
 }
 
+// initDatabase initializes the database
+// If the environment is set to test, the test database will be used and will be dropped, recreated and migrated
 func (c *Container) initDatabase() {
 	var err error
 
@@ -127,6 +153,7 @@ func (c *Container) initDatabase() {
 	}
 }
 
+// initORM initializes the ORM
 func (c *Container) initORM() {
 	drv := entsql.OpenDB(dialect.Postgres, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
@@ -135,14 +162,17 @@ func (c *Container) initORM() {
 	}
 }
 
+// initAuth initializes the authentication client
 func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
 }
 
+// initTemplateRenderer initializes the template renderer
 func (c *Container) initTemplateRenderer() {
 	c.TemplateRenderer = NewTemplateRenderer(c.Config)
 }
 
+// initMail initialize the mail client
 func (c *Container) initMail() {
 	var err error
 	c.Mail, err = NewMailClient(c.Config, c.TemplateRenderer)

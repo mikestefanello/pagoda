@@ -14,6 +14,8 @@ import (
 	"goweb/funcmap"
 )
 
+// TemplateRenderer provides a flexible and easy to use method of rendering simple templates or complex sets of
+// templates while also providing caching and/or hot-reloading depending on your current environment
 type TemplateRenderer struct {
 	// templateCache stores a cache of parsed page templates
 	templateCache sync.Map
@@ -28,6 +30,7 @@ type TemplateRenderer struct {
 	config *config.Config
 }
 
+// NewTemplateRenderer creates a new TemplateRenderer
 func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
 	t := &TemplateRenderer{
 		templateCache: sync.Map{},
@@ -44,26 +47,26 @@ func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
 	return t
 }
 
-func (t *TemplateRenderer) ParseAndExecute(module, key, name string, files []string, directories []string, data interface{}) (*bytes.Buffer, error) {
+func (t *TemplateRenderer) ParseAndExecute(group, id, name string, files []string, directories []string, data interface{}) (*bytes.Buffer, error) {
 	var buf *bytes.Buffer
 	var err error
 
-	if err = t.Parse(module, key, name, files, directories); err != nil {
+	if err = t.Parse(group, id, name, files, directories); err != nil {
 		return nil, err
 	}
-	if buf, err = t.Execute(module, key, name, data); err != nil {
+	if buf, err = t.Execute(group, id, name, data); err != nil {
 		return nil, err
 	}
 
 	return buf, nil
 }
 
-func (t *TemplateRenderer) Parse(module, key, name string, files []string, directories []string) error {
-	cacheKey := t.getCacheKey(module, key)
+func (t *TemplateRenderer) Parse(group, id, name string, files []string, directories []string) error {
+	cacheKey := t.getCacheKey(group, id)
 
 	// Check if the template has not yet been parsed or if the app environment is local, so that
 	// templates reflect changes without having the restart the server
-	if _, err := t.Load(module, key); err != nil || t.config.App.Environment == config.EnvLocal {
+	if _, err := t.Load(group, id); err != nil || t.config.App.Environment == config.EnvLocal {
 		// Initialize the parsed template with the function map
 		parsed := template.New(name + config.TemplateExt).
 			Funcs(t.funcMap)
@@ -96,8 +99,8 @@ func (t *TemplateRenderer) Parse(module, key, name string, files []string, direc
 	return nil
 }
 
-func (t *TemplateRenderer) Execute(module, key, name string, data interface{}) (*bytes.Buffer, error) {
-	tmpl, err := t.Load(module, key)
+func (t *TemplateRenderer) Execute(group, id, name string, data interface{}) (*bytes.Buffer, error) {
+	tmpl, err := t.Load(group, id)
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +114,8 @@ func (t *TemplateRenderer) Execute(module, key, name string, data interface{}) (
 	return buf, nil
 }
 
-func (t *TemplateRenderer) Load(module, key string) (*template.Template, error) {
-	load, ok := t.templateCache.Load(t.getCacheKey(module, key))
+func (t *TemplateRenderer) Load(group, id string) (*template.Template, error) {
+	load, ok := t.templateCache.Load(t.getCacheKey(group, id))
 	if !ok {
 		return nil, errors.New("uncached page template requested")
 	}
@@ -129,6 +132,6 @@ func (t *TemplateRenderer) GetTemplatesPath() string {
 	return t.templatesPath
 }
 
-func (t *TemplateRenderer) getCacheKey(module, key string) string {
-	return fmt.Sprintf("%s:%s", module, key)
+func (t *TemplateRenderer) getCacheKey(group, id string) string {
+	return fmt.Sprintf("%s:%s", group, id)
 }

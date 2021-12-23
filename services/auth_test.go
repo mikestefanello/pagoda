@@ -104,12 +104,12 @@ func TestDeletePasswordTokens(t *testing.T) {
 }
 
 func TestRandomToken(t *testing.T) {
-	length := 64
+	length := c.Config.App.PasswordToken.Length
 	a, err := c.Auth.RandomToken(length)
 	require.NoError(t, err)
 	b, err := c.Auth.RandomToken(length)
 	require.NoError(t, err)
-	assert.Len(t, a, 64)
-	assert.Len(t, b, 64)
+	assert.Len(t, a, length)
+	assert.Len(t, b, length)
 	assert.NotEqual(t, a, b)
 }

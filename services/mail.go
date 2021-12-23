@@ -16,6 +16,7 @@ type MailClient struct {
 	// config stores application configuration
 	config *config.Config
 
+	// templates stores the template renderer
 	templates *TemplateRenderer
 }
 
@@ -51,7 +52,7 @@ func (c *MailClient) SendTemplate(ctx echo.Context, to, template string, data in
 		"mail",
 		template,
 		template,
-		[]string{fmt.Sprintf("email/%s", template)},
+		[]string{fmt.Sprintf("emails/%s", template)},
 		[]string{},
 		data,
 	)
