@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height:100%;">
     <head>
         {{template "metatags" .}}
         {{template "css" .}}
         {{template "js" .}}
     </head>
-    <body>
+    <body class="has-background-light" style="min-height:100%;">
         <nav class="navbar is-dark">
             <div class="container" hx-boost="true">
                 <div class="navbar-brand">
@@ -28,12 +28,14 @@
 
         <section class="section">
             <div class="container">
-                {{- if .Title}}
-                    <h1 class="title">{{.Title}}</h1>
-                {{- end}}
+                <div class="box">
+                    {{- if .Title}}
+                        <h1 class="title">{{.Title}}</h1>
+                    {{- end}}
 
-                {{template "messages" .}}
-                {{template "content" .}}
+                    {{template "messages" .}}
+                    {{template "content" .}}
+                </div>
             </div>
         </section>
     </body>

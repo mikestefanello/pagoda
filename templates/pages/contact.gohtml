@@ -1,10 +1,11 @@
 {{define "content"}}
-    <form id="contact" method="post" hx-post>
+    <form id="contact" method="post" >
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
                 <input id="email" name="email" type="email" class="input" value="{{.Data.Email}}">
             </div>
+            {{template "form-field-errors" (.Data.Submission.GetFieldErrors "email")}}
         </div>
 
         <div class="field">
@@ -12,6 +13,7 @@
             <div class="control">
                 <textarea id="message" name="message" class="textarea">{{.Data.Message}}</textarea>
             </div>
+            {{template "form-field-errors" (.Data.Submission.GetFieldErrors "message")}}
         </div>
 
         <div class="field is-grouped">
