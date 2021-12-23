@@ -44,6 +44,12 @@ type Page struct {
 	// This is what the controller uses to pass the content of the page.
 	Data interface{}
 
+	// Form stores a struct that represents a form on the page.
+	// This should be a struct with fields for each form field, using both "form" and "validate" tags
+	// It should also contain a Submission field of type FormSubmission if you wish to have validation
+	// messagesa and markup presented to the user
+	Form interface{}
+
 	// Layout stores the name of the layout base template file which will be used when the page is rendered.
 	// This should match a template file located within the layouts directory inside the templates directory.
 	// The template extension should not be included in this value.

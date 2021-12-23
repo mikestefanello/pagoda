@@ -27,10 +27,10 @@ func (c *Contact) Get(ctx echo.Context) error {
 	p.Layout = "main"
 	p.Name = "contact"
 	p.Title = "Contact us"
-	p.Data = ContactForm{}
+	p.Form = ContactForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		p.Data = form.(ContactForm)
+		p.Form = form.(ContactForm)
 	}
 
 	return c.RenderPage(ctx, p)
@@ -59,7 +59,7 @@ func (c *Contact) Post(ctx echo.Context) error {
 		return c.Get(ctx)
 	}
 
-	htmx := controller.NewHTMXRequest(ctx)
+	htmx := controller.GetHTMXRequest(ctx)
 
 	if htmx.Enabled {
 		return ctx.String(http.StatusOK, "<b>HELLO!</b>")

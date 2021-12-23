@@ -33,8 +33,15 @@ func (f FormSubmission) HasErrors() bool {
 	return len(f.Errors) > 0
 }
 
-func (f FormSubmission) FieldHasError(fieldName string) bool {
+func (f FormSubmission) FieldHasErrors(fieldName string) bool {
 	return len(f.GetFieldErrors(fieldName)) > 0
+}
+
+func (f *FormSubmission) SetFieldError(fieldName string, message string) {
+	if f.Errors == nil {
+		f.Errors = make(map[string][]string)
+	}
+	f.Errors[fieldName] = append(f.Errors[fieldName], message)
 }
 
 func (f FormSubmission) GetFieldErrors(fieldName string) []string {
@@ -48,6 +55,16 @@ func (f FormSubmission) GetFieldErrors(fieldName string) []string {
 	}
 
 	return errors
+}
+
+func (f FormSubmission) GetFieldStatusClass(fieldName string) string {
+	if f.IsSubmitted {
+		if f.FieldHasErrors(fieldName) {
+			return "is-danger"
+		}
+		return "is-success"
+	}
+	return ""
 }
 
 func (f *FormSubmission) setErrorMessages(form interface{}, err error) {
@@ -86,6 +103,6 @@ func (f *FormSubmission) setErrorMessages(form interface{}, err error) {
 		}
 
 		// Add the error
-		f.Errors[fieldName] = append(f.Errors[fieldName], message)
+		f.SetFieldError(fieldName, message)
 	}
 }

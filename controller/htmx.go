@@ -34,10 +34,11 @@ type (
 		Trigger            string
 		TriggerAfterSwap   string
 		TriggerAfterSettle string
+		// TODO: No content 204 response?
 	}
 )
 
-func NewHTMXRequest(ctx echo.Context) HTMXRequest {
+func GetHTMXRequest(ctx echo.Context) HTMXRequest {
 	return HTMXRequest{
 		Enabled:     ctx.Request().Header.Get(HTMXHeaderRequest) == "true",
 		Trigger:     ctx.Request().Header.Get(HTMXHeaderTrigger),

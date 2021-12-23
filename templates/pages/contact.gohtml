@@ -3,17 +3,17 @@
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
-                <input id="email" name="email" type="email" class="input" value="{{.Data.Email}}">
+                <input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "email"}}" value="{{.Form.Email}}">
             </div>
-            {{template "form-field-errors" (.Data.Submission.GetFieldErrors "email")}}
+            {{template "field-errors" (.Form.Submission.GetFieldErrors "email")}}
         </div>
 
         <div class="field">
             <label for="message" class="label">Message</label>
             <div class="control">
-                <textarea id="message" name="message" class="textarea">{{.Data.Message}}</textarea>
+                <textarea id="message" name="message" class="textarea {{.Form.Submission.GetFieldStatusClass "message"}}">{{.Form.Message}}</textarea>
             </div>
-            {{template "form-field-errors" (.Data.Submission.GetFieldErrors "message")}}
+            {{template "field-errors" (.Form.Submission.GetFieldErrors "message")}}
         </div>
 
         <div class="field is-grouped">
