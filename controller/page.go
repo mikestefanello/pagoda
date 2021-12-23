@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"goweb/context"
+	"goweb/htmx"
 	"goweb/msg"
 
 	echomw "github.com/labstack/echo/v4/middleware"
@@ -94,6 +95,11 @@ type Page struct {
 	// This will only be populated if the request ID middleware is in effect for the given request.
 	RequestID string
 
+	HTMX struct {
+		Request  htmx.Request
+		Response *htmx.Response
+	}
+
 	// Cache stores values for caching the response of this page
 	Cache struct {
 		// Enabled dictates if the response of this page should be cached.
@@ -132,6 +138,8 @@ func NewPage(ctx echo.Context) Page {
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 	}
+
+	p.HTMX.Request = htmx.GetRequest(ctx)
 
 	return p
 }

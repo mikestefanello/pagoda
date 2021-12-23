@@ -67,6 +67,10 @@ func (f FormSubmission) GetFieldStatusClass(fieldName string) string {
 	return ""
 }
 
+func (f FormSubmission) IsDone() bool {
+	return f.IsSubmitted && !f.HasErrors()
+}
+
 func (f *FormSubmission) setErrorMessages(form interface{}, err error) {
 	// Only this is supported right now
 	ves, ok := err.(validator.ValidationErrors)

@@ -31,7 +31,7 @@ func NewMailClient(cfg *config.Config, templates *TemplateRenderer) (*MailClient
 // Send sends an email to a given email address with a given body
 func (c *MailClient) Send(ctx echo.Context, to, body string) error {
 	if c.skipSend() {
-		ctx.Logger().Debugf("skipping email sent to: %s")
+		ctx.Logger().Debugf("skipping email sent to: %s", to)
 	}
 
 	// TODO: Finish based on your mail sender of choice
@@ -43,7 +43,7 @@ func (c *MailClient) Send(ctx echo.Context, to, body string) error {
 // The funcmap will be automatically added to the template and the data will be passed in.
 func (c *MailClient) SendTemplate(ctx echo.Context, to, template string, data interface{}) error {
 	if c.skipSend() {
-		ctx.Logger().Debugf("skipping template email sent to: %s")
+		ctx.Logger().Debugf("skipping template email sent to: %s", to)
 	}
 
 	// Parse and execute template

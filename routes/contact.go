@@ -1,11 +1,8 @@
 package routes
 
 import (
-	"net/http"
-
 	"goweb/context"
 	"goweb/controller"
-	"goweb/msg"
 
 	"github.com/labstack/echo/v4"
 )
@@ -43,6 +40,8 @@ func (c *Contact) Post(ctx echo.Context) error {
 	//	return c.Get(ctx)
 	//}
 
+	// TODO: Error handling w/ HTMX support
+
 	// Parse the form values
 	var form ContactForm
 	if err := ctx.Bind(&form); err != nil {
@@ -55,17 +54,11 @@ func (c *Contact) Post(ctx echo.Context) error {
 
 	ctx.Set(context.FormKey, form)
 
-	if form.Submission.HasErrors() {
-		return c.Get(ctx)
+	if !form.Submission.HasErrors() {
+		if err := c.Container.Mail.Send(ctx, form.Email, "Hello!"); err != nil {
+			ctx.Logger().Error(err)
+		}
 	}
 
-	htmx := controller.GetHTMXRequest(ctx)
-
-	if htmx.Enabled {
-		return ctx.String(http.StatusOK, "<b>HELLO!</b>")
-	} else {
-		msg.Success(ctx, "Thank you for contacting us!")
-		msg.Info(ctx, "We will respond to you shortly.")
-		return c.Redirect(ctx, "home")
-	}
+	return c.Get(ctx)
 }
