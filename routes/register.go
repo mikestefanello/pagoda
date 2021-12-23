@@ -44,11 +44,11 @@ func (r *Register) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	form := new(RegisterForm)
-	if err := c.Bind(form); err != nil {
+	var form RegisterForm
+	if err := c.Bind(&form); err != nil {
 		return fail("unable to parse form values", err)
 	}
-	c.Set(context.FormKey, *form)
+	c.Set(context.FormKey, form)
 
 	// Validate the form
 	if err := c.Validate(form); err != nil {

@@ -45,11 +45,11 @@ func (l *Login) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	form := new(LoginForm)
-	if err := c.Bind(form); err != nil {
+	var form LoginForm
+	if err := c.Bind(&form); err != nil {
 		return fail("unable to parse login form", err)
 	}
-	c.Set(context.FormKey, *form)
+	c.Set(context.FormKey, form)
 
 	// Validate the form
 	if err := c.Validate(form); err != nil {

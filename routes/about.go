@@ -16,7 +16,7 @@ func (a *About) Get(c echo.Context) error {
 	p.Name = "about"
 	p.Title = "About"
 	p.Data = "This is the about page"
-	p.Cache.Enabled = true
+	p.Cache.Enabled = false
 	p.Cache.Tags = []string{"page_about", "page:list"}
 
 	return a.RenderPage(c, p)

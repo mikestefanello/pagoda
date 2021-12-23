@@ -37,8 +37,8 @@ func (r *ResetPassword) Post(c echo.Context) error {
 	}
 
 	// Parse the form values
-	form := new(ResetPasswordForm)
-	if err := c.Bind(form); err != nil {
+	var form ResetPasswordForm
+	if err := c.Bind(&form); err != nil {
 		return fail("unable to parse forgot password form", err)
 	}
 
