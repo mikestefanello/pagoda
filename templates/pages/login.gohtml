@@ -1,5 +1,6 @@
 {{define "content"}}
-    <form method="post">
+    <form method="post" hx-boost="true">
+        {{template "messages" .}}
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
@@ -24,5 +25,4 @@
         </div>
         {{template "csrf" .}}
     </form>
-    <div class="content is-small"><a href="{{call .ToURL "register"}}">Create an account</a> - <a href="{{call .ToURL "forgot_password"}}">Forgot password?</a></div>
 {{end}}
