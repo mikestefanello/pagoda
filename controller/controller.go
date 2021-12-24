@@ -156,6 +156,11 @@ func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...int
 	return ctx.Redirect(http.StatusFound, ctx.Echo().Reverse(route, routeParams))
 }
 
+func (c *Controller) Fail(ctx echo.Context, err error, log string) error {
+	ctx.Logger().Errorf("%s: %v", log, err)
+	return echo.NewHTTPError(500)
+}
+
 // SetValidationErrorMessages sets error flash messages for validation failures of a given struct
 // and attempts to provide more user-friendly wording.
 // The error should result from the validator module and the data should be the struct that failed

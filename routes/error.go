@@ -33,6 +33,7 @@ func (e *Error) Get(err error, c echo.Context) {
 	p.Title = http.StatusText(code)
 	p.Name = "error"
 	p.StatusCode = code
+	p.HTMX.Request.Enabled = false
 
 	if err = e.RenderPage(c, p); err != nil {
 		c.Logger().Error(err)

@@ -34,29 +34,21 @@ func (c *Contact) Get(ctx echo.Context) error {
 }
 
 func (c *Contact) Post(ctx echo.Context) error {
-	//fail := func(message string, err error) error {
-	//	ctx.Logger().Errorf("%s: %v", message, err)
-	//	msg.Danger(ctx, "An error occurred. Please try again.")
-	//	return c.Get(ctx)
-	//}
-
-	// TODO: Error handling w/ HTMX support
-
 	// Parse the form values
 	var form ContactForm
 	if err := ctx.Bind(&form); err != nil {
-		ctx.Logger().Error(err)
+		return c.Fail(ctx, err, "unable to bind form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		// TOOD
+		return c.Fail(ctx, err, "unable to process form submission")
 	}
 
 	ctx.Set(context.FormKey, form)
 
 	if !form.Submission.HasErrors() {
 		if err := c.Container.Mail.Send(ctx, form.Email, "Hello!"); err != nil {
-			ctx.Logger().Error(err)
+			return c.Fail(ctx, err, "unable to send email")
 		}
 	}
 
