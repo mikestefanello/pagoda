@@ -20,3 +20,13 @@
     <script src="https://unpkg.com/htmx.org@1.6.1"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 {{end}}
+
+{{define "footer"}}
+    {{- if .CSRF}}
+        <script>
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                event.detail.parameters['csrf'] = '{{ .CSRF }}';
+            })
+        </script>
+    {{end}}
+{{end}}
