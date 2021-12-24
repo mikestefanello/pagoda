@@ -1,17 +1,25 @@
 {{define "content"}}
     {{- if not (eq .HTMX.Request.Target "posts")}}
-        Hello homepage
-        <p><img src="{{file "gopher.png"}}" alt="Gopher"/></p>
-
-        <section class="section">
-            <h1 class="title">Recent posts</h1>
-            <h2 class="subtitle">
-                Below is an example of both paging and AJAX fetching using HTMX
-            </h2>
-        </section>
+        {{template "top-content" .}}
     {{- end}}
 
     {{template "posts" .}}
+
+    {{- if not (eq .HTMX.Request.Target "posts")}}
+        {{template "file-msg" .}}
+    {{- end}}
+{{end}}
+
+{{define "top-content"}}
+    Hello homepage
+    <p><img src="{{file "gopher.png"}}" alt="Gopher"/></p>
+
+    <section class="section">
+        <h1 class="title">Recent posts</h1>
+        <h2 class="subtitle">
+            Below is an example of both paging and AJAX fetching using HTMX
+        </h2>
+    </section>
 {{end}}
 
 {{define "posts"}}
@@ -48,4 +56,18 @@
             {{- end}}
         </div>
     </div>
+{{end}}
+
+{{define "file-msg"}}
+    <article class="message is-small is-info mt-4" x-data="{show: true}" x-show="show">
+        <div class="message-header">
+            <p>Serving files</p>
+            <button class="delete is-small" aria-label="delete" x-on:click="show = false"></button>
+        </div>
+        <div class="message-body">
+            In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted.
+            Static files also contain cache-control headers which are configured via middleware.
+            You can also use AlpineJS to dismiss this message.
+        </div>
+    </article>
 {{end}}
