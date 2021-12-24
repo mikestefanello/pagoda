@@ -27,15 +27,17 @@ func (c *Contact) Get(ctx echo.Context) error {
 	p.Form = ContactForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		p.Form = form.(ContactForm)
+		p.Form = form.(*ContactForm)
 	}
 
 	return c.RenderPage(ctx, p)
 }
 
 func (c *Contact) Post(ctx echo.Context) error {
-	// Parse the form values
 	var form ContactForm
+	ctx.Set(context.FormKey, &form)
+
+	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
 		return c.Fail(ctx, err, "unable to bind form")
 	}
@@ -44,7 +46,7 @@ func (c *Contact) Post(ctx echo.Context) error {
 		return c.Fail(ctx, err, "unable to process form submission")
 	}
 
-	ctx.Set(context.FormKey, form)
+	//ctx.Set(context.FormKey, form)
 
 	if !form.Submission.HasErrors() {
 		if err := c.Container.Mail.Send(ctx, form.Email, "Hello!"); err != nil {

@@ -18,73 +18,76 @@ type (
 	}
 
 	LoginForm struct {
-		Email    string `form:"email" validate:"required,email" label:"Email address"`
-		Password string `form:"password" validate:"required" label:"Password"`
+		Email      string `form:"email" validate:"required,email" label:"Email address"`
+		Password   string `form:"password" validate:"required" label:"Password"`
+		Submission controller.FormSubmission
 	}
 )
 
-func (l *Login) Get(c echo.Context) error {
-	p := controller.NewPage(c)
-	p.Layout = "auth"
-	p.Name = "login"
-	p.Title = "Log in"
-	p.Data = LoginForm{}
+func (c *Login) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "auth"
+	page.Name = "login"
+	page.Title = "Log in"
+	page.Form = LoginForm{}
 
-	if form := c.Get(context.FormKey); form != nil {
-		p.Data = form.(LoginForm)
+	if form := ctx.Get(context.FormKey); form != nil {
+		page.Form = form.(*LoginForm)
 	}
 
-	return l.RenderPage(c, p)
+	return c.RenderPage(ctx, page)
 }
 
-func (l *Login) Post(c echo.Context) error {
-	fail := func(message string, err error) error {
-		c.Logger().Errorf("%s: %v", message, err)
-		msg.Danger(c, "An error occurred. Please try again.")
-		return l.Get(c)
+func (c *Login) Post(ctx echo.Context) error {
+	var form LoginForm
+	ctx.Set(context.FormKey, &form)
+
+	authFailed := func() error {
+		form.Submission.SetFieldError("Email", "")
+		form.Submission.SetFieldError("Password", "")
+		msg.Danger(ctx, "Invalid credentials. Please try again.")
+		return c.Get(ctx)
 	}
 
 	// Parse the form values
-	var form LoginForm
-	if err := c.Bind(&form); err != nil {
-		return fail("unable to parse login form", err)
+	if err := ctx.Bind(&form); err != nil {
+		return c.Fail(ctx, err, "unable to parse login form")
 	}
-	c.Set(context.FormKey, form)
 
-	// Validate the form
-	if err := c.Validate(form); err != nil {
-		l.SetValidationErrorMessages(c, err, form)
-		return l.Get(c)
+	if err := form.Submission.Process(ctx, form); err != nil {
+		return c.Fail(ctx, err, "unable to process form submission")
+	}
+
+	if form.Submission.HasErrors() {
+		return c.Get(ctx)
 	}
 
 	// Attempt to load the user
-	u, err := l.Container.ORM.User.
+	u, err := c.Container.ORM.User.
 		Query().
 		Where(user.Email(form.Email)).
-		Only(c.Request().Context())
+		Only(ctx.Request().Context())
 
 	switch err.(type) {
 	case *ent.NotFoundError:
-		msg.Danger(c, "Invalid credentials. Please try again.")
-		return l.Get(c)
+		return authFailed()
 	case nil:
 	default:
-		return fail("error querying user during login", err)
+		return c.Fail(ctx, err, "error querying user during login")
 	}
 
 	// Check if the password is correct
-	err = l.Container.Auth.CheckPassword(form.Password, u.Password)
+	err = c.Container.Auth.CheckPassword(form.Password, u.Password)
 	if err != nil {
-		msg.Danger(c, "Invalid credentials. Please try again.")
-		return l.Get(c)
+		return authFailed()
 	}
 
 	// Log the user in
-	err = l.Container.Auth.Login(c, u.ID)
+	err = c.Container.Auth.Login(ctx, u.ID)
 	if err != nil {
-		return fail("unable to log in user", err)
+		return c.Fail(ctx, err, "unable to log in user")
 	}
 
-	msg.Success(c, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
-	return l.Redirect(c, "home")
+	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
+	return c.Redirect(ctx, "home")
 }

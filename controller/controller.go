@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
+	"goweb/htmx"
 	"goweb/middleware"
 	"goweb/msg"
 	"goweb/services"
@@ -153,7 +154,11 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 
 // Redirect redirects to a given route name with optional route parameters
 func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
-	return ctx.Redirect(http.StatusFound, ctx.Echo().Reverse(route, routeParams))
+	url := ctx.Echo().Reverse(route, routeParams)
+	h := htmx.Response{}
+	h.Redirect = url
+	h.Apply(ctx)
+	return ctx.Redirect(http.StatusFound, url)
 }
 
 func (c *Controller) Fail(ctx echo.Context, err error, log string) error {

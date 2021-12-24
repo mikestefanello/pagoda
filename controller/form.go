@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"reflect"
-
 	"github.com/go-playground/validator/v10"
 
 	"github.com/labstack/echo/v4"
@@ -78,20 +76,8 @@ func (f *FormSubmission) setErrorMessages(form interface{}, err error) {
 		return
 	}
 
-	formType := reflect.TypeOf(form)
-
 	for _, ve := range ves {
 		var message string
-
-		// Default the field form name to the name of the struct field
-		fieldName := ve.StructField()
-
-		// Attempt to get the form field name from the field's struct tag
-		if field, ok := formType.FieldByName(ve.Field()); ok {
-			if fieldNameTag := field.Tag.Get("form"); fieldNameTag != "" {
-				fieldName = fieldNameTag
-			}
-		}
 
 		// Provide better error messages depending on the failed validation tag
 		// This should be expanded as you use additional tags in your validation
@@ -107,6 +93,6 @@ func (f *FormSubmission) setErrorMessages(form interface{}, err error) {
 		}
 
 		// Add the error
-		f.SetFieldError(fieldName, message)
+		f.SetFieldError(ve.Field(), message)
 	}
 }

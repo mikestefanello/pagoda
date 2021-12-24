@@ -26,17 +26,17 @@
             <div class="field">
                 <label for="email" class="label">Email address</label>
                 <div class="control">
-                    <input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "email"}}" value="{{.Form.Email}}">
+                    <input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
                 </div>
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "email")}}
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
             </div>
 
             <div class="field">
                 <label for="message" class="label">Message</label>
                 <div class="control">
-                    <textarea id="message" name="message" class="textarea {{.Form.Submission.GetFieldStatusClass "message"}}">{{.Form.Message}}</textarea>
+                    <textarea id="message" name="message" class="textarea {{.Form.Submission.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
                 </div>
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "message")}}
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Message")}}
             </div>
 
             <div class="field is-grouped">
