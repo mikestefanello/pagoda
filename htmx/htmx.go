@@ -22,6 +22,7 @@ const (
 )
 
 type (
+	// Request contains data that HTMX provides during requests
 	Request struct {
 		Enabled     bool
 		Boosted     bool
@@ -31,6 +32,7 @@ type (
 		Prompt      string
 	}
 
+	// Response contain data that the server can communicate back to HTMX
 	Response struct {
 		Push               string
 		Redirect           string
@@ -42,6 +44,7 @@ type (
 	}
 )
 
+// GetRequest extracts HTMX data from the request
 func GetRequest(ctx echo.Context) Request {
 	return Request{
 		Enabled:     ctx.Request().Header.Get(HeaderRequest) == "true",
@@ -53,6 +56,7 @@ func GetRequest(ctx echo.Context) Request {
 	}
 }
 
+// Apply applies data from a Response to a server response
 func (r Response) Apply(ctx echo.Context) {
 	if r.Push != "" {
 		ctx.Response().Header().Set(HeaderPush, r.Push)
