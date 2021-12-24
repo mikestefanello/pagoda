@@ -53,7 +53,7 @@ func GetRequest(ctx echo.Context) Request {
 	}
 }
 
-func (r *Response) Apply(ctx echo.Context) {
+func (r Response) Apply(ctx echo.Context) {
 	if r.Push != "" {
 		ctx.Response().Header().Set(HeaderPush, r.Push)
 	}

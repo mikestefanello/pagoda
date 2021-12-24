@@ -3,25 +3,29 @@
         <div class="field">
             <label for="name" class="label">Name</label>
             <div class="control">
-                <input type="text" id="name" name="name" class="input" value="{{.Data.Name}}" required>
+                <input type="text" id="name" name="name" class="input {{.Form.Submission.GetFieldStatusClass "Name"}}" value="{{.Form.Name}}" required>
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Name")}}
             </div>
         </div>
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
-                <input type="email" id="email" name="email" class="input" value="{{.Data.Email}}" required>
+                <input type="email" id="email" name="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}" required>
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
             </div>
         </div>
         <div class="field">
             <label for="password" class="label">Password</label>
             <div class="control">
-                <input type="password" id="password" name="password" placeholder="*******" class="input" required>
+                <input type="password" id="password" name="password" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "Password"}}" required>
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "Password")}}
             </div>
         </div>
         <div class="field">
             <label for="password-confirm" class="label">Confirm password</label>
             <div class="control">
-                <input type="password" id="password-confirm" name="password-confirm" placeholder="*******" class="input" required>
+                <input type="password" id="password-confirm" name="password-confirm" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "ConfirmPassword"}}" required>
+                {{template "field-errors" (.Form.Submission.GetFieldErrors "ConfirmPassword")}}
             </div>
         </div>
         <div class="field is-grouped">

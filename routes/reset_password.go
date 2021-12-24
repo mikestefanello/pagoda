@@ -16,64 +16,69 @@ type (
 	}
 
 	ResetPasswordForm struct {
-		Password        string `form:"password" validate:"required" label:"Password"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password" label:"Confirm password"`
+		Password        string `form:"password" validate:"required"`
+		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
+		Submission      controller.FormSubmission
 	}
 )
 
-func (r *ResetPassword) Get(c echo.Context) error {
-	p := controller.NewPage(c)
-	p.Layout = "auth"
-	p.Name = "reset-password"
-	p.Title = "Reset password"
-	return r.RenderPage(c, p)
+func (c *ResetPassword) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "auth"
+	page.Name = "reset-password"
+	page.Title = "Reset password"
+	page.Form = ResetPasswordForm{}
+
+	if form := ctx.Get(context.FormKey); form != nil {
+		page.Form = form.(*ResetPasswordForm)
+	}
+
+	return c.RenderPage(ctx, page)
 }
 
-func (r *ResetPassword) Post(c echo.Context) error {
-	fail := func(message string, err error) error {
-		c.Logger().Errorf("%s: %v", message, err)
-		msg.Danger(c, "An error occurred. Please try again.")
-		return r.Get(c)
-	}
+func (c *ResetPassword) Post(ctx echo.Context) error {
+	var form ResetPasswordForm
+	ctx.Set(context.FormKey, &form)
 
 	// Parse the form values
-	var form ResetPasswordForm
-	if err := c.Bind(&form); err != nil {
-		return fail("unable to parse forgot password form", err)
+	if err := ctx.Bind(&form); err != nil {
+		return c.Fail(ctx, err, "unable to parse password reset form")
 	}
 
-	// Validate the form
-	if err := c.Validate(form); err != nil {
-		r.SetValidationErrorMessages(c, err, form)
-		return r.Get(c)
+	if err := form.Submission.Process(ctx, form); err != nil {
+		return c.Fail(ctx, err, "unable to process form submission")
+	}
+
+	if form.Submission.HasErrors() {
+		return c.Get(ctx)
 	}
 
 	// Hash the new password
-	hash, err := r.Container.Auth.HashPassword(form.Password)
+	hash, err := c.Container.Auth.HashPassword(form.Password)
 	if err != nil {
-		return fail("unable to hash password", err)
+		return c.Fail(ctx, err, "unable to hash password")
 	}
 
 	// Get the requesting user
-	usr := c.Get(context.UserKey).(*ent.User)
+	usr := ctx.Get(context.UserKey).(*ent.User)
 
 	// Update the user
-	_, err = r.Container.ORM.User.
+	_, err = c.Container.ORM.User.
 		Update().
 		SetPassword(hash).
 		Where(user.ID(usr.ID)).
-		Save(c.Request().Context())
+		Save(ctx.Request().Context())
 
 	if err != nil {
-		return fail("unable to update password", err)
+		return c.Fail(ctx, err, "unable to update password")
 	}
 
 	// Delete all password tokens for this user
-	err = r.Container.Auth.DeletePasswordTokens(c, usr.ID)
+	err = c.Container.Auth.DeletePasswordTokens(ctx, usr.ID)
 	if err != nil {
-		return fail("unable to delete password tokens", err)
+		return c.Fail(ctx, err, "unable to delete password tokens")
 	}
 
-	msg.Success(c, "Your password has been updated.")
-	return r.Redirect(c, "login")
+	msg.Success(ctx, "Your password has been updated.")
+	return c.Redirect(ctx, "login")
 }

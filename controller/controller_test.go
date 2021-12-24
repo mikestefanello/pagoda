@@ -10,15 +10,12 @@ import (
 
 	"goweb/config"
 	"goweb/middleware"
-	"goweb/msg"
 	"goweb/services"
 	"goweb/tests"
 
 	"github.com/eko/gocache/v2/store"
 
 	"github.com/eko/gocache/v2/marshaler"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -54,25 +51,6 @@ func TestController_Redirect(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "", ctx.Response().Header().Get(echo.HeaderLocation))
 	assert.Equal(t, http.StatusFound, ctx.Response().Status)
-}
-
-func TestController_SetValidationErrorMessages(t *testing.T) {
-	type example struct {
-		Name string `validate:"required" label:"Label test"`
-	}
-	e := example{}
-	v := validator.New()
-	err := v.Struct(e)
-	require.Error(t, err)
-
-	ctx, _ := tests.NewContext(c.Web, "/")
-	tests.InitSession(ctx)
-	ctr := NewController(c)
-	ctr.SetValidationErrorMessages(ctx, err, e)
-
-	msgs := msg.Get(ctx, msg.TypeDanger)
-	require.Len(t, msgs, 1)
-	assert.Equal(t, "<strong>Label test</strong> is required.", msgs[0])
 }
 
 func TestController_RenderPage(t *testing.T) {

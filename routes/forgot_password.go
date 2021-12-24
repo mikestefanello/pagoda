@@ -18,76 +18,79 @@ type (
 	}
 
 	ForgotPasswordForm struct {
-		Email string `form:"email" validate:"required,email" label:"Email address"`
+		Email      string `form:"email" validate:"required,email"`
+		Submission controller.FormSubmission
 	}
 )
 
-func (f *ForgotPassword) Get(c echo.Context) error {
-	p := controller.NewPage(c)
-	p.Layout = "auth"
-	p.Name = "forgot-password"
-	p.Title = "Forgot password"
-	p.Data = ForgotPasswordForm{}
+func (c *ForgotPassword) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "auth"
+	page.Name = "forgot-password"
+	page.Title = "Forgot password"
+	page.Form = ForgotPasswordForm{}
 
-	if form := c.Get(context.FormKey); form != nil {
-		p.Data = form.(ForgotPasswordForm)
+	if form := ctx.Get(context.FormKey); form != nil {
+		page.Form = form.(*ForgotPasswordForm)
 	}
 
-	return f.RenderPage(c, p)
+	return c.RenderPage(ctx, page)
 }
 
-func (f *ForgotPassword) Post(c echo.Context) error {
-	fail := func(message string, err error) error {
-		c.Logger().Errorf("%s: %v", message, err)
-		msg.Danger(c, "An error occurred. Please try again.")
-		return f.Get(c)
-	}
+func (c *ForgotPassword) Post(ctx echo.Context) error {
+	var form ForgotPasswordForm
+	ctx.Set(context.FormKey, &form)
 
 	succeed := func() error {
-		c.Set(context.FormKey, nil)
-		msg.Success(c, "An email containing a link to reset your password will be sent to this address if it exists in our system.")
-		return f.Get(c)
+		ctx.Set(context.FormKey, nil)
+		msg.Success(ctx, "An email containing a link to reset your password will be sent to this address if it exists in our system.")
+		return c.Get(ctx)
 	}
 
 	// Parse the form values
-	var form ForgotPasswordForm
-	if err := c.Bind(&form); err != nil {
-		return fail("unable to parse forgot password form", err)
+	if err := ctx.Bind(&form); err != nil {
+		return c.Fail(ctx, err, "unable to parse forgot password form")
 	}
-	c.Set(context.FormKey, form)
 
-	// Validate the form
-	if err := c.Validate(form); err != nil {
-		f.SetValidationErrorMessages(c, err, form)
-		return f.Get(c)
+	if err := form.Submission.Process(ctx, form); err != nil {
+		return c.Fail(ctx, err, "unable to process form submission")
+	}
+
+	if form.Submission.HasErrors() {
+		return c.Get(ctx)
 	}
 
 	// Attempt to load the user
-	u, err := f.Container.ORM.User.
+	u, err := c.Container.ORM.User.
 		Query().
 		Where(user.Email(form.Email)).
-		Only(c.Request().Context())
+		Only(ctx.Request().Context())
 
 	switch err.(type) {
 	case *ent.NotFoundError:
 		return succeed()
 	case nil:
 	default:
-		return fail("error querying user during forgot password", err)
+		return c.Fail(ctx, err, "error querying user during forgot password")
 	}
 
 	// Generate the token
-	token, _, err := f.Container.Auth.GeneratePasswordResetToken(c, u.ID)
+	token, _, err := c.Container.Auth.GeneratePasswordResetToken(ctx, u.ID)
 	if err != nil {
-		return fail("error generating password reset token", err)
+		return c.Fail(ctx, err, "error generating password reset token")
 	}
-	c.Logger().Infof("generated password reset token for user %d", u.ID)
+
+	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
 
 	// Email the user
-	// TODO: better email
-	err = f.Container.Mail.Send(c, u.Email, fmt.Sprintf("Go here to reset your password: %s", c.Echo().Reverse("reset_password", u.ID, token)))
+	body := fmt.Sprintf(
+		"Go here to reset your password: %s",
+		ctx.Echo().Reverse("reset_password", u.ID, token),
+	)
+	ctx.Logger().Info(body)
+	err = c.Container.Mail.Send(ctx, u.Email, body)
 	if err != nil {
-		return fail("error sending password reset email", err)
+		return c.Fail(ctx, err, "error sending password reset email")
 	}
 
 	return succeed()

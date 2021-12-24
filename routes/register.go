@@ -15,79 +15,77 @@ type (
 	}
 
 	RegisterForm struct {
-		Name            string `form:"name" validate:"required" label:"Name"`
-		Email           string `form:"email" validate:"required,email" label:"Email address"`
-		Password        string `form:"password" validate:"required" label:"Password"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password" label:"Confirm password"`
+		Name            string `form:"name" validate:"required"`
+		Email           string `form:"email" validate:"required,email"`
+		Password        string `form:"password" validate:"required"`
+		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
+		Submission      controller.FormSubmission
 	}
 )
 
-func (r *Register) Get(c echo.Context) error {
-	p := controller.NewPage(c)
-	p.Layout = "auth"
-	p.Name = "register"
-	p.Title = "Register"
-	p.Data = RegisterForm{}
+func (c *Register) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "auth"
+	page.Name = "register"
+	page.Title = "Register"
+	page.Form = RegisterForm{}
 
-	if form := c.Get(context.FormKey); form != nil {
-		p.Data = form.(RegisterForm)
+	if form := ctx.Get(context.FormKey); form != nil {
+		page.Form = form.(*RegisterForm)
 	}
 
-	return r.RenderPage(c, p)
+	return c.RenderPage(ctx, page)
 }
 
-func (r *Register) Post(c echo.Context) error {
-	fail := func(message string, err error) error {
-		c.Logger().Errorf("%s: %v", message, err)
-		msg.Danger(c, "An error occurred. Please try again.")
-		return r.Get(c)
-	}
+func (c *Register) Post(ctx echo.Context) error {
+	var form RegisterForm
+	ctx.Set(context.FormKey, &form)
 
 	// Parse the form values
-	var form RegisterForm
-	if err := c.Bind(&form); err != nil {
-		return fail("unable to parse form values", err)
+	if err := ctx.Bind(&form); err != nil {
+		return c.Fail(ctx, err, "unable to parse register form")
 	}
-	c.Set(context.FormKey, form)
 
-	// Validate the form
-	if err := c.Validate(form); err != nil {
-		r.SetValidationErrorMessages(c, err, form)
-		return r.Get(c)
+	if err := form.Submission.Process(ctx, form); err != nil {
+		return c.Fail(ctx, err, "unable to process form submission")
+	}
+
+	if form.Submission.HasErrors() {
+		return c.Get(ctx)
 	}
 
 	// Hash the password
-	pwHash, err := r.Container.Auth.HashPassword(form.Password)
+	pwHash, err := c.Container.Auth.HashPassword(form.Password)
 	if err != nil {
-		return fail("unable to hash password", err)
+		return c.Fail(ctx, err, "unable to hash password")
 	}
 
 	// Attempt creating the user
-	u, err := r.Container.ORM.User.
+	u, err := c.Container.ORM.User.
 		Create().
 		SetName(form.Name).
 		SetEmail(form.Email).
 		SetPassword(pwHash).
-		Save(c.Request().Context())
+		Save(ctx.Request().Context())
 
 	switch err.(type) {
 	case nil:
-		c.Logger().Infof("user created: %s", u.Name)
+		ctx.Logger().Infof("user created: %s", u.Name)
 	case *ent.ConstraintError:
-		msg.Warning(c, "A user with this email address already exists. Please log in.")
-		return r.Redirect(c, "login")
+		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
+		return c.Redirect(ctx, "login")
 	default:
-		return fail("unable to create user", err)
+		return c.Fail(ctx, err, "unable to create user")
 	}
 
 	// Log the user in
-	err = r.Container.Auth.Login(c, u.ID)
+	err = c.Container.Auth.Login(ctx, u.ID)
 	if err != nil {
-		c.Logger().Errorf("unable to log in: %v", err)
-		msg.Info(c, "Your account has been created.")
-		return r.Redirect(c, "login")
+		ctx.Logger().Errorf("unable to log in: %v", err)
+		msg.Info(ctx, "Your account has been created.")
+		return c.Redirect(ctx, "login")
 	}
 
-	msg.Info(c, "Your account has been created. You are now logged in.")
-	return r.Redirect(c, "home")
+	msg.Info(ctx, "Your account has been created. You are now logged in.")
+	return c.Redirect(ctx, "home")
 }

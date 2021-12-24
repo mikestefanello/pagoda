@@ -46,8 +46,6 @@ func (c *Contact) Post(ctx echo.Context) error {
 		return c.Fail(ctx, err, "unable to process form submission")
 	}
 
-	//ctx.Set(context.FormKey, form)
-
 	if !form.Submission.HasErrors() {
 		if err := c.Container.Mail.Send(ctx, form.Email, "Hello!"); err != nil {
 			return c.Fail(ctx, err, "unable to send email")

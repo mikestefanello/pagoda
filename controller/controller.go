@@ -4,14 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"reflect"
 
-	"goweb/htmx"
 	"goweb/middleware"
-	"goweb/msg"
 	"goweb/services"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/eko/gocache/v2/marshaler"
 
@@ -155,57 +150,11 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 // Redirect redirects to a given route name with optional route parameters
 func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
 	url := ctx.Echo().Reverse(route, routeParams)
-	h := htmx.Response{}
-	h.Redirect = url
-	h.Apply(ctx)
+	// TODO: HTMX redirect?
 	return ctx.Redirect(http.StatusFound, url)
 }
 
 func (c *Controller) Fail(ctx echo.Context, err error, log string) error {
 	ctx.Logger().Errorf("%s: %v", log, err)
-	return echo.NewHTTPError(500)
-}
-
-// SetValidationErrorMessages sets error flash messages for validation failures of a given struct
-// and attempts to provide more user-friendly wording.
-// The error should result from the validator module and the data should be the struct that failed
-// validation.
-// This method supports including a struct tag of "labeL" on each field which will be the name
-// of the field used in the error messages, for example:
-//  - FirstName string `form:"first-name" validate:"required" label:"First name"`
-// Only a few validator tags are supported below. Expand them as needed.
-func (c *Controller) SetValidationErrorMessages(ctx echo.Context, err error, data interface{}) {
-	ves, ok := err.(validator.ValidationErrors)
-	if !ok {
-		return
-	}
-
-	for _, ve := range ves {
-		var message string
-
-		// Default the field label to the name of the struct field
-		label := ve.StructField()
-
-		// Attempt to get a label from the field's struct tag
-		if field, ok := reflect.TypeOf(data).FieldByName(ve.Field()); ok {
-			if labelTag := field.Tag.Get("label"); labelTag != "" {
-				label = labelTag
-			}
-		}
-
-		// Provide better error messages depending on the failed validation tag
-		// This should be expanded as you use additional tags in your validation
-		switch ve.Tag() {
-		case "required":
-			message = "%s is required."
-		case "email":
-			message = "%s must be a valid email address."
-		case "eqfield":
-			message = "%s must match."
-		default:
-			message = "%s is not a valid value."
-		}
-
-		msg.Danger(ctx, fmt.Sprintf(message, "<strong>"+label+"</strong>"))
-	}
+	return echo.NewHTTPError(http.StatusInternalServerError)
 }

@@ -18,8 +18,8 @@ type (
 	}
 
 	LoginForm struct {
-		Email      string `form:"email" validate:"required,email" label:"Email address"`
-		Password   string `form:"password" validate:"required" label:"Password"`
+		Email      string `form:"email" validate:"required,email"`
+		Password   string `form:"password" validate:"required"`
 		Submission controller.FormSubmission
 	}
 )
