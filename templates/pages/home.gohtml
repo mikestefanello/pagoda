@@ -1,4 +1,51 @@
 {{define "content"}}
-    Hello homepage {{upper "data"}}: {{ .Data }}
-    <p><img src="{{file "gopher.png"}}" alt="Gopher"/></p>
+    {{- if not (eq .HTMX.Request.Target "posts")}}
+        Hello homepage
+        <p><img src="{{file "gopher.png"}}" alt="Gopher"/></p>
+
+        <section class="section">
+            <h1 class="title">Recent posts</h1>
+            <h2 class="subtitle">
+                Below is an example of both paging and AJAX fetching using HTMX
+            </h2>
+        </section>
+    {{- end}}
+
+    {{template "posts" .}}
+{{end}}
+
+{{define "posts"}}
+    <div id="posts">
+        {{- range .Data}}
+            <article class="media">
+                <figure class="media-left">
+                    <p class="image is-64x64">
+                        <img src="{{file "gopher.png"}}" alt="Gopher"/>
+                    </p>
+                </figure>
+                <div class="media-content">
+                    <div class="content">
+                        <p>
+                            <strong>{{.Title}}</strong>
+                            <br>
+                            {{.Body}}
+                        </p>
+                    </div>
+                </div>
+            </article>
+        {{- end}}
+
+        <div class="field is-grouped is-grouped-centered">
+            {{- if not $.Pager.IsBeginning}}
+                <p class="control">
+                    <button class="button is-primary" hx-swap="outerHTML" hx-get="/?page={{sub $.Pager.Page 1}}" hx-target="#posts">Previous page</button>
+                </p>
+            {{- end}}
+            {{- if not $.Pager.IsEnd}}
+                <p class="control">
+                    <button class="button is-primary" hx-swap="outerHTML" hx-get="/?page={{add $.Pager.Page 1}}" hx-target="#posts">Next page</button>
+                </p>
+            {{- end}}
+        </div>
+    </div>
 {{end}}

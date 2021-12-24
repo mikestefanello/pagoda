@@ -61,18 +61,18 @@ func (p *Pager) SetItems(items int) {
 }
 
 // IsBeginning determines if the pager is at the beginning of the pages
-func (p *Pager) IsBeginning() bool {
+func (p Pager) IsBeginning() bool {
 	return p.Page == 1
 }
 
 // IsEnd determines if the pager is at the end of the pages
-func (p *Pager) IsEnd() bool {
+func (p Pager) IsEnd() bool {
 	return p.Page >= p.Pages
 }
 
 // GetOffset determines the offset of the results in order to get the items for
 // the current page
-func (p *Pager) GetOffset() int {
+func (p Pager) GetOffset() int {
 	if p.Page == 0 {
 		p.Page = 1
 	}
