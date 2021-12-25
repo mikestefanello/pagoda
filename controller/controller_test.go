@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"goweb/config"
+	"goweb/htmx"
 	"goweb/middleware"
 	"goweb/services"
 	"goweb/tests"
@@ -97,6 +98,39 @@ func TestController_RenderPage(t *testing.T) {
 		expectedTemplates := make(map[string]bool)
 		expectedTemplates[p.Name+config.TemplateExt] = true
 		expectedTemplates[p.Layout+config.TemplateExt] = true
+		components, err := ioutil.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
+		require.NoError(t, err)
+		for _, f := range components {
+			expectedTemplates[f.Name()] = true
+		}
+
+		for _, v := range parsed.Templates() {
+			delete(expectedTemplates, v.Name())
+		}
+		assert.Empty(t, expectedTemplates)
+	})
+
+	t.Run("htmx rendering", func(t *testing.T) {
+		ctx, _, ctr, p := setup()
+		p.HTMX.Request.Enabled = true
+		p.HTMX.Response = &htmx.Response{
+			Trigger: "trigger",
+		}
+		err := ctr.RenderPage(ctx, p)
+		require.NoError(t, err)
+
+		// Check HTMX header
+		assert.Equal(t, "trigger", ctx.Response().Header().Get(htmx.HeaderTrigger))
+
+		// Check the template cache
+		parsed, err := c.TemplateRenderer.Load("page:htmx", p.Name)
+		assert.NoError(t, err)
+
+		// Check that all expected templates were parsed.
+		// This includes the name, htmx and all components
+		expectedTemplates := make(map[string]bool)
+		expectedTemplates[p.Name+config.TemplateExt] = true
+		expectedTemplates["htmx"+config.TemplateExt] = true
 		components, err := ioutil.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
 		require.NoError(t, err)
 		for _, f := range components {

@@ -102,8 +102,8 @@ func (h *httpResponse) assertStatusCode(code int) *httpResponse {
 	return h
 }
 
-func (h *httpResponse) assertRedirect(t *testing.T, destination string) *httpResponse {
-	assert.Equal(t, destination, h.Header.Get("Location"))
+func (h *httpResponse) assertRedirect(t *testing.T, route string, params ...interface{}) *httpResponse {
+	assert.Equal(t, c.Web.Reverse(route, params), h.Header.Get("Location"))
 	return h
 }
 

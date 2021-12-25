@@ -15,6 +15,7 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
+// BuildRouter builds the router
 func BuildRouter(c *services.Container) {
 	// Static files with proper cache control
 	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
@@ -58,7 +59,7 @@ func BuildRouter(c *services.Container) {
 	err := Error{Controller: ctr}
 	c.Web.HTTPErrorHandler = err.Get
 
-	// Routes
+	// Example routes
 	navRoutes(c, g, ctr)
 	userRoutes(c, g, ctr)
 }

@@ -46,12 +46,15 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		page.AppName = c.Container.Config.App.Name
 	}
 
-	// Check if this is an HTMX request
+	// Check if this is an HTMX non-boosted request which indicates that only partial
+	// content should be rendered
 	if page.HTMX.Request.Enabled && !page.HTMX.Request.Boosted {
-		// Disable caching
-		page.Cache.Enabled = false
-
-		// Parse and execute
+		// Parse and execute the templates only for the content portion of the page
+		// The templates used for this partial request will be:
+		// 1. The base htmx template which omits the layout and only includes the content template
+		// 2. The content template specified in Page.Name
+		// 3. All templates within the components directory
+		// Also included is the function map provided by the funcmap package
 		buf, err = c.Container.TemplateRenderer.ParseAndExecute(
 			"page:htmx",
 			page.Name,
@@ -150,10 +153,10 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 // Redirect redirects to a given route name with optional route parameters
 func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
 	url := ctx.Echo().Reverse(route, routeParams)
-	// TODO: HTMX redirect?
 	return ctx.Redirect(http.StatusFound, url)
 }
 
+// Fail is a helper to fail a request by returning a 500 error and logging the error
 func (c *Controller) Fail(ctx echo.Context, err error, log string) error {
 	ctx.Logger().Errorf("%s: %v", log, err)
 	return echo.NewHTTPError(http.StatusInternalServerError)
