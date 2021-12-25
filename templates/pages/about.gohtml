@@ -1,43 +1,28 @@
 {{define "content"}}
-    <p>{{.Data}}</p>
-    <div x-data="{tab: 'pictures'}">
-        <div class="tabs">
-            <ul>
-                <li :class="{'is-active': tab === 'pictures'}" @click="tab = 'pictures'"><a>Pictures</a></li>
-                <li :class="{'is-active': tab === 'music'}" @click="tab = 'music'"><a>Music</a></li>
-                <li :class="{'is-active': tab === 'videos'}" @click="tab = 'videos'"><a>Videos</a></li>
-                <li :class="{'is-active': tab === 'documents'}" @click="tab = 'documents'"><a>Documents</a></li>
-            </ul>
+    {{if .Data.Tabs}}
+        <p class="mb-4">The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.</p>
+        <div x-data="{tab: 0}">
+            <div class="tabs">
+                <ul>
+                    {{range $index, $tab := .Data.Tabs}}
+                        <li :class="{'is-active': tab === {{$index}}}" @click="tab = {{$index}}"><a>{{.Title}}</a></li>
+                    {{end}}
+                </ul>
+            </div>
+            {{range $index, $tab := .Data.Tabs}}
+                <div x-show="tab == {{$index}}"><p>{{.Body}}</p></div>
+            {{end}}
         </div>
-        <div x-show="tab == 'pictures'">pictures</div>
-        <div x-show="tab == 'music'">music</div>
-        <div x-show="tab == 'videos'">videos</div>
-        <div x-show="tab == 'documents'">documents</div>
-    </div>
+    {{end}}
 
-    <div class="row" x-data="{fields: []}">
-            <table class="table table-bordered align-items-center table-sm">
-                <thead class="thead-light">
-                <tr>
-                    <th>#</th>
-                    <th>Text Feild 1</th>
-                    <th>Remove</th>
-                </tr>
-                </thead>
-                <tbody>
-                <template x-for="(field, index) in fields" :key="index">
-                    <tr>
-                        <td x-text="index + 1"></td>
-                        <td><input x-model="field.value" type="text" name="txt1[]" class="form-control"></td>
-                        <td><button type="button" class="btn btn-danger btn-small" @click="fields.splice(index, 1);">&times;</button></td>
-                    </tr>
-                </template>
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td colspan="4" class="text-right"><button type="button" class="btn btn-info" @click="fields.push({value: ''})">+ Add Row</button></td>
-                </tr>
-                </tfoot>
-            </table>
-    </div>
+    {{if .Data.ShowCacheWarning}}
+        <article class="message is-warning mt-5">
+            <div class="message-header">
+                <p>Warning</p>
+            </div>
+            <div class="message-body">
+                This route has caching enabled so hot-reloading in the local environment will not work. Check the Redis cache for a key matching the URL path.
+            </div>
+        </article>
+    {{end}}
 {{end}}
