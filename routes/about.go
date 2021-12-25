@@ -15,7 +15,8 @@ type (
 
 	AboutData struct {
 		ShowCacheWarning bool
-		Tabs             []AboutTab
+		FrontendTabs     []AboutTab
+		BackendTabs      []AboutTab
 	}
 
 	AboutTab struct {
@@ -35,9 +36,10 @@ func (c *About) Get(ctx echo.Context) error {
 	page.Cache.Tags = []string{"page_about", "page:list"}
 
 	// A simple example of how the Data field can contain anything you want to send to the templates
+	// even though you wouldn't normally send markup like this
 	page.Data = AboutData{
 		ShowCacheWarning: true,
-		Tabs: []AboutTab{
+		FrontendTabs: []AboutTab{
 			{
 				Title: "HTMX",
 				Body:  template.HTML(`Completes HTML as a hypertext by providing attributes to AJAXify anything and much more. Visit <a href="https://htmx.org/">htmx.org</a> to learn more.`),
@@ -49,6 +51,16 @@ func (c *About) Get(ctx echo.Context) error {
 			{
 				Title: "Bulma",
 				Body:  template.HTML(`Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href="https://bulma.io/">bulma.io</a> to learn more.`),
+			},
+		},
+		BackendTabs: []AboutTab{
+			{
+				Title: "Echo",
+				Body:  template.HTML(`High performance, extensible, minimalist Go web framework. Visit <a href="https://echo.labstack.com/">echo.labstack.com</a> to learn more.`),
+			},
+			{
+				Title: "Ent",
+				Body:  template.HTML(`Simple, yet powerful ORM for modeling and querying data. Visit <a href="https://entgo.io/">entgo.io</a> to learn more.`),
 			},
 		},
 	}
