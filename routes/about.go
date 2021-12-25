@@ -10,14 +10,14 @@ type About struct {
 	controller.Controller
 }
 
-func (a *About) Get(c echo.Context) error {
-	p := controller.NewPage(c)
-	p.Layout = "main"
-	p.Name = "about"
-	p.Title = "About"
-	p.Data = "This is the about page"
-	p.Cache.Enabled = false
-	p.Cache.Tags = []string{"page_about", "page:list"}
+func (c *About) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "main"
+	page.Name = "about"
+	page.Title = "About"
+	page.Data = "The data field can take in anything you want to send to the templates"
+	page.Cache.Enabled = false
+	page.Cache.Tags = []string{"page_about", "page:list"}
 
-	return a.RenderPage(c, p)
+	return c.RenderPage(ctx, page)
 }

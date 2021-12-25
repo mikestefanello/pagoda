@@ -15,7 +15,7 @@
 
 {{define "message"}}
     <div class="notification is-light is-{{.Type}}" x-data="{show: true}" x-show="show">
-        <button class="delete" x-on:click="show = false"></button>
+        <button class="delete" @click="show = false"></button>
         {{.Text}}
     </div>
 {{end}}

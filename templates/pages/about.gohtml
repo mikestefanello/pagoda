@@ -1,3 +1,43 @@
 {{define "content"}}
     <p>{{.Data}}</p>
+    <div x-data="{tab: 'pictures'}">
+        <div class="tabs">
+            <ul>
+                <li :class="{'is-active': tab === 'pictures'}" @click="tab = 'pictures'"><a>Pictures</a></li>
+                <li :class="{'is-active': tab === 'music'}" @click="tab = 'music'"><a>Music</a></li>
+                <li :class="{'is-active': tab === 'videos'}" @click="tab = 'videos'"><a>Videos</a></li>
+                <li :class="{'is-active': tab === 'documents'}" @click="tab = 'documents'"><a>Documents</a></li>
+            </ul>
+        </div>
+        <div x-show="tab == 'pictures'">pictures</div>
+        <div x-show="tab == 'music'">music</div>
+        <div x-show="tab == 'videos'">videos</div>
+        <div x-show="tab == 'documents'">documents</div>
+    </div>
+
+    <div class="row" x-data="{fields: []}">
+            <table class="table table-bordered align-items-center table-sm">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>Text Feild 1</th>
+                    <th>Remove</th>
+                </tr>
+                </thead>
+                <tbody>
+                <template x-for="(field, index) in fields" :key="index">
+                    <tr>
+                        <td x-text="index + 1"></td>
+                        <td><input x-model="field.value" type="text" name="txt1[]" class="form-control"></td>
+                        <td><button type="button" class="btn btn-danger btn-small" @click="fields.splice(index, 1);">&times;</button></td>
+                    </tr>
+                </template>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="4" class="text-right"><button type="button" class="btn btn-info" @click="fields.push({value: ''})">+ Add Row</button></td>
+                </tr>
+                </tfoot>
+            </table>
+    </div>
 {{end}}
