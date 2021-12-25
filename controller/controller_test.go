@@ -63,8 +63,8 @@ func TestController_RenderPage(t *testing.T) {
 		p.Name = "home"
 		p.Layout = "main"
 		p.Cache.Enabled = false
-		p.Headers["a"] = "b"
-		p.Headers["c"] = "d"
+		p.Headers["A"] = "b"
+		p.Headers["C"] = "d"
 		p.StatusCode = http.StatusCreated
 		return ctx, rec, ctr, p
 	}
@@ -89,7 +89,7 @@ func TestController_RenderPage(t *testing.T) {
 		}
 
 		// Check the template cache
-		parsed, err := c.TemplateRenderer.Load("controller", p.Name)
+		parsed, err := c.TemplateRenderer.Load("page", p.Name)
 		assert.NoError(t, err)
 
 		// Check that all expected templates were parsed.

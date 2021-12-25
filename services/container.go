@@ -21,6 +21,9 @@ import (
 // Container contains all services used by the application and provides an easy way to handle dependency
 // injection including within tests
 type Container struct {
+	// Validator stores a validator
+	Validator *Validator
+
 	// Web stores the web framework
 	Web *echo.Echo
 
@@ -53,6 +56,7 @@ type Container struct {
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
+	c.initValidator()
 	c.initWeb()
 	c.initCache()
 	c.initDatabase()
@@ -87,6 +91,11 @@ func (c *Container) initConfig() {
 	c.Config = &cfg
 }
 
+// initValidator initializes the validator
+func (c *Container) initValidator() {
+	c.Validator = NewValidator()
+}
+
 // initWeb initializes the web framework
 func (c *Container) initWeb() {
 	c.Web = echo.New()
@@ -98,6 +107,8 @@ func (c *Container) initWeb() {
 	default:
 		c.Web.Logger.SetLevel(log.DEBUG)
 	}
+
+	c.Web.Validator = c.Validator
 }
 
 // initCache initializes the cache
