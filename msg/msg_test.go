@@ -8,8 +8,6 @@ import (
 	"github.com/go-playground/assert/v2"
 	"github.com/stretchr/testify/require"
 
-	"k8s.io/apimachinery/pkg/util/rand"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,23 +24,23 @@ func TestMsg(t *testing.T) {
 		require.Len(t, ret, 0)
 	}
 
-	text := rand.String(10)
+	text := "aaa"
 	Success(ctx, text)
 	assertMsg(TypeSuccess, text)
 
-	text = rand.String(10)
+	text = "bbb"
 	Info(ctx, text)
 	assertMsg(TypeInfo, text)
 
-	text = rand.String(10)
+	text = "ccc"
 	Danger(ctx, text)
 	assertMsg(TypeDanger, text)
 
-	text = rand.String(10)
+	text = "ddd"
 	Warning(ctx, text)
 	assertMsg(TypeWarning, text)
 
-	text = rand.String(10)
+	text = "eee"
 	Set(ctx, TypeSuccess, text)
 	assertMsg(TypeSuccess, text)
 }

@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,8 +14,6 @@ import (
 
 	"github.com/go-playground/assert/v2"
 	"github.com/stretchr/testify/require"
-
-	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -46,7 +45,7 @@ func AssertHTTPErrorCode(t *testing.T, err error, code int) {
 }
 
 func CreateUser(orm *ent.Client) (*ent.User, error) {
-	seed := fmt.Sprintf("%d-%d", time.Now().UnixMilli(), rand.IntnRange(10, 1000000))
+	seed := fmt.Sprintf("%d-%d", time.Now().UnixMilli(), rand.Intn(1000000))
 	return orm.User.
 		Create().
 		SetEmail(fmt.Sprintf("testuser-%s@localhost.localhost", seed)).
