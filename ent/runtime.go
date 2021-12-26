@@ -2,43 +2,4 @@
 
 package ent
 
-import (
-	"goweb/ent/passwordtoken"
-	"goweb/ent/schema"
-	"goweb/ent/user"
-	"time"
-)
-
-// The init function reads all schema descriptors with runtime code
-// (default values, validators, hooks and policies) and stitches it
-// to their package variables.
-func init() {
-	passwordtokenFields := schema.PasswordToken{}.Fields()
-	_ = passwordtokenFields
-	// passwordtokenDescHash is the schema descriptor for hash field.
-	passwordtokenDescHash := passwordtokenFields[0].Descriptor()
-	// passwordtoken.HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	passwordtoken.HashValidator = passwordtokenDescHash.Validators[0].(func(string) error)
-	// passwordtokenDescCreatedAt is the schema descriptor for created_at field.
-	passwordtokenDescCreatedAt := passwordtokenFields[1].Descriptor()
-	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	passwordtoken.DefaultCreatedAt = passwordtokenDescCreatedAt.Default.(func() time.Time)
-	userFields := schema.User{}.Fields()
-	_ = userFields
-	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[0].Descriptor()
-	// user.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	user.NameValidator = userDescName.Validators[0].(func(string) error)
-	// userDescEmail is the schema descriptor for email field.
-	userDescEmail := userFields[1].Descriptor()
-	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
-	// userDescPassword is the schema descriptor for password field.
-	userDescPassword := userFields[2].Descriptor()
-	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
-	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
-	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[3].Descriptor()
-	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
-	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
-}
+// The schema-stitching logic is generated in goweb/ent/runtime/runtime.go

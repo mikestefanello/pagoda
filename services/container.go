@@ -16,6 +16,7 @@ import (
 
 	"goweb/config"
 	"goweb/ent"
+	_ "goweb/ent/runtime"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency

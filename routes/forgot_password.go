@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"strings"
 
 	"goweb/context"
 	"goweb/controller"
@@ -63,7 +64,7 @@ func (c *ForgotPassword) Post(ctx echo.Context) error {
 	// Attempt to load the user
 	u, err := c.Container.ORM.User.
 		Query().
-		Where(user.Email(form.Email)).
+		Where(user.Email(strings.ToLower(form.Email))).
 		Only(ctx.Request().Context())
 
 	switch err.(type) {

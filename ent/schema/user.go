@@ -1,7 +1,12 @@
 package schema
 
 import (
+	"context"
+	"strings"
 	"time"
+
+	ge "goweb/ent"
+	"goweb/ent/hook"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -35,5 +40,22 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", PasswordToken.Type).
 			Ref("user"),
+	}
+}
+
+func (User) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				return hook.UserFunc(func(ctx context.Context, m *ge.UserMutation) (ent.Value, error) {
+					if v, exists := m.Email(); exists {
+						m.SetEmail(strings.ToLower(v))
+					}
+					return next.Mutate(ctx, m)
+				})
+			},
+			// Limit the hook only for these operations.
+			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+		),
 	}
 }

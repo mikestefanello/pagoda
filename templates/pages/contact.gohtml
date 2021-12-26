@@ -22,7 +22,7 @@
             </div>
         </article>
     {{- else}}
-        <form id="contact" method="post" hx-post>
+        <form id="contact" method="post" hx-post="{{call .ToURL "contact.post"}}">
             <div class="field">
                 <label for="email" class="label">Email address</label>
                 <div class="control">

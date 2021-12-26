@@ -1,5 +1,5 @@
 {{define "content"}}
-    <form method="post" hx-boost="true">
+    <form method="post" hx-boost="true" action="{{call .ToURL "register.post"}}">
         <div class="field">
             <label for="name" class="label">Name</label>
             <div class="control">

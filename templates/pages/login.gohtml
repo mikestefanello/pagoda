@@ -1,5 +1,5 @@
 {{define "content"}}
-    <form method="post" hx-boost="true">
+    <form method="post" hx-boost="true" action="{{call .ToURL "login.post"}}">
         {{template "messages" .}}
         <div class="field">
             <label for="email" class="label">Email address</label>
