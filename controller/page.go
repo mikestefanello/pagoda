@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"goweb/context"
+	"goweb/ent"
 	"goweb/htmx"
 	"goweb/msg"
 
@@ -67,6 +68,9 @@ type Page struct {
 
 	// IsAuth stores whether or not the user is authenticated
 	IsAuth bool
+
+	// AuthUser stores the authenticated user
+	AuthUser *ent.User
 
 	// StatusCode stores the HTTP status code that will be returned
 	StatusCode int
@@ -137,6 +141,7 @@ func NewPage(ctx echo.Context) Page {
 
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
+		p.AuthUser = u.(*ent.User)
 	}
 
 	p.HTMX.Request = htmx.GetRequest(ctx)

@@ -11,6 +11,17 @@
 {{end}}
 
 {{define "top-content"}}
+    <section class="hero is-info welcome is-small">
+        <div class="hero-body">
+            <div class="container">
+                <h1 class="title">
+                    Hello{{if .IsAuth}}, {{.AuthUser.Name}}{{end}}
+                </h1>
+                <h2 class="subtitle">Welcome back!</h2>
+            </div>
+        </div>
+    </section>
+
     <section class="section">
         <h1 class="title">Recent posts</h1>
         <h2 class="subtitle">
@@ -56,7 +67,8 @@
 {{end}}
 
 {{define "file-msg"}}
-    <article class="message is-small is-info mt-4" x-data="{show: true}" x-show="show">
+    <div class="block"></div>
+    <article class="message is-small is-warning" x-data="{show: true}" x-show="show">
         <div class="message-header">
             <p>Serving files</p>
             <button class="delete is-small" aria-label="delete" @click="show = false"></button>

@@ -10,6 +10,7 @@ import (
 
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewPage(t *testing.T) {
@@ -29,13 +30,16 @@ func TestNewPage(t *testing.T) {
 	assert.False(t, p.Cache.Enabled)
 
 	ctx, _ = tests.NewContext(c.Web, "/abc?def=123")
-	ctx.Set(context.AuthenticatedUserKey, 1)
+	usr, err := tests.CreateUser(c.ORM)
+	require.NoError(t, err)
+	ctx.Set(context.AuthenticatedUserKey, usr)
 	ctx.Set(echomw.DefaultCSRFConfig.ContextKey, "csrf")
 	p = NewPage(ctx)
 	assert.Equal(t, "/abc", p.Path)
 	assert.Equal(t, "/abc?def=123", p.URL)
 	assert.False(t, p.IsHome)
 	assert.True(t, p.IsAuth)
+	assert.Equal(t, usr, p.AuthUser)
 	assert.Equal(t, "csrf", p.CSRF)
 }
 

@@ -43,6 +43,7 @@ func (User) Edges() []ent.Edge {
 	}
 }
 
+// Hooks of the User.
 func (User) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hook.On(

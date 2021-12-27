@@ -13,31 +13,48 @@
                 </div>
                 <div id="navbarMenu" class="navbar-menu">
                     <div class="navbar-end">
-                        {{link (call .ToURL "home") "Home" .Path "navbar-item"}}
-                        {{link (call .ToURL "about") "About" .Path "navbar-item"}}
-                        {{link (call .ToURL "contact") "Contact" .Path "navbar-item"}}
-                        {{- if .IsAuth}}
-                            {{link (call .ToURL "logout") "Logout" .Path "navbar-item"}}
-                        {{- else}}
-                            {{link (call .ToURL "login") "Login" .Path "navbar-item"}}
-                        {{- end}}
                     </div>
                 </div>
             </div>
         </nav>
 
-        <section class="section">
-            <div class="container">
-                <div class="box">
-                    {{- if .Title}}
-                        <h1 class="title">{{.Title}}</h1>
-                    {{- end}}
+        <div class="container mt-5">
+            <div class="columns">
+                <div class="column is-2">
+                    <aside class="menu" hx-boost="true">
+                        <p class="menu-label">General</p>
+                        <ul class="menu-list">
+                            <li>{{link (call .ToURL "home") "Dashboard" .Path}}</li>
+                            <li>{{link (call .ToURL "about") "About" .Path}}</li>
+                            <li>{{link (call .ToURL "contact") "Contact" .Path}}</li>
+                        </ul>
 
+                        <p class="menu-label">Account</p>
+                        <ul class="menu-list">
+                            {{- if .IsAuth}}
+                                <li>{{link (call .ToURL "logout") "Logout" .Path}}</li>
+                            {{- else}}
+                                <li>{{link (call .ToURL "login") "Login" .Path}}</li>
+                                <li>{{link (call .ToURL "register") "Register" .Path}}</li>
+                                <li>{{link (call .ToURL "forgot_password") "Forgot password" .Path}}</li>
+                            {{- end}}
+                        </ul>
+                    </aside>
+                </div>
+
+                <div class="column is-10">
                     {{template "messages" .}}
-                    {{template "content" .}}
+
+                    <div class="box">
+                        {{- if .Title}}
+                            <h1 class="title">{{.Title}}</h1>
+                        {{- end}}
+
+                        {{template "content" .}}
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
         {{template "footer" .}}
     </body>
