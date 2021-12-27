@@ -6,6 +6,10 @@ db:
 db-test:
 	 psql postgresql://admin:admin@localhost:5432/app_test
 
+.PHONY: cache
+cache:
+	 redis-cli
+
 .PHONY: ent-gen
 ent-gen:
 	go generate ./ent
