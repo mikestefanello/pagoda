@@ -17,7 +17,7 @@
                 <h1 class="title">
                     Hello{{if .IsAuth}}, {{.AuthUser.Name}}{{end}}
                 </h1>
-                <h2 class="subtitle">Welcome back!</h2>
+                <h2 class="subtitle">{{if .IsAuth}}Welcome back!{{else}}Please login in to your account.{{end}}</h2>
             </div>
         </div>
     </section>

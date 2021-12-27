@@ -68,6 +68,9 @@ func navRoutes(c *services.Container, g *echo.Group, ctr controller.Controller) 
 	home := Home{Controller: ctr}
 	g.GET("/", home.Get).Name = "home"
 
+	search := Search{Controller: ctr}
+	g.GET("/search", search.Get).Name = "search"
+
 	about := About{Controller: ctr}
 	g.GET("/about", about.Get).Name = "about"
 

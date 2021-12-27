@@ -4,14 +4,14 @@
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
-                <input id="email" type="email" name="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}" required>
+                <input id="email" type="email" name="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
                 {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
             </div>
         </div>
         <div class="field">
             <label for="password" class="label">Password</label>
             <div class="control">
-                <input id="password" type="password" name="password" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "Password"}}" required>
+                <input id="password" type="password" name="password" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "Password"}}">
                 {{template "field-errors" (.Form.Submission.GetFieldErrors "Password")}}
             </div>
         </div>

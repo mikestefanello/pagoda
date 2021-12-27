@@ -1,0 +1,5 @@
+{{define "content"}}
+    {{- range .Data}}
+        <a class="panel-block" href="{{.URL}}">{{.Title}}</a>
+    {{- end}}
+{{end}}
