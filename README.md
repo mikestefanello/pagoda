@@ -27,10 +27,13 @@
 * [ORM](#orm)
   * [Entity types](#entity-types)
   * [New entity type](#new-entity-type)
+* [Sessions](#sessions)
 * [Authentication](#authentication)
-  * [Login/Logout](#login-logout)
+  * [Login / Logout](#login--logout)
   * [Forgot password](#forgot-password)
   * [Registration](#registration)
+  * [Authenticated user](#authenticated-user)
+    * [Middleware](#middleware)
 * [Routes](#routes)
 * [Controller / Page](#controller)
   * [Page](#)
@@ -278,4 +281,18 @@ Once a user claims a valid password token, all tokens for that user should be de
 
 Routes are provided to request a password reset email at `user/password` and to reset your password at `user/password/reset/token/:uid/:password_token`.
 
-  * [Registration](#registration)
+### Registration
+
+The actual registration of a user is not handled within the `AuthClient` but rather just by creating a `User` entity. When creating a user, use `HashPassword()` to create a hash of the user's password, which is what will be stored in the database.
+
+A route is provided for the user to register at `user/register`.
+
+### Authenticated user
+
+The `AuthClient` has two methods available to get either the `User` entity or the ID of the user currently logged in for a given request. Those methods are `GetAuthenticatedUser()` and `GetAuthenticatedUserID()`.
+
+#### Middleware
+
+Registered for all routes is middleware that will load the currently logged in user entity and store it within the request context. The middleware is located at `middleware.LoadAuthenticatedUser()` and, if authenticated, the `User` entity is stored within the context using the key `context.AuthenticatedUserKey`.
+
+If you wish to require either authentication or non-authentication for a given route, you can use either `middleware.RequireAuthentication()` or `middleware.RequireNoAuthentication()`.
