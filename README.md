@@ -23,7 +23,10 @@
     * [Environments](#environments)
 * [Database](#database)
     * [Auto-migrations](#auto-migrations)
-    * [Separate test database](#test-database)
+    * [Separate test database](#separate-test-database)
+* [ORM](#orm)
+  * [Entity types](#entity-types)
+  * [New entity type](#new-entity-type)
 * [Authentication](#authentication)
   * [Login/Logout](#login-logout)
   * [Forgot password](#forgot-password)
@@ -107,8 +110,8 @@ Ensure the following are installed on your system:
  - [Go](https://go.dev/)
  - [Docker](https://www.docker.com/)
  - [Docker Compose](https://docs.docker.com/compose/install/)
- - _(optional)_ [psql](https://www.postgresql.org/docs/13/app-psql.html)
- - _(optional)_ [redis-cli](https://redis.io/topics/rediscli)
+ - [psql](https://www.postgresql.org/docs/13/app-psql.html) _(optional)_
+ - [redis-cli](https://redis.io/topics/rediscli) _(optional)_
 
 ### Start the application
 
@@ -132,15 +135,28 @@ The following _make_ commands are available to make it easy to connect to the da
 
 ## Service container
 
-todo
+The container is located at `services/container.go` and is meant to house all of your application's services and/or dependencies. It is easily extensible and can be created and initialized in a single call. The services currently included in the container are:
+
+- Configuration
+- Cache
+- Database
+- ORM
+- Web
+- Validator
+- Authentication
+- Mail
+- Template renderer
+
+A new container can be created and initialized via `services.NewContainer()`. It can be later shutdown via `Shutdown()`.
 
 ### Dependency injection
 
-todo
+The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is passed to and stored within the `Controller`
+ so that the controller and the route using it have full, easy access to all services.
 
 ### Test dependencies
 
-todo
+It is common that your tests will require access to dependencies, like the database, or any of the other services available within the container. Keeping all services in a container makes it especially easy to initialize everything within your tests. You can see an example pattern for doing this [here](#environments).
 
 ## Configuration
 
@@ -182,3 +198,84 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 ```
+
+## Database
+
+The database currently used is [PostgreSQL](https://www.postgresql.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [pgx](github.com/jackc/pgx/v4) and included in the `Container`.
+
+Database configuration can be found and managed within the `config` package.
+
+### Auto-migrations
+
+[Ent](https://entgo.io/) provides automatic migrations which are executed on the database whenever the `Container` is created, which means they will run when the application starts.
+
+### Separate test database
+
+Since many tests can require a database, this application supports a separate database specifically for tests. Within the `config`, the test database name can be specified at `Config.Database.TestDatabase`.
+
+When a `Container` is created, if the [environment](#environments) is set to `config.EnvTest`, the database client will connect to the test database instead, drop the database, recreate it, and run migrations so your tests start with a clean, ready-to-go database. Another benefit is that after the tests execute in a given package, you can connect to the test database to audit the data which can be useful for debugging.
+
+## ORM
+
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started). 
+
+An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
+
+Ent relies on code-generation for the entities you create to provide robust, type-safe data operations. Everything within the `ent` package in this repository is generated code for the two entity types listed below with the exception of the schema declaration.
+
+### Entity types
+
+The two included entity types are:
+- User
+- PasswordToken
+
+### New entity type
+
+While you should refer to their [documentation](https://entgo.io/docs/getting-started) for detailed usage, it's helpful to understand how to create an entity type and generate code. To make this easier, the `Makefile` contains some helpers.
+
+1. Ensure all Ent code is downloaded by executing `make ent-install`.
+2. Create the new entity type by executing `make ent-new name=User` where `User` is the name of the entity type. This will generate a file like you can see in `ent/schema/user.go` though the `Fields()` and `Edges()` will be left empty.
+3. Populate the `Fields()` and optionally the `Edges()` (which are the relationships to other entity types).
+4. When done, generate all code by executing `make ent-gen`.
+
+The generated code is extremely flexible and impressive. An example to highlight this is one used within this application:
+
+```go
+entity, err := ORM.PasswordToken.
+		Query().
+		Where(passwordtoken.HasUserWith(user.ID(userID))).
+		Where(passwordtoken.CreatedAtGTE(expiration)).
+		All(ctx.Request().Context())
+```
+
+This executes a database query to return all _password token_ entities that belong to a user with a given ID and have a _created at_ timestamp field that is greater than or equal to a given time.
+
+## Sessions
+
+Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured in the router located at `routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
+
+## Authentication
+
+Included are standard authentication features you expect in any web application. Authentication functionality is bundled as a _Service_ within `services/AuthClient` and added to the `Container`. If you wish to handle authentication in a different manner, you could swap this client out or modify it as needed.
+
+### Login / Logout
+
+The `AuthClient` has methods `Login()` and `Logout()` to log a user in or out. To track a user's authentication state, data is stored in the session including the user ID and authentication status.
+
+Prior to logging a user in, the method `CheckPassword()` can be used to determine if a user's password matches the hash stored in the database and on the `User` entity.
+
+Routes are provided for the user to login and logout at `user/login` and `user/logout`.
+
+### Forgot password
+
+Users can reset their password in a secure manner by issuing a new password token via the method `GeneratePasswordResetToken()`. This creates a new `PasswordToken` entity in the database belonging to the user. The actual token itself, however, is not stored in the database for security purposes. It is only returned via the method so it can be used to build the reset URL for the email. Rather, a hash of the token is stored, using `bcrypt` the same package used to hash user passwords. The reason for doing this is the same as passwords. You do not want to store a plain-text value in the database that can be used to access an account.
+
+Tokens have a configurable expiration. By default, they expire within 1 hour. This can be controlled in the `config` package. The expiration of the token is not stored in the database, but rather is used only when tokens are loaded for potential usage. This allows you to change the expiration duration and affect existing tokens.
+
+Since the actual tokens are not stored in the database, the reset URL must contain the user's ID. Using that, `GetValidPasswordToken()` will load all non-expired _password token_ entities belonging to the user, and use `bcrypt` to determine if the token in the URL matches any of the stored hashes.
+
+Once a user claims a valid password token, all tokens for that user should be deleted using `DeletePasswordTokens()`.
+
+Routes are provided to request a password reset email at `user/password` and to reset your password at `user/password/reset/token/:uid/:password_token`.
+
+  * [Registration](#registration)
