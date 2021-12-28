@@ -35,24 +35,30 @@
   * [Authenticated user](#authenticated-user)
     * [Middleware](#middleware)
 * [Routes](#routes)
-* [Controller / Page](#controller)
+  * [Custom middleware](#custom-middleware)
+  * [Controller / Dependencies](#controller--dependencies)
+  * [Patterns](#patterns)
+  * [Custom middleware](#custom-middleware)
+  * [Testing](#testing)
+    * [HTTP server](#http-server)
+    * [Request / Request helpers](#request--response-helpers)
+    * [Goquery](#goquery)
+* [Controller](#controller)
   * [Page](#)
   * [Flash messaging](#)
   * [Pager](#)
   * [CSRF](#)
   * [Automatic template parsing](#)
-  * [Template caching](#)
-  * [Template hot-reload for development](#)
-  * [Funcmap](#)
   * [Cached responses](#)
   * [Cache tags](#)
-  * [Inline form validation](#)
+  * [Forms](#)
+    * [Submission processing](#)
+    * [Inline validation](#)
   * [HTMX support](#)
-  * [Testing](#controller-testing)
-    * [HTTP server](#)
-    * [Response/request helpers](#)
-    * [Goquery](#)
 * [Template renderer](#template-renderer)
+  * [Caching](#)
+  * [Hot-reload for development](#)
+* [Funcmap](#)
 * [Cache](#cache)
   * Responses
   * Tags
@@ -257,6 +263,20 @@ This executes a database query to return all _password token_ entities that belo
 
 Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured in the router located at `routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
 
+Here's a simple example of loading data from a session and saving new values:
+
+```go
+func SomeFunction(ctx echo.Context) error {
+	sess, err := session.Get("some-session-key", ctx)
+	if err != nil {
+		return err
+	}
+	sess.Values["hello"] = "world"
+	sess.Values["isSomething"] = true
+	return sess.Save(ctx.Request(), ctx.Response())
+}
+```
+
 ## Authentication
 
 Included are standard authentication features you expect in any web application. Authentication functionality is bundled as a _Service_ within `services/AuthClient` and added to the `Container`. If you wish to handle authentication in a different manner, you could swap this client out or modify it as needed.
@@ -296,3 +316,94 @@ The `AuthClient` has two methods available to get either the `User` entity or th
 Registered for all routes is middleware that will load the currently logged in user entity and store it within the request context. The middleware is located at `middleware.LoadAuthenticatedUser()` and, if authenticated, the `User` entity is stored within the context using the key `context.AuthenticatedUserKey`.
 
 If you wish to require either authentication or non-authentication for a given route, you can use either `middleware.RequireAuthentication()` or `middleware.RequireNoAuthentication()`.
+
+## Routes
+
+The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `routes/router.go`. Since the _Echo_ instance is a _Service_ on the _Container_ which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
+
+### Custom middleware
+
+By default, a middleware stack is included in the router that makes sense for most web applications. Be sure to review what has been included and what else is available within _Echo_ and the other projects mentioned.
+
+A `middleware` package is included which you can easily add to along with the custom middleware provided.
+
+### Controller / Dependencies
+
+The `Controller`, which is described in a section below, serves two purposes for routes:
+
+1) It provides base functionality which can be embedded in each route, most importantly `Page` rendering (described in the `Controller` section below)
+2) It stores a pointer to the `Container`, making all _Services_ available within your route
+
+While using the `Controller` is not required for your routes, it will certainly make development easier.
+
+See the following section for the proposed pattern.
+
+### Patterns
+
+These patterns are not required, but were designed to make development as easy as possible.
+
+To declare a new route that will have methods to handle a GET and POST request, for example, start with a new _struct_ type, that embeds the `Controller`:
+
+```go
+type Home struct {
+	controller.Controller
+}
+
+func (c *Home) Get(ctx echo.Context) error {}
+
+func (c *Home) Post(ctx echo.Context) error {}
+```
+
+Then create the route and add to the router:
+
+```go
+	home := Home{Controller: controller.NewController(c)}
+	g.GET("/", home.Get).Name = "home"
+	g.POST("/", home.Post).Name = "home.post"
+```
+
+Your route will not have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
+
+**It is highly recommended** that you name your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
+
+### Testing
+
+Since most of your web application logic will live in your routes, being able to easily test them is important. The following aims to help facilitate that.
+
+The test setup and helpers reside in `routes/router_test.go`.
+
+Only a brief example of route tests were provided in order to highlight what is available. Adding full tests did not seem logical since these routes will most likely be changed or removed in your project.
+
+#### HTTP server
+
+When the route tests initialize, a new `Container` is created which provides full access to all of the _Services_ that will be available during normal application execution. Also provided is a test HTTP server with the router added. This means your tests can make requests and expect responses exactly as the application would behave outside of tests. You do not need to mock the requests and responses.
+
+#### Request / Response helpers
+
+With the test HTTP server setup, test helpers for making HTTP requests and evaluating responses are made available to reduce the amount of code you need to write. See `httpRequest` and `httpResponse` within `routes/router_test.go`.
+
+Here is an example how to easily make a request and evaluate the response:
+
+```go
+func TestAbout_Get(t *testing.T) {
+  doc := request(t).
+    setRoute("about").
+    get().
+    assertStatusCode(http.StatusOK).
+    toDoc()
+}
+```
+
+#### Goquery
+
+A helpful, included package to test HTML markup from HTTP responses is [goquery](https://github.com/PuerkitoBio/goquery). This allows you to use jQuery-style selectors to parse and extract HTML values, attributes, and so on.
+
+In the example above, `toDoc()` will return a `*goquery.Document` created from the HTML response of the test HTTP server.
+
+Here is a simple example of how to use it, along with [testify](https://github.com/stretchr/testify) for making assertions:
+
+```go
+h1 := doc.Find("h1.title")
+assert.Len(t, h1.Nodes, 1)
+assert.Equal(t, "About", h1.Text())
+```
