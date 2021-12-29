@@ -65,11 +65,11 @@
   * [Caching](#caching)
   * [Hot-reload for development](#hot-reload-for-development)
   * [File configuration](#file-configuration)
-* [Funcmap](#)
+* [Funcmap](#funcmap)
 * [Cache](#cache)
 * [Static files](#static-files)
-  * Cache control headers
-  * Cache-buster
+  * [Cache control headers](#cache-control-headers)
+  * [Cache-buster](#cache-buster)
 * [Email](#email)
 * [HTTPS](#https)
 * [Logging](#logging)
@@ -772,6 +772,8 @@ The parameters represent:
  - `directories`: A list of directories to include all templates contained
  - `data`: The data object to send to the templates
 
+All templates will be parsed with the [funcap](#funcmap).
+
 ### Caching
 
 Parsed templates will be cached within a `sync.Map` so the operation will only happen once per cache _group_ and _ID_. Be careful with your cache _group_ and _ID_ parameters to avoid collisions.
@@ -783,3 +785,51 @@ If the current [environment](#environments) is set to `config.EnvLocal`, which i
 ### File configuration
 
 To make things easier and less repetitive, parameters given to the _template renderer_ must not include the `templates` directory or the template file extensions. These are stored as constants within the `config` package. If your project has a need to change either of these, simply adjust the `TemplateDir` and `TemplateExt` constants.
+
+## Funcmap
+
+The `funcmap` package provides a _function map_ (`template.FuncMap`) which will be included for all templates rendered with the [template renderer](#template-renderer). Aside from a few custom functions, [sprig](https://github.com/Masterminds/sprig) is included which provides over 100 commonly used template functions. The full list is available [here](http://masterminds.github.io/sprig/).
+
+To include additional custom functions, add to the slice in `GetFuncMap()` and define the function in the package. It will then become automatically available in all templates.
+
+## Cache
+
+As previously mentioned, [Redis](https://redis.io/) was chosen as the cache but it can be easily swapped out for something else. [go-redis](https://github.com/go-redis/redis) is used as the underlying client but the `Container` currently only exposes [gocache](https://github.com/eko/gocache) which was chosen because it makes interfacing with the cache client much easier, and it provides a consistent interface if you were to use a cache backend other than Redis.
+
+The built-in usage of the cache is currently only for optional [page caching](#cached-responses) but it can be used for practically anything.
+
+## Static files
+
+Static files are currently configured in the router (`routes/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
+
+### Cache control headers
+
+Static files are grouped separately so you can apply middleware only to them. Included is a custom middleware to set cache control headers (`middleware.CacheControl`) which has been added to the static files router group.
+
+The cache max-life is controlled by the configuration at `Config.Cache.Expiration.StaticFile` and defaults to 6 months.
+
+### Cache-buster
+
+While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function is provided in the [funcmap](#funcmap) to generate a static file URL for a given file that appends a cache-buster query. This query string is randomly generated and persisted until the application restarts.
+
+For example, to render a file located in `static/picture.png`, you would use:
+```go
+<img href="{{File "picture.png"}"/>
+```
+
+Which would result in:
+```go
+<img href="/files/picture.png?v=9fhe73kaf3"/>
+```
+
+Where `9fhe73kaf3` is the randomly-generated cache-buster.
+
+## Email
+
+## HTTPS
+
+## Logging
+
+## Roadmap
+
+## Credits
