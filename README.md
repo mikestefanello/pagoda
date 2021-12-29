@@ -44,17 +44,22 @@
     * [Request / Request helpers](#request--response-helpers)
     * [Goquery](#goquery)
 * [Controller](#controller)
-  * [Page](#)
-  * [Flash messaging](#)
-  * [Pager](#)
-  * [CSRF](#)
-  * [Automatic template parsing](#)
-  * [Cached responses](#)
-  * [Cache tags](#)
-  * [Forms](#)
-    * [Submission processing](#)
-    * [Inline validation](#)
-  * [HTMX support](#)
+  * [Page](#page)
+  * [Flash messaging](#flash-messaging)
+  * [Pager](#pager)
+  * [CSRF](#csrf)
+  * [Automatic template parsing](#automatic-template-parsing)
+  * [Cached responses](#cached-responses)
+  * [Cache tags](#cache-tags)
+  * [Data](#data)
+  * [Forms](#forms)
+    * [Submission processing](#submission-processing)
+    * [Inline validation](#inline-validation)
+  * [Headers](#headers)
+  * [Status code](#status-code)
+  * [Metatags](#metatags)
+  * [HTMX support](#htmx-support)
+  * [Rendering the page](#rendering-the-page)
 * [Template renderer](#template-renderer)
   * [Caching](#)
   * [Hot-reload for development](#)
@@ -67,6 +72,7 @@
   * Cache-buster
 * [Email](#email)
 * [HTTPS](#https)
+* [Logging](#logging)
 * [Roadmap](#roadmap)
 * [Credits](#credits)
 
@@ -261,7 +267,7 @@ This executes a database query to return all _password token_ entities that belo
 
 ## Sessions
 
-Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured in the router located at `routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
+Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured as middleware in the router located at `routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
 
 Here's a simple example of loading data from a session and saving new values:
 
@@ -280,6 +286,8 @@ func SomeFunction(ctx echo.Context) error {
 ## Authentication
 
 Included are standard authentication features you expect in any web application. Authentication functionality is bundled as a _Service_ within `services/AuthClient` and added to the `Container`. If you wish to handle authentication in a different manner, you could swap this client out or modify it as needed.
+
+Authentication currently requires [sessions](#sessions) and the session middleware.
 
 ### Login / Logout
 
@@ -407,3 +415,119 @@ h1 := doc.Find("h1.title")
 assert.Len(t, h1.Nodes, 1)
 assert.Equal(t, "About", h1.Text())
 ```
+
+## Controller
+
+As previously mentioned, the `Controller` acts as a base for your routes, though it is optional. It stores the `Container` which houses all _Services_ (_dependencies_) but also a wide array of functionality aimed at allowing you to build complex responses with ease and consistency.
+
+### Page
+
+The `Page` is the major building block of your `Controller` responses. It is a _struct_ type located at `controller/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates.
+
+All example routes provided construct and _render_ a `Page`. It's recommended that you review both the `Page` and the example routes as they try to illustrate all included functionality.
+
+As you develop your application, the `Page` can be easily extended to include whatever data or functions you want to provide to your templates.
+
+Initializing a new page is simple:
+
+```go
+func (c *Home) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+}
+```
+
+Using the `echo.Context`, the `Page` will be initialized with the following fields populated:
+
+- `Context`: The passed in _context_
+- `ToURL`: A function the templates can use to generate a URL with a given route name and parameters
+- `Path`: The requested URL path
+- `URL`: The requested URL
+- `StatusCode`: Defaults to 200
+- `Pager`: Initialized `Pager` (see below)
+- `RequestID`: The request ID, if the middleware is being used
+- `IsHome`: If the request was for the homepage
+- `IsAuth`: If the user is authenticated
+- `AuthUser`: The logged in user entity, if one
+- `CSRF`: The CSRF token, if the middleware is being used
+- `HTMX.Request`: Data from the HTMX headers, if HTMX made the request (see below)
+
+### Flash messaging
+
+While flash messaging functionality is provided outside of the `Controller` and `Page`, within the `msg` package, it's really only used within this context.
+
+Flash messaging requires that [sessions](#sessions) and the session middleware are in place since that is where the messages are stored.
+
+#### Creating messages
+
+There are four types of messages, and each can be created as follows:
+- Success: `msg.Success(ctx echo.Context, message string)`
+- Info: `msg.Info(ctx echo.Context, message string)`
+- Warning: `msg.Warning(ctx echo.Context, message string)`
+- Danger: `msg.Danger(ctx echo.Context, message string)`
+
+The _message_ string can contain HTML.
+
+#### Rendering messages
+
+When a flash message is retrieved from storage in order to be rendered, it is deleted from storage so that it cannot be rendered again.
+
+The `Page` has a method that can be used to fetch messages for a given type from within the template: `Page.GetMessages(typ msg.Type)`. This is used rather than the _funcmap_ because the `Page` contains the request context which is required in order to access the session data. Since the `Page` is the data destined for the templates, you can use: `{{.GetMessages "success"}}` for example.
+
+To make things easier, a template _component_ is already provided, located at `templates/components/messages.gohtml`. This will render all messages of all types simply by using `{{template "messages" .}}` either within your page or layout template.
+
+### Pager
+
+A very basic mechanism is provided to handle and facilitate paging located in `controller/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
+
+During initialization, the _items per page_ amount will be set to the default, controlled via constant, which has a value of 20. It can be overridden by changing `Pager.ItemsPerPage` but should be done before other values are set in order to not provide incorrect calculations.
+
+Methods include:
+
+- `SetItems(items int)`: Set the total amount of items in the entire result-set
+- `IsBeginning()`: Determine if the pager is at the beginning of the pages
+- `IsEnd()`: Determine if the pager is at the end of the pages
+- `GetOffset()`: Get the offset which can be useful is constructing a paged database query
+
+There is currently no template (yet) to easily render a pager.
+
+### CSRF
+
+By default, all non GET requests will require a CSRF token be provided as a form value. This is provided by middleware and can be adjusted or removed in the router.
+
+The `Page` will contain the CSRF token for the given request. There is a CSRF helper component template which can be used to easily render a hidden form element in your form which will contain the CSRF token and the proper element name. Simply include `{{template "csrf" .}}` within your form.
+
+### Automatic template parsing
+
+Dealing with templates can be quite tedious and annoying so the `Page` aims to make it as simple as possible with the help of the [template renderer](#template-renderer). To start, templates for _pages_ are grouped in the following directories within the `templates` directory:
+
+- `layouts`: Base templates that provide the entire HTML wrapper/layout. This template should include a call to `{{template "content" .}}` to render the content of the `Page`.
+- `pages`: Templates that are specific for a given route/page. These must contain `{{define "content"}}{{end}}` which will be injected in to the _layout_ template.
+- `components`: A shared library of common components that the layout and base template can leverage.
+
+Specifying which templates to render for a given `Page` is as easy as:
+
+```go
+page.Name = "home"
+page.Layout = "main"
+```
+
+That alone will result in the following templates being parsed and executed when the `Page` is rendered:
+
+1) `layouts/main.gohtml` as the base template
+2) `pages/home.gohtml` to provide the `content` template for the layout
+3) All template files located within the `components` directory
+4) The entire [funcmap](#funcmap)
+
+The [template renderer](#template-renderer) also provides caching and local hot-reloading.
+
+### Cached responses
+### Cache tags
+### Data
+### Forms
+#### Submission processing
+#### Inline validation
+### Headers
+### Status code
+### Metatags
+### HTMX support
+### Rendering the page
