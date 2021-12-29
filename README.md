@@ -50,7 +50,8 @@
   * [CSRF](#csrf)
   * [Automatic template parsing](#automatic-template-parsing)
   * [Cached responses](#cached-responses)
-  * [Cache tags](#cache-tags)
+    * [Cache tags](#cache-tags)
+    * [Cache middleware](#cache-middleware)
   * [Data](#data)
   * [Forms](#forms)
     * [Submission processing](#submission-processing)
@@ -65,8 +66,6 @@
   * [Hot-reload for development](#)
 * [Funcmap](#)
 * [Cache](#cache)
-  * Responses
-  * Tags
 * [Static files](#static-files)
   * Cache control headers
   * Cache-buster
@@ -370,7 +369,7 @@ Then create the route and add to the router:
 	g.POST("/", home.Post).Name = "home.post"
 ```
 
-Your route will not have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
+Your route will now have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
 
 **It is highly recommended** that you name your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
 
@@ -521,11 +520,133 @@ That alone will result in the following templates being parsed and executed when
 The [template renderer](#template-renderer) also provides caching and local hot-reloading.
 
 ### Cached responses
-### Cache tags
+
+A `Page` can have cached enabled just by setting `Page.Cache.Enabled` to `true`. The `Controller` will automatically handle caching the HTML output, headers and status code. Cached pages are stored using a key that matches the full request URL and [middleware](#cache-middleware) is used to serve it on matching requests.
+
+By default, the cache expiration time will be set according to the configuration value located at `Config.Cache.Expiration.Page` but it can be set per-page at `Page.Cache.Expiration`.
+
+#### Cache tags
+
+You can optionally specify cache tags for the `Page` by setting a slice of strings on `Page.Cache.Tags`. This provides the ability to build in cache invalidation logic in your application driven by events such as entity operations, for example.
+
+The cache client on the `Container` is currently handled by [gocache](https://github.com/eko/gocache) which makes it easy to perform operations such as tag-invalidation, for example:
+
+```go
+c.Cache.Invalidate(ctx, store.InvalidateOptions{
+    Tags: []string{"my-tag"},
+})
+```
+
+#### Cache middleware
+
+Cached pages are served via the middleware `ServeCachedPage()` in the `middleware` package.
+
+The cache is bypassed if the requests meet any of the following criteria:
+1) Is not a GET request
+2) Is made by an authenticated user
+
+Cached pages are looked up for a key that matches the exact, full URL of the given request.
+
 ### Data
+
+The `Data` field on the `Page` is of type `interface{}` and is what allows your route to pass whatever it requires to the templates, alongside the `Page` itself.
+
 ### Forms
+
+The `Form` field on the `Page` is similar to the `Data` field in that it's an `interface{}` type but it's meant to store a struct that represents a form being rendered on the page.
+
+An example of this pattern is:
+
+```go
+type ContactForm struct {
+    Email      string `form:"email" validate:"required,email"`
+    Message    string `form:"message" validate:"required"`
+    Submission controller.FormSubmission
+}
+```
+
+Then in your page:
+
+```go
+page := controller.NewPage(ctx)
+page.Form = ContactForm{}
+```
+
+How the _form_ gets populated with values so that your template can render them is covered in the next section.
+
 #### Submission processing
+
+Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `FormSubmission` struct located in `controller/form.go`.
+
+Using the example form above, these are the steps you would take within the _POST_ callback for your route:
+
+Start by storing a pointer to the form in the conetxt so that your _GET_ callback can access the form values, which will be showed at the end:
+```go
+var form ContactForm
+ctx.Set(context.FormKey, &form)
+```
+
+Parse the input in the POST data to map to the struct so it becomes populated:
+```go
+if err := ctx.Bind(&form); err != nil {
+    // Something went wrong...
+}
+```
+
+Process the submissions which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
+```go
+if err := form.Submission.Process(ctx, form); err != nil {
+    // Something went wrong...
+}
+```
+
+Check if the form submission has any validation errors:
+```go
+if !form.Submission.HasErrors() {
+    // All good, now execute something!
+}
+```
+
+In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
+```go
+if form.Submission.HasErrors() {
+	return c.Get(ctx)
+}
+```
+
+Then, in your _GET_ handler, extract the form from the context so it can be passed to the templates:
+```go
+page := controller.NewPage(ctx)
+page.Form = ContactForm{}
+
+if form := ctx.Get(context.FormKey); form != nil {
+    page.Form = form.(*ContactForm)
+}
+```
+
+And finally, your template:
+```
+<input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
+```
+
 #### Inline validation
+
+The `FormSubmission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that your templates can use to provide classes and extract the error messages.
+
+While [validator](https://github.com/go-playground/validator) is an incredible package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `FormSubmission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
+
+To provide the inline validation in your template, there are two things that need to be done.
+
+First, include a status class on the element so it will highlight green or red based on the validation:
+```
+<input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
+```
+
+Second, render the error messages, if there are any for a given field:
+```
+{{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
+```
+
 ### Headers
 ### Status code
 ### Metatags

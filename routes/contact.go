@@ -20,17 +20,17 @@ type (
 )
 
 func (c *Contact) Get(ctx echo.Context) error {
-	p := controller.NewPage(ctx)
-	p.Layout = "main"
-	p.Name = "contact"
-	p.Title = "Contact us"
-	p.Form = ContactForm{}
+	page := controller.NewPage(ctx)
+	page.Layout = "main"
+	page.Name = "contact"
+	page.Title = "Contact us"
+	page.Form = ContactForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		p.Form = form.(*ContactForm)
+		page.Form = form.(*ContactForm)
 	}
 
-	return c.RenderPage(ctx, p)
+	return c.RenderPage(ctx, page)
 }
 
 func (c *Contact) Post(ctx echo.Context) error {
