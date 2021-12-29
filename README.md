@@ -62,8 +62,9 @@
   * [HTMX support](#htmx-support)
   * [Rendering the page](#rendering-the-page)
 * [Template renderer](#template-renderer)
-  * [Caching](#)
-  * [Hot-reload for development](#)
+  * [Caching](#caching)
+  * [Hot-reload for development](#hot-reload-for-development)
+  * [File configuration](#file-configuration)
 * [Funcmap](#)
 * [Cache](#cache)
 * [Static files](#static-files)
@@ -648,7 +649,137 @@ Second, render the error messages, if there are any for a given field:
 ```
 
 ### Headers
+
+HTTP headers can be set either via the `Page` or the _context_:
+
+```go
+page := controller.NewPage(ctx)
+page.Headers["HeaderName"] = "header-value"
+```
+
+```go
+ctx.Response().Header().Set("HeaderName", "header-value")
+```
+
 ### Status code
+
+The HTTP response status code can be set either via the `Page` or the _context_:
+
+```go
+page := controller.NewPage(ctx)
+page.StatusCode = http.StatusTooManyRequests
+```
+
+```go
+ctx.Response().Status = http.StatusTooManyRequests
+```
+
 ### Metatags
+
+The `Page` provides the ability to set basic HTML metatags which can be especially useful if your web application is publicly accessible. Only fields for the _description_ and _keywords_ are provided but adding additional fields is very easy.
+
+```go
+page := controller.NewPage(ctx)
+page.Metatags.Description = "The page description."
+page.Metatags.Keywords = []string{"Go", "Software"}
+```
+
+A _component_ template is included to render metatags in `core.gohtml` which can be used by adding `{{template "metatags" .}}` to your _layout_.
+
 ### HTMX support
+
+[HTMX](https://htmx.org/) is an incredible JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
+
+Many examples of its usage are available in the included examples:
+- All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
+- All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
+- The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
+
+All of this can be easily accomplished without writing any JavaScript at all.
+
+Another benefit of [HTMX](https://htmx.org/) is that it's completely backend-agnostic and does not require any special tools or integrations on the backend. But to make things easier, included is a small package to read and write [HTTP headers](https://htmx.org/docs/#requests) that HTMX uses to communicate additional information and commands.
+
+The `htmx` package contains the headers for the _request_ and _response_. When a `Page` is initialized, `Page.HTMX.Request` will also be initialized and populated with the headers that HTMX provides, if HTMX made the request. This allows you to determine if HTMX is making the given request and what exactly it is doing, which could be useful both in your _route_ as well as your _templates_.
+
+If you need to set any HTMX headers in your `Page` response, this can be done by altering `Page.HTMX.Response`.
+
+#### Layout template override
+
+To faciliate easy partial rendering for HTMX requests, the `Page` will automatically change your _Layout_ template to use `htmx.gohtml`, which currently only renders `{{template "content" .}}`. This allows you to use an HTMX request to only update the content portion of the page, rather than the entire HTML.
+
+This override only happens if the HTMX request being made is **not a boost** request because **boost** requests replace the entire `body` element so there is no need to do a partial render.
+
+#### Conditional processing / rendering
+
+Since HTMX communicates what it is doing with the server, you can use the request headers to conditionally process in your _route_ or render in your _template_, if needed. If your routes aren't doing multiple things, you may not need this, but it's worth knowing how flexible you can be.
+
+A simple example of this:
+
+```go
+if page.HTMX.Request.Target == "search" {
+	// You know this request HTMX is fetching content just for the #search element
+}
+```
+
+```go
+{{if eq .page.HTMX.Request.Target "search"}}
+    // Render content for the #search element
+{{end}}
+```
+
 ### Rendering the page
+
+Once your `Page` is fully built, rendering it via the embedded `Controller` in your _route_ can be done simply by calling `RenderPage()`:
+
+```go
+func (c *Home) Get(ctx echo.Context) error {
+	page := controller.NewPage(ctx)
+	page.Layout = "main"
+	page.Name = "home"
+	return c.RenderPage(ctx, page)
+}
+```
+
+## Template renderer
+
+The _template renderer_ is a _Service_ on the `Container` that aims to make template parsing and rendering easy and flexible. It is the mechanism that allows the `Page` to do [automatic template parsing](#automatic-template-parsing). The standard `html/template` is still the engine used behind the scenes. The code can be found in `services/template_renderer.go`.
+
+While there are several methods available, the following is the primary one used:
+
+`ParseAndExecute(cacheGroup, cacheID, baseName string, files []string, directories []string, data interface{})`
+
+Using the example from the [page rendering](#rendering-the-page), this is what the `Controller` will execute:
+
+```go
+buf, err = c.Container.TemplateRenderer.ParseAndExecute(
+  "page",
+  page.Name,
+  page.Layout,
+  []string{
+      fmt.Sprintf("layouts/%s", page.Layout),
+      fmt.Sprintf("pages/%s", page.Name),
+  },
+  []string{"components"},
+  page,
+)
+```
+
+The parameters represent:
+ - `cacheGroup`: The _group_ to cache the parsed templates in
+ - `cacheID`: The _ID_ of the cache within the _group_
+ - `baseName`: The name of the base template, excluding the extension
+ - `files`: A list of individual template files to include, excluding the extension and template directory
+ - `directories`: A list of directories to include all templates contained
+ - `data`: The data object to send to the templates
+
+### Caching
+
+Parsed templates will be cached within a `sync.Map` so the operation will only happen once per cache _group_ and _ID_. Be careful with your cache _group_ and _ID_ parameters to avoid collisions.
+
+### Hot-reload for development
+
+If the current [environment](#environments) is set to `config.EnvLocal`, which is the default, the cache will be bypassed and templates will be parsed every time they are requested. This allows you to have hot-reloading without having to restart the application so you can see your HTML changes in the browser immediately.
+
+### File configuration
+
+To make things easier and less repetitive, parameters given to the _template renderer_ must not include the `templates` directory or the template file extensions. These are stored as constants within the `config` package. If your project has a need to change either of these, simply adjust the `TemplateDir` and `TemplateExt` constants.
