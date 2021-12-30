@@ -751,7 +751,7 @@ While there are several methods available, the following is the primary one used
 Using the example from the [page rendering](#rendering-the-page), this is what the `Controller` will execute:
 
 ```go
-buf, err = c.Container.TemplateRenderer.ParseAndExecute(
+buf, err = c.TemplateRenderer.ParseAndExecute(
   "page",
   page.Name,
   page.Layout,
@@ -814,22 +814,80 @@ While it's ideal to use cache control headers on your static files so browsers c
 
 For example, to render a file located in `static/picture.png`, you would use:
 ```go
-<img href="{{File "picture.png"}"/>
+<img src="{{File "picture.png"}"/>
 ```
 
 Which would result in:
 ```go
-<img href="/files/picture.png?v=9fhe73kaf3"/>
+<img src="/files/picture.png?v=9fhe73kaf3"/>
 ```
 
 Where `9fhe73kaf3` is the randomly-generated cache-buster.
 
 ## Email
 
+An email client was added as a _Service_ to the `Container` but it is just a skeleton without any actual email-sending functionality. The reason is because there are a lot of ways to send email and most prefer using a SaaS solution for that. That makes it difficult to provide a generic solution that will work for most applications.
+
+Two starter methods were added to the `MailClient`, one to send an email via plain-text and one to send via a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction.
+
 ## HTTPS
+
+By default, the application will not use HTTPS but it can be enabled easily. Just alter the following configuration:
+
+- `Config.HTTP.TLS.Enabled`: `true`
+- `Config.HTTP.TLS.Certificate`: Full path to the certificate file
+- `Config.HTTP.TLS.Key`: Full path to the key file
+
+To use _Let's Encrypt_ follow [this guide](https://echo.labstack.com/cookbook/auto-tls/#server).
 
 ## Logging
 
+Logging is provided by [Echo](https://echo.labstack.com/guide/customization/#logging) and is accessible within the _Echo_ instance, which is located in the `Web` field of the `Container`, or within any of the _context_ parameters, for example:
+
+```go
+func (c *Home) Get(ctx echo.Context) error {
+    ctx.Logger().Info("something happened")
+	
+    if err := someOperation(); err != nil {
+        ctx.Logger().Errorf("the operation failed: %v", err)
+    }
+}
+```
+
+The logger can be swapped out for another, as long as it implements Echo's logging [interface](https://github.com/labstack/echo/blob/master/log.go). There are projects that provide this bridge for popular logging packages such as [zerolog](https://github.com/rs/zerolog).
+
+### Request ID
+
+By default, Echo's [request ID middleware](https://echo.labstack.com/middleware/request-id/) is enabled on the router but it only adds a request ID to the log entry for the HTTP request itself. Log entries that are created during the course of that request do not contain the request ID. `LogRequestID()` is custom middleware included which adds that request ID to all logs created throughout the request.
+
 ## Roadmap
 
+Future work includes but is not limited to:
+
+- Email verification
+- Flexible pager templates
+- Expanded HTMX examples
+- Admin section
+
 ## Credits
+
+Thank you to all of the following amazing projects for making this possible.
+
+- [go](https://go.dev/)
+- [echo](https://github.com/labstack/echo)
+- [ent](https://github.com/ent/ent)
+- [sprig](https://github.com/Masterminds/sprig)
+- [goquery](https://github.com/PuerkitoBio/goquery)
+- [validator](https://github.com/go-playground/validator)
+- [go-redis](https://github.com/go-redis/redis)
+- [gocache](https://github.com/eko/gocache)
+- [sessions](https://github.com/gorilla/sessions)
+- [pgx](https://github.com/jackc/pgx)
+- [envdecode](https://github.com/joeshaw/envdecode)
+- [testify](https://github.com/stretchr/testify)
+- [htmx](https://github.com/bigskysoftware/htmx)
+- [alpinejs](https://github.com/alpinejs/alpine)
+- [bulma](https://github.com/jgthms/bulma)
+- [docker](https://www.docker.com/)
+- [postgresql](https://www.postgresql.org/)
+- [redis](https://redis.io/)
