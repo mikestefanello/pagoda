@@ -84,12 +84,10 @@ func (c *ForgotPassword) Post(ctx echo.Context) error {
 	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
 
 	// Email the user
-	body := fmt.Sprintf(
+	err = c.Container.Mail.Send(ctx, u.Email, fmt.Sprintf(
 		"Go here to reset your password: %s",
 		ctx.Echo().Reverse("reset_password", u.ID, token),
-	)
-	ctx.Logger().Info(body)
-	err = c.Container.Mail.Send(ctx, u.Email, body)
+	))
 	if err != nil {
 		return c.Fail(ctx, err, "error sending password reset email")
 	}

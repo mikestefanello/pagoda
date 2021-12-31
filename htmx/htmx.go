@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//  Headers (https://.org/docs/#requests)
+//  Headers (https://htmx.org/docs/#requests)
 const (
 	HeaderRequest            = "HX-Request"
 	HeaderBoosted            = "HX-Boosted"

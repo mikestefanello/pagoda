@@ -1,6 +1,5 @@
 ## (NAME) - Rapid, easy full-stack web development starter kit in Go
 
-----
 ## Table of Contents
 * [Introduction](#introduction)
     * [Overview](#overview)
@@ -59,6 +58,7 @@
   * [Headers](#headers)
   * [Status code](#status-code)
   * [Metatags](#metatags)
+  * [URL and link generation](#url-and-link-generation)
   * [HTMX support](#htmx-support)
   * [Rendering the page](#rendering-the-page)
 * [Template renderer](#template-renderer)
@@ -175,7 +175,7 @@ It is common that your tests will require access to dependencies, like the datab
 
 ## Configuration
 
-The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the _Container_ as a _Service_, making it accessible across most of the application. 
+The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application. 
 
 Be sure to review and adjust all of the default configuration values provided.
 
@@ -184,7 +184,7 @@ Be sure to review and adjust all of the default configuration values provided.
 Leveraging the functionality of [envdecode](https://github.com/joeshaw/envdecode), all configuration values can be overridden by environment variables. Here is an example of what a configuration value looks like, each of which is a field on a struct:
 
 ```go
-Port         uint16        `env:"HTTP_PORT,default=8000"`
+Port  uint16  `env:"HTTP_PORT,default=8000"`
 ```
 
 The value for this field will be set to `8000`, the default, unless the `HTTP_PORT` environment variable is set, in which case the value of the variable will be used. This allows you to easily override configuration values per-environment.
@@ -256,11 +256,11 @@ While you should refer to their [documentation](https://entgo.io/docs/getting-st
 The generated code is extremely flexible and impressive. An example to highlight this is one used within this application:
 
 ```go
-entity, err := ORM.PasswordToken.
-		Query().
-		Where(passwordtoken.HasUserWith(user.ID(userID))).
-		Where(passwordtoken.CreatedAtGTE(expiration)).
-		All(ctx.Request().Context())
+entity, err := c.ORM.PasswordToken.
+    Query().
+    Where(passwordtoken.HasUserWith(user.ID(userID))).
+    Where(passwordtoken.CreatedAtGTE(expiration)).
+    All(ctx.Request().Context())
 ```
 
 This executes a database query to return all _password token_ entities that belong to a user with a given ID and have a _created at_ timestamp field that is greater than or equal to a given time.
@@ -273,13 +273,13 @@ Here's a simple example of loading data from a session and saving new values:
 
 ```go
 func SomeFunction(ctx echo.Context) error {
-	sess, err := session.Get("some-session-key", ctx)
-	if err != nil {
-		return err
-	}
-	sess.Values["hello"] = "world"
-	sess.Values["isSomething"] = true
-	return sess.Save(ctx.Request(), ctx.Response())
+    sess, err := session.Get("some-session-key", ctx)
+    if err != nil {
+        return err
+    }
+    sess.Values["hello"] = "world"
+    sess.Values["isSomething"] = true
+    return sess.Save(ctx.Request(), ctx.Response())
 }
 ```
 
@@ -327,7 +327,7 @@ If you wish to require either authentication or non-authentication for a given r
 
 ## Routes
 
-The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `routes/router.go`. Since the _Echo_ instance is a _Service_ on the _Container_ which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
+The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `routes/router.go`. Since the _Echo_ instance is a _Service_ on the `Container` which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
 
 ### Custom middleware
 
@@ -354,7 +354,7 @@ To declare a new route that will have methods to handle a GET and POST request, 
 
 ```go
 type Home struct {
-	controller.Controller
+    controller.Controller
 }
 
 func (c *Home) Get(ctx echo.Context) error {}
@@ -365,14 +365,14 @@ func (c *Home) Post(ctx echo.Context) error {}
 Then create the route and add to the router:
 
 ```go
-	home := Home{Controller: controller.NewController(c)}
-	g.GET("/", home.Get).Name = "home"
-	g.POST("/", home.Post).Name = "home.post"
+home := Home{Controller: controller.NewController(c)}
+g.GET("/", home.Get).Name = "home"
+g.POST("/", home.Post).Name = "home.post"
 ```
 
 Your route will now have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
 
-**It is highly recommended** that you name your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
+**It is highly recommended** that you provide a `Name` for your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
 
 ### Testing
 
@@ -394,11 +394,11 @@ Here is an example how to easily make a request and evaluate the response:
 
 ```go
 func TestAbout_Get(t *testing.T) {
-  doc := request(t).
-    setRoute("about").
-    get().
-    assertStatusCode(http.StatusOK).
-    toDoc()
+    doc := request(t).
+        setRoute("about").
+        get().
+        assertStatusCode(http.StatusOK).
+        toDoc()
 }
 ```
 
@@ -432,7 +432,7 @@ Initializing a new page is simple:
 
 ```go
 func (c *Home) Get(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
+    page := controller.NewPage(ctx)
 }
 ```
 
@@ -587,14 +587,14 @@ var form ContactForm
 ctx.Set(context.FormKey, &form)
 ```
 
-Parse the input in the POST data to map to the struct so it becomes populated:
+Parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
 ```go
 if err := ctx.Bind(&form); err != nil {
     // Something went wrong...
 }
 ```
 
-Process the submissions which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
+Process the submission which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
 ```go
 if err := form.Submission.Process(ctx, form); err != nil {
     // Something went wrong...
@@ -611,7 +611,7 @@ if !form.Submission.HasErrors() {
 In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
 ```go
 if form.Submission.HasErrors() {
-	return c.Get(ctx)
+    return c.Get(ctx)
 }
 ```
 
@@ -644,7 +644,7 @@ First, include a status class on the element so it will highlight green or red b
 ```
 
 Second, render the error messages, if there are any for a given field:
-```
+```go
 {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
 ```
 
@@ -686,6 +686,35 @@ page.Metatags.Keywords = []string{"Go", "Software"}
 
 A _component_ template is included to render metatags in `core.gohtml` which can be used by adding `{{template "metatags" .}}` to your _layout_.
 
+### URL and link generation
+
+Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`. 
+
+As an example, if you have route such as:
+```go
+profile := Profile{Controller: ctr}
+e.GET("/user/profile/:user", profile.Get).Name = "user_profile"
+```
+
+And you want to generate a URL in the template, you can:
+```go
+{{call .ToURL "user_profile" 1}
+```
+
+Which will generate: `/user/profile/1`
+
+There is also a helper function provided in the [funcmap](#funcmap) to generate links which has the benefit of adding an _active_ class if the link URL matches the current path. This is especially useful for navigation menus.
+
+```go
+{{link (call .ToURL "user_profile" .AuthUser.ID) "Profile" .Path "extra-class"}}
+```
+
+Will generate:
+```html
+<a href="/user/profile/1" class="is-active extra-class">Profile</a>
+```
+Assuming the current _path_ is `/user/profile/1`; otherwise the `is-active` class will be excluded.
+
 ### HTMX support
 
 [HTMX](https://htmx.org/) is an incredible JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
@@ -717,7 +746,7 @@ A simple example of this:
 
 ```go
 if page.HTMX.Request.Target == "search" {
-	// You know this request HTMX is fetching content just for the #search element
+    // You know this request HTMX is fetching content just for the #search element
 }
 ```
 
@@ -733,10 +762,10 @@ Once your `Page` is fully built, rendering it via the embedded `Controller` in y
 
 ```go
 func (c *Home) Get(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "home"
-	return c.RenderPage(ctx, page)
+    page := controller.NewPage(ctx)
+    page.Layout = "main"
+    page.Name = "home"
+    return c.RenderPage(ctx, page)
 }
 ```
 
@@ -752,15 +781,15 @@ Using the example from the [page rendering](#rendering-the-page), this is what t
 
 ```go
 buf, err = c.TemplateRenderer.ParseAndExecute(
-  "page",
-  page.Name,
-  page.Layout,
-  []string{
-      fmt.Sprintf("layouts/%s", page.Layout),
-      fmt.Sprintf("pages/%s", page.Name),
-  },
-  []string{"components"},
-  page,
+    "page",
+    page.Name,
+    page.Layout,
+    []string{
+        fmt.Sprintf("layouts/%s", page.Layout),
+        fmt.Sprintf("pages/%s", page.Name),
+    },
+    []string{"components"},
+    page,
 )
 ```
 
@@ -818,7 +847,7 @@ For example, to render a file located in `static/picture.png`, you would use:
 ```
 
 Which would result in:
-```go
+```html
 <img src="/files/picture.png?v=9fhe73kaf3"/>
 ```
 
