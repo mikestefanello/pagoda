@@ -67,7 +67,7 @@ type (
 
 	// AppConfig stores application configuration
 	AppConfig struct {
-		Name          string        `env:"APP_NAME,default=Goweb"`
+		Name          string        `env:"APP_NAME,default=Pagoda"`
 		Environment   Environment   `env:"APP_ENVIRONMENT,default=local"`
 		EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
 		Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`

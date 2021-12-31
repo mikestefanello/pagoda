@@ -1,4 +1,6 @@
-## (NAME) - Rapid, easy full-stack web development starter kit in Go
+## Pagoda: Rapid, easy full-stack web development starter kit in Go
+
+<p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
 ## Table of Contents
 * [Introduction](#introduction)
@@ -80,9 +82,11 @@
 
 ### Overview
 
-(NAME) is not a framework but rather a base starter-kit for rapid, easy full-stack web development in Go, aiming to provide much of the functionality you would expect from a complete web framework as well as establishing patterns, procedures and structure for your web application.
+_Pagoda_ is not a framework but rather a base starter-kit for rapid, easy full-stack web development in Go, aiming to provide much of the functionality you would expect from a complete web framework as well as establishing patterns, procedures and structure for your web application.
  
-todo
+Built on a solid [foundation](#foundation) of well-established frameworks and modules, _Pagoda_ aims to be a starting point for any web application with the benefit over a mega-framework in that you have full control over all of the code, the ability to easily swap any frameworks or modules in or out, no strict patterns or interfaces to follow, and no fear of lock-in.
+
+While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that (todo) 
 
 ### Motivation
 
@@ -92,7 +96,7 @@ todo
 
 ### Foundation
 
-While many great projects were used to build this, all of which are listed in the _credits_ section, the following provide the foundation of the back and frontend. It's important to note that you are **not required to use any of these**. Swapping any of them out will be relatively easy.
+While many great projects were used to build this, all of which are listed in the [credits](#credits) section, the following provide the foundation of the back and frontend. It's important to note that you are **not required to use any of these**. Swapping any of them out will be relatively easy.
 
 #### Backend
 
@@ -114,7 +118,17 @@ Go server-side rendered HTML combined with the projects below enable you to crea
 
 ### Screenshots
 
-todo
+#### Inline validation
+
+<img src="https://user-images.githubusercontent.com/552328/147838632-570a3116-1e74-428f-8bfc-523ed309ef06.png" alt="Inline validation"/>
+
+#### Switch layout templates, user registration
+
+<img src="https://user-images.githubusercontent.com/552328/147838633-c1b3e4f6-bbfd-44e1-b0be-884d1a83f8f4.png" alt="Registration"/>
+
+#### Alpine.js modal, HTMX AJAX request
+
+<img src="https://user-images.githubusercontent.com/552328/147838634-4b84c5d5-dc3b-4280-ac12-247ab22184a3.png" alt="Alpine and HTMX"/>
 
 ## Getting started
 
@@ -755,6 +769,10 @@ if page.HTMX.Request.Target == "search" {
     // Render content for the #search element
 {{end}}
 ```
+
+#### CSRF token
+
+If [CSRF](#csrf) protection is enabled, the token value will automatically be passed to HTMX to be included in all non-GET requests. This is done in the `footer` template by leveraging HTMX [events](https://htmx.org/reference/#events).
 
 ### Rendering the page
 
