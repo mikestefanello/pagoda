@@ -1,5 +1,10 @@
 ## Pagoda: Rapid, easy full-stack web development starter kit in Go
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda)
+[![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
+
 <p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
 ## Table of Contents
@@ -38,7 +43,7 @@
   * [Custom middleware](#custom-middleware)
   * [Controller / Dependencies](#controller--dependencies)
   * [Patterns](#patterns)
-  * [Custom middleware](#custom-middleware)
+  * [Errors](#errors)
   * [Testing](#testing)
     * [HTTP server](#http-server)
     * [Request / Request helpers](#request--response-helpers)
@@ -380,6 +385,12 @@ g.POST("/", home.Post).Name = "home.post"
 Your route will now have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
 
 **It is highly recommended** that you provide a `Name` for your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
+
+### Errors
+
+Routes can return errors to indicate that something wrong happened. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code. You can use `return echo.NewHTTPError(http.StatusInternalServerError)`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
+
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `routes/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
 
 ### Testing
 
@@ -906,7 +917,7 @@ Future work includes but is not limited to:
 
 - Email verification
 - Flexible pager templates
-- Expanded HTMX examples
+- Expanded HTMX examples and integration
 - Admin section
 
 ## Credits
