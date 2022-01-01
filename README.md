@@ -5,7 +5,6 @@
 ## Table of Contents
 * [Introduction](#introduction)
     * [Overview](#overview)
-    * [Motivation](#motivation)
     * [Foundation](#foundation)
       * [Backend](#backend)
       * [Frontend](#frontend)
@@ -86,13 +85,7 @@ _Pagoda_ is not a framework but rather a base starter-kit for rapid, easy full-s
  
 Built on a solid [foundation](#foundation) of well-established frameworks and modules, _Pagoda_ aims to be a starting point for any web application with the benefit over a mega-framework in that you have full control over all of the code, the ability to easily swap any frameworks or modules in or out, no strict patterns or interfaces to follow, and no fear of lock-in.
 
-While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that (todo) 
-
-### Motivation
-
-It started with [this post](https://news.ycombinator.com/item?id=29311761) on _Hacker News_, asking the community what the _simplest stack to build web apps in 2021_ is. After leaving PHP for Go over a year ago, I didn't have an answer for what I would use if I were to start building a web app tomorrow. If I was still using PHP, _Laravel_ would most likely be the easy answer, but there's nothing quite like that available for Go, especially in terms of adoption and maturity. For good reasons, the community also seems mostly opposed to mega-frameworks.
-
-todo
+While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that _Go_ templates can be powerful and easy to work with, and interesting [frontend](#frontend) libraries can provide the same modern functionality and behavior without having to write any JS at all.
 
 ### Foundation
 
@@ -648,7 +641,7 @@ And finally, your template:
 
 The `FormSubmission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that your templates can use to provide classes and extract the error messages.
 
-While [validator](https://github.com/go-playground/validator) is an incredible package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `FormSubmission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
+While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `FormSubmission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
 
 To provide the inline validation in your template, there are two things that need to be done.
 
@@ -731,7 +724,7 @@ Assuming the current _path_ is `/user/profile/1`; otherwise the `is-active` clas
 
 ### HTMX support
 
-[HTMX](https://htmx.org/) is an incredible JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
+[HTMX](https://htmx.org/) is an awesome JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
 
 Many examples of its usage are available in the included examples:
 - All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
