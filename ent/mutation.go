@@ -5,11 +5,12 @@ package ent
 import (
 	"context"
 	"fmt"
-	"goweb/ent/passwordtoken"
-	"goweb/ent/predicate"
-	"goweb/ent/user"
 	"sync"
 	"time"
+
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/predicate"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"entgo.io/ent"
 )

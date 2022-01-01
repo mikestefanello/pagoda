@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"log"
 
-	"goweb/ent/migrate"
+	"github.com/mikestefanello/pagoda/ent/migrate"
 
-	"goweb/ent/passwordtoken"
-	"goweb/ent/user"
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

@@ -8,11 +8,11 @@ import (
 	"os"
 	"testing"
 
-	"goweb/config"
-	"goweb/htmx"
-	"goweb/middleware"
-	"goweb/services"
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/htmx"
+	"github.com/mikestefanello/pagoda/middleware"
+	"github.com/mikestefanello/pagoda/services"
+	"github.com/mikestefanello/pagoda/tests"
 
 	"github.com/eko/gocache/v2/store"
 

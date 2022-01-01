@@ -6,9 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"goweb/ent/passwordtoken"
-	"goweb/ent/user"
 	"time"
+
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"

@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"goweb/config"
+	"github.com/mikestefanello/pagoda/config"
 
 	"github.com/labstack/echo/v4"
 )

@@ -14,9 +14,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 
-	"goweb/config"
-	"goweb/ent"
-	_ "goweb/ent/runtime"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/ent"
+	_ "github.com/mikestefanello/pagoda/ent/runtime"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency

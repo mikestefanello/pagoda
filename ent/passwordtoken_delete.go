@@ -5,8 +5,9 @@ package ent
 import (
 	"context"
 	"fmt"
-	"goweb/ent/passwordtoken"
-	"goweb/ent/predicate"
+
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

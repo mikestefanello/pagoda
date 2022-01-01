@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"goweb/context"
-	"goweb/ent"
-	"goweb/ent/user"
+	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"github.com/labstack/echo/v4"
 )

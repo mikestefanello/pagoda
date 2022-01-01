@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"goweb/config"
+	"github.com/mikestefanello/pagoda/config"
 
 	"github.com/stretchr/testify/assert"
 )

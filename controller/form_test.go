@@ -3,7 +3,7 @@ package controller
 import (
 	"testing"
 
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/tests"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

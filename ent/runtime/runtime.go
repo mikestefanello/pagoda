@@ -3,10 +3,11 @@
 package runtime
 
 import (
-	"goweb/ent/passwordtoken"
-	"goweb/ent/schema"
-	"goweb/ent/user"
 	"time"
+
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/schema"
+	"github.com/mikestefanello/pagoda/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

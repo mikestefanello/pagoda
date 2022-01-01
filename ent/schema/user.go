@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	ge "goweb/ent"
-	"goweb/ent/hook"
+	ge "github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/hook"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"

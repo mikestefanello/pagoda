@@ -5,8 +5,9 @@ package ent
 import (
 	"errors"
 	"fmt"
-	"goweb/ent/passwordtoken"
-	"goweb/ent/user"
+
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

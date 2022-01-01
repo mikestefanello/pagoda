@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"goweb/config"
-	"goweb/ent"
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/tests"
 
 	"github.com/labstack/echo/v4"
 )

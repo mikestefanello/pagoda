@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"sync"
 
-	"goweb/config"
-	"goweb/funcmap"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/funcmap"
 )
 
 // TemplateRenderer provides a flexible and easy to use method of rendering simple templates or complex sets of

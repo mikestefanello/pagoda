@@ -4,9 +4,10 @@ package ent
 
 import (
 	"fmt"
-	"goweb/ent/user"
 	"strings"
 	"time"
+
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"entgo.io/ent/dialect/sql"
 )

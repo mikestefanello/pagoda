@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/tests"
 
 	"github.com/stretchr/testify/require"
 

@@ -4,10 +4,10 @@ import (
 	"os"
 	"testing"
 
-	"goweb/config"
-	"goweb/ent"
-	"goweb/services"
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/services"
+	"github.com/mikestefanello/pagoda/tests"
 )
 
 var (

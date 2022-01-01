@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/http"
 
-	"goweb/context"
-	"goweb/ent"
-	"goweb/msg"
-	"goweb/services"
+	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/msg"
+	"github.com/mikestefanello/pagoda/services"
 
 	"github.com/labstack/echo/v4"
 )

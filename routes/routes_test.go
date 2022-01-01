@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"goweb/config"
-	"goweb/services"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/services"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"

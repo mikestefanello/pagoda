@@ -3,10 +3,10 @@ package routes
 import (
 	"net/http"
 
-	"goweb/config"
-	"goweb/controller"
-	"goweb/middleware"
-	"goweb/services"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/controller"
+	"github.com/mikestefanello/pagoda/middleware"
+	"github.com/mikestefanello/pagoda/services"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"

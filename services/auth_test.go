@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"goweb/ent/passwordtoken"
-	"goweb/ent/user"
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"github.com/stretchr/testify/require"
 

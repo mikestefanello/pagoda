@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"goweb/config"
+	"github.com/mikestefanello/pagoda/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

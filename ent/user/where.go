@@ -3,8 +3,9 @@
 package user
 
 import (
-	"goweb/ent/predicate"
 	"time"
+
+	"github.com/mikestefanello/pagoda/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

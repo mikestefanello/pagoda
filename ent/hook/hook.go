@@ -5,7 +5,8 @@ package hook
 import (
 	"context"
 	"fmt"
-	"goweb/ent"
+
+	"github.com/mikestefanello/pagoda/ent"
 )
 
 // The PasswordTokenFunc type is an adapter to allow the use of ordinary

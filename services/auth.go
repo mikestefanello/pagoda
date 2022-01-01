@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 	"time"
 
-	"goweb/config"
-	"goweb/ent"
-	"goweb/ent/passwordtoken"
-	"goweb/ent/user"
+	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/user"
 
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"

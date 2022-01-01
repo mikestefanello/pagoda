@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"time"
 
-	"goweb/routes"
-	"goweb/services"
+	"github.com/mikestefanello/pagoda/routes"
+	"github.com/mikestefanello/pagoda/services"
 )
 
 func main() {

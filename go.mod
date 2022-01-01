@@ -1,4 +1,4 @@
-module goweb
+module github.com/mikestefanello/pagoda
 
 go 1.17
 

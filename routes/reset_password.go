@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"goweb/context"
-	"goweb/controller"
-	"goweb/ent"
-	"goweb/ent/user"
-	"goweb/msg"
+	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/controller"
+	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/user"
+	"github.com/mikestefanello/pagoda/msg"
 
 	"github.com/labstack/echo/v4"
 )

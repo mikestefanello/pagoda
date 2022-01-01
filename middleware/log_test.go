@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/tests"
 
 	"github.com/labstack/echo/v4"
 

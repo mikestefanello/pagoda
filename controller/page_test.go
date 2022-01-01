@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"goweb/context"
-	"goweb/msg"
-	"goweb/tests"
+	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/msg"
+	"github.com/mikestefanello/pagoda/tests"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"

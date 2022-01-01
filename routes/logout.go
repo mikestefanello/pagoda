@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"goweb/controller"
-	"goweb/msg"
+	"github.com/mikestefanello/pagoda/controller"
+	"github.com/mikestefanello/pagoda/msg"
 
 	"github.com/labstack/echo/v4"
 )

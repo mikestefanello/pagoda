@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"goweb/middleware"
-	"goweb/services"
+	"github.com/mikestefanello/pagoda/middleware"
+	"github.com/mikestefanello/pagoda/services"
 
 	"github.com/eko/gocache/v2/marshaler"
 

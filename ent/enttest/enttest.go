@@ -4,9 +4,11 @@ package enttest
 
 import (
 	"context"
-	"goweb/ent"
+
+	"github.com/mikestefanello/pagoda/ent"
+
 	// required by schema hooks.
-	_ "goweb/ent/runtime"
+	_ "github.com/mikestefanello/pagoda/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

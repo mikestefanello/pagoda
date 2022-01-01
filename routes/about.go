@@ -3,7 +3,7 @@ package routes
 import (
 	"html/template"
 
-	"goweb/controller"
+	"github.com/mikestefanello/pagoda/controller"
 
 	"github.com/labstack/echo/v4"
 )
