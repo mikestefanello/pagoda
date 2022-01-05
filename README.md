@@ -33,6 +33,7 @@
   * [Entity types](#entity-types)
   * [New entity type](#new-entity-type)
 * [Sessions](#sessions)
+  * [Encryption](#encryption)
 * [Authentication](#authentication)
   * [Login / Logout](#login--logout)
   * [Forgot password](#forgot-password)
@@ -294,6 +295,10 @@ func SomeFunction(ctx echo.Context) error {
     return sess.Save(ctx.Request(), ctx.Response())
 }
 ```
+
+### Encryption
+
+Session data is encrypted for security purposes. The encryption key is stored in [configuration](#configuration) at `Config.App.EncryptionKey`. While the default is fine for local development, it is **imperative** that you change this value for any live environment otherwise session data can be compromised.
 
 ## Authentication
 
@@ -769,7 +774,7 @@ if page.HTMX.Request.Target == "search" {
 ```
 
 ```go
-{{if eq .page.HTMX.Request.Target "search"}}
+{{if eq .HTMX.Request.Target "search"}}
     // Render content for the #search element
 {{end}}
 ```
