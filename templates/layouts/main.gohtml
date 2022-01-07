@@ -13,7 +13,7 @@
                 </div>
                 <div id="navbarMenu" class="navbar-menu">
                     <div class="navbar-end">
-                        {{template "search"}}
+                        {{template "search" .}}
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     <h2 class="subtitle">Search</h2>
                     <p class="control">
                         <input
-                                hx-get="/search"
+                                hx-get="{{call .ToURL "search"}}"
                                 hx-trigger="keyup changed delay:500ms"
                                 hx-target="#results"
                                 name="query"
