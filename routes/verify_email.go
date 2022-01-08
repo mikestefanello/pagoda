@@ -66,5 +66,5 @@ func (c *VerifyEmail) verifyToken(ctx echo.Context) {
 		return
 	}
 
-	msg.Success(ctx, "You email has been successfully verified.")
+	msg.Success(ctx, "Your email has been successfully verified.")
 }
