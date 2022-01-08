@@ -8,13 +8,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent/passwordtoken"
-	"github.com/mikestefanello/pagoda/ent/predicate"
-	"github.com/mikestefanello/pagoda/ent/user"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/predicate"
+	"github.com/mikestefanello/pagoda/ent/user"
 )
 
 // PasswordTokenUpdate is the builder for updating PasswordToken entities.

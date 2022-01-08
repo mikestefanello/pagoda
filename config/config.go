@@ -67,14 +67,16 @@ type (
 
 	// AppConfig stores application configuration
 	AppConfig struct {
-		Name          string        `env:"APP_NAME,default=Pagoda"`
-		Environment   Environment   `env:"APP_ENVIRONMENT,default=local"`
+		Name        string      `env:"APP_NAME,default=Pagoda"`
+		Environment Environment `env:"APP_ENVIRONMENT,default=local"`
+		// THIS MUST BE OVERRIDDEN ON ANY LIVE ENVIRONMENTS
 		EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
 		Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`
 		PasswordToken struct {
 			Expiration time.Duration `env:"APP_PASSWORD_TOKEN_EXPIRATION,default=60m"`
 			Length     int           `env:"APP_PASSWORD_TOKEN_LENGTH,default=64"`
 		}
+		EmailVerificationTokenExpiration time.Duration `env:"APP_EMAIL_VERIFICATION_TOKEN_EXPIRATION,default=12h"`
 	}
 
 	// CacheConfig stores the cache configuration

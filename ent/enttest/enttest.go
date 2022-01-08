@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/mikestefanello/pagoda/ent"
-
 	// required by schema hooks.
 	_ "github.com/mikestefanello/pagoda/ent/runtime"
 

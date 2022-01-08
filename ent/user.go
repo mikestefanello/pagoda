@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent/user"
-
 	"entgo.io/ent/dialect/sql"
+	"github.com/mikestefanello/pagoda/ent/user"
 )
 
 // User is the model entity for the User schema.
@@ -23,6 +22,8 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"-"`
+	// Verified holds the value of the "verified" field.
+	Verified bool `json:"verified,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -53,6 +54,8 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldVerified:
+			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldName, user.FieldEmail, user.FieldPassword:
@@ -98,6 +101,12 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				u.Password = value.String
 			}
+		case user.FieldVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field verified", values[i])
+			} else if value.Valid {
+				u.Verified = value.Bool
+			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -142,6 +151,8 @@ func (u *User) String() string {
 	builder.WriteString(", email=")
 	builder.WriteString(u.Email)
 	builder.WriteString(", password=<sensitive>")
+	builder.WriteString(", verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.Verified))
 	builder.WriteString(", created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')

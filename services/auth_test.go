@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuth(t *testing.T) {
+func TestAuthClient_Auth(t *testing.T) {
 	assertNoAuth := func() {
 		_, err := c.Auth.GetAuthenticatedUserID(ctx)
 		assert.True(t, errors.Is(err, NotAuthenticatedError{}))
@@ -41,7 +41,7 @@ func TestAuth(t *testing.T) {
 	assertNoAuth()
 }
 
-func TestPasswordHashing(t *testing.T) {
+func TestAuthClient_PasswordHashing(t *testing.T) {
 	pw := "testcheckpassword"
 	hash, err := c.Auth.HashPassword(pw)
 	assert.NoError(t, err)
@@ -50,14 +50,14 @@ func TestPasswordHashing(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestGeneratePasswordResetToken(t *testing.T) {
+func TestAuthClient_GeneratePasswordResetToken(t *testing.T) {
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
 	assert.Len(t, token, c.Config.App.PasswordToken.Length)
 	assert.NoError(t, c.Auth.CheckPassword(token, pt.Hash))
 }
 
-func TestGetValidPasswordToken(t *testing.T) {
+func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	// Check that a fake token is not valid
 	_, err := c.Auth.GetValidPasswordToken(ctx, "faketoken", usr.ID)
 	assert.Error(t, err)
@@ -82,7 +82,7 @@ func TestGetValidPasswordToken(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestDeletePasswordTokens(t *testing.T) {
+func TestAuthClient_DeletePasswordTokens(t *testing.T) {
 	// Create three tokens for the user
 	for i := 0; i < 3; i++ {
 		_, _, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
@@ -103,7 +103,7 @@ func TestDeletePasswordTokens(t *testing.T) {
 	assert.Equal(t, 0, count)
 }
 
-func TestRandomToken(t *testing.T) {
+func TestAuthClient_RandomToken(t *testing.T) {
 	length := c.Config.App.PasswordToken.Length
 	a, err := c.Auth.RandomToken(length)
 	require.NoError(t, err)
@@ -112,4 +112,34 @@ func TestRandomToken(t *testing.T) {
 	assert.Len(t, a, length)
 	assert.Len(t, b, length)
 	assert.NotEqual(t, a, b)
+}
+
+func TestAuthClient_EmailVerificationToken(t *testing.T) {
+	t.Run("valid token", func(t *testing.T) {
+		email := "test@localhost.com"
+		token, err := c.Auth.GenerateEmailVerificationToken(email)
+		require.NoError(t, err)
+
+		tokenEmail, err := c.Auth.ValidateEmailVerificationToken(token)
+		require.NoError(t, err)
+		assert.Equal(t, email, tokenEmail)
+	})
+
+	t.Run("invalid token", func(t *testing.T) {
+		badToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAbG9jYWxob3N0LmNvbSIsImV4cCI6MTkxNzg2NDAwMH0.ScJCpfEEzlilKfRs_aVouzwPNKI28M3AIm-hyImQHUQ"
+		_, err := c.Auth.ValidateEmailVerificationToken(badToken)
+		assert.Error(t, err)
+	})
+
+	t.Run("expired token", func(t *testing.T) {
+		c.Config.App.EmailVerificationTokenExpiration = -time.Hour
+		email := "test@localhost.com"
+		token, err := c.Auth.GenerateEmailVerificationToken(email)
+		require.NoError(t, err)
+
+		_, err = c.Auth.ValidateEmailVerificationToken(token)
+		assert.Error(t, err)
+
+		c.Config.App.EmailVerificationTokenExpiration = time.Hour * 12
+	})
 }

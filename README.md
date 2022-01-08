@@ -40,6 +40,7 @@
   * [Registration](#registration)
   * [Authenticated user](#authenticated-user)
     * [Middleware](#middleware)
+  * [Email verification](#email-verification)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
   * [Controller / Dependencies](#controller--dependencies)
@@ -341,6 +342,20 @@ The `AuthClient` has two methods available to get either the `User` entity or th
 Registered for all routes is middleware that will load the currently logged in user entity and store it within the request context. The middleware is located at `middleware.LoadAuthenticatedUser()` and, if authenticated, the `User` entity is stored within the context using the key `context.AuthenticatedUserKey`.
 
 If you wish to require either authentication or non-authentication for a given route, you can use either `middleware.RequireAuthentication()` or `middleware.RequireNoAuthentication()`.
+
+### Email verification
+
+Most web applications require the user to verify their email address (or other form of contact information). The `User` entity has a field `Verified` to indicate if they have verified themself. When a user successfully registers, an email is sent to them containing a link with a token that will verify their account when visited. This route is currently accessible at `/email/verify/:token` and handled by `routes/VerifyEmail`.
+
+There is currently no enforcement that a `User` must be verified in order to access the application. If that is something you desire, it will have to be added in yourself. It was not included because you may want partial access of certain features until the user verifies; or no access at all.
+
+Verification tokens are [JSON Web Tokens](https://jwt.io/) generated and processed by the [jwt](https://github.com/golang-jwt/jwt) module. The tokens are _signed_ using the encryption key stored in [configuration](#configuration) (`Config.App.EncryptionKey`). **It is imperative** that you override this value from the default in any live environments otherwise the data can be comprimised. JWT was chosen because they are secure tokens that do not have to be stored in the database, since the tokens contain all of the data required, including built-in expirations. These were not chosen for password reset tokens because JWT cannot be withdrawn once they are issued which poses a security risk. Since these tokens do not grant access to an account, the ability to withdraw the tokens is not needed.
+
+By default, verification tokens expire 12 hours after they are issued. This can be changed in configuration at `Config.App.EmailVerificationTokenExpiration`. There is currently not a route or form provided to request a new link.
+
+Be sure to review the [email](#email) section since actual email sending is not fully implemented.
+
+To generate a new verification token, the `AuthClient` has a method `GenerateEmailVerificationToken()` which creates a token for a given email address. To verify the token, pass it in to `ValidateEmailVerificationToken()` which will return the email address associated with the token and an error if the token is invalid.
 
 ## Routes
 
@@ -920,7 +935,6 @@ By default, Echo's [request ID middleware](https://echo.labstack.com/middleware/
 
 Future work includes but is not limited to:
 
-- Email verification
 - Flexible pager templates
 - Expanded HTMX examples and integration
 - Admin section
@@ -929,21 +943,22 @@ Future work includes but is not limited to:
 
 Thank you to all of the following amazing projects for making this possible.
 
-- [go](https://go.dev/)
-- [echo](https://github.com/labstack/echo)
-- [ent](https://github.com/ent/ent)
-- [sprig](https://github.com/Masterminds/sprig)
-- [goquery](https://github.com/PuerkitoBio/goquery)
-- [validator](https://github.com/go-playground/validator)
-- [go-redis](https://github.com/go-redis/redis)
-- [gocache](https://github.com/eko/gocache)
-- [sessions](https://github.com/gorilla/sessions)
-- [pgx](https://github.com/jackc/pgx)
-- [envdecode](https://github.com/joeshaw/envdecode)
-- [testify](https://github.com/stretchr/testify)
-- [htmx](https://github.com/bigskysoftware/htmx)
 - [alpinejs](https://github.com/alpinejs/alpine)
 - [bulma](https://github.com/jgthms/bulma)
 - [docker](https://www.docker.com/)
+- [echo](https://github.com/labstack/echo)
+- [ent](https://github.com/ent/ent)
+- [envdecode](https://github.com/joeshaw/envdecode)
+- [go](https://go.dev/)
+- [gocache](https://github.com/eko/gocache)
+- [goquery](https://github.com/PuerkitoBio/goquery)
+- [go-redis](https://github.com/go-redis/redis)
+- [htmx](https://github.com/bigskysoftware/htmx)
+- [jwt](https://github.com/golang-jwt/jwt)
+- [pgx](https://github.com/jackc/pgx)
 - [postgresql](https://www.postgresql.org/)
 - [redis](https://redis.io/)
+- [sprig](https://github.com/Masterminds/sprig)
+- [sessions](https://github.com/gorilla/sessions)
+- [testify](https://github.com/stretchr/testify)
+- [validator](https://github.com/go-playground/validator)

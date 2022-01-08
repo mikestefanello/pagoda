@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"fmt"
+
 	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/controller"
 	"github.com/mikestefanello/pagoda/ent"
@@ -86,6 +88,31 @@ func (c *Register) Post(ctx echo.Context) error {
 		return c.Redirect(ctx, "login")
 	}
 
-	msg.Info(ctx, "Your account has been created. You are now logged in.")
+	msg.Success(ctx, "Your account has been created. You are now logged in.")
+
+	// Send the verification email
+	c.sendVerificationEmail(ctx, u)
+
 	return c.Redirect(ctx, "home")
+}
+
+func (c *Register) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
+	// Generate a token
+	token, err := c.Container.Auth.GenerateEmailVerificationToken(usr.Email)
+	if err != nil {
+		ctx.Logger().Errorf("unable to generate email verification token: %v", err)
+		return
+	}
+
+	// Send the email
+	err = c.Container.Mail.Send(ctx, usr.Email, fmt.Sprintf(
+		"Confirm your email address: %s",
+		ctx.Echo().Reverse("verify_email", token),
+	))
+	if err != nil {
+		ctx.Logger().Errorf("unable to send email verification token: %v", err)
+		return
+	}
+
+	msg.Info(ctx, "An email was sent to you to verify your email address.")
 }

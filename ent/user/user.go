@@ -19,6 +19,8 @@ const (
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldVerified holds the string denoting the verified field in the database.
+	FieldVerified = "verified"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
@@ -40,6 +42,7 @@ var Columns = []string{
 	FieldName,
 	FieldEmail,
 	FieldPassword,
+	FieldVerified,
 	FieldCreatedAt,
 }
 
@@ -57,7 +60,7 @@ func ValidColumn(column string) bool {
 // package on the initialization of the application. Therefore,
 // it should be imported in the main as follows:
 //
-//	import _ "goweb/ent/runtime"
+//	import _ "github.com/mikestefanello/pagoda/ent/runtime"
 //
 var (
 	Hooks [1]ent.Hook
@@ -67,6 +70,8 @@ var (
 	EmailValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
+	// DefaultVerified holds the default value on creation for the "verified" field.
+	DefaultVerified bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )

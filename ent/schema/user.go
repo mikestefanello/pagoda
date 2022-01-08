@@ -29,6 +29,8 @@ func (User) Fields() []ent.Field {
 		field.String("password").
 			Sensitive().
 			NotEmpty(),
+		field.Bool("verified").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

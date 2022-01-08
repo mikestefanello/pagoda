@@ -6,13 +6,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mikestefanello/pagoda/ent/passwordtoken"
-	"github.com/mikestefanello/pagoda/ent/predicate"
-	"github.com/mikestefanello/pagoda/ent/user"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/predicate"
+	"github.com/mikestefanello/pagoda/ent/user"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -43,6 +42,20 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 // SetPassword sets the "password" field.
 func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	uu.mutation.SetPassword(s)
+	return uu
+}
+
+// SetVerified sets the "verified" field.
+func (uu *UserUpdate) SetVerified(b bool) *UserUpdate {
+	uu.mutation.SetVerified(b)
+	return uu
+}
+
+// SetNillableVerified sets the "verified" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableVerified(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetVerified(*b)
+	}
 	return uu
 }
 
@@ -206,6 +219,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldPassword,
 		})
 	}
+	if value, ok := uu.mutation.Verified(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: user.FieldVerified,
+		})
+	}
 	if uu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -294,6 +314,20 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 // SetPassword sets the "password" field.
 func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	uuo.mutation.SetPassword(s)
+	return uuo
+}
+
+// SetVerified sets the "verified" field.
+func (uuo *UserUpdateOne) SetVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetVerified(b)
+	return uuo
+}
+
+// SetNillableVerified sets the "verified" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableVerified(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetVerified(*b)
+	}
 	return uuo
 }
 
@@ -479,6 +513,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldPassword,
+		})
+	}
+	if value, ok := uuo.mutation.Verified(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: user.FieldVerified,
 		})
 	}
 	if uuo.mutation.OwnerCleared() {

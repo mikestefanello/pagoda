@@ -3,8 +3,11 @@ package services
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
+	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
@@ -193,4 +196,37 @@ func (c *AuthClient) RandomToken(length int) (string, error) {
 	}
 	token := hex.EncodeToString(b)
 	return token[:length], nil
+}
+
+// GenerateEmailVerificationToken generates an email verification token for a given email address using JWT which
+// is set to expire based on the duration stored in configuration
+func (c *AuthClient) GenerateEmailVerificationToken(email string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": email,
+		"exp":   time.Now().Add(c.config.App.EmailVerificationTokenExpiration).Unix(),
+	})
+
+	return token.SignedString([]byte(c.config.App.EncryptionKey))
+}
+
+// ValidateEmailVerificationToken validates an email verification token and returns the associated email address if
+// the token is valid and has not expired
+func (c *AuthClient) ValidateEmailVerificationToken(token string) (string, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+
+		return []byte(c.config.App.EncryptionKey), nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
+		return claims["email"].(string), nil
+	}
+
+	return "", errors.New("invalid or expired token")
 }

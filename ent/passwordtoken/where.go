@@ -5,10 +5,9 @@ package passwordtoken
 import (
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent/predicate"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/mikestefanello/pagoda/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
