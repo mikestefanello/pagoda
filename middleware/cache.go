@@ -51,11 +51,15 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 				new(CachedPage),
 			)
 			if err != nil {
-				if err == redis.Nil {
+				switch {
+				case err == redis.Nil:
 					c.Logger().Info("no cached page found")
-				} else {
+				case context.IsCanceledError(err):
+					return nil
+				default:
 					c.Logger().Errorf("failed getting cached page: %v", err)
 				}
+
 				return next(c)
 			}
 

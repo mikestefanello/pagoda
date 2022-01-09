@@ -14,12 +14,6 @@ type VerifyEmail struct {
 }
 
 func (c *VerifyEmail) Get(ctx echo.Context) error {
-	c.verifyToken(ctx)
-
-	return c.Redirect(ctx, "home")
-}
-
-func (c *VerifyEmail) verifyToken(ctx echo.Context) {
 	var usr *ent.User
 
 	// Validate the token
@@ -27,7 +21,7 @@ func (c *VerifyEmail) verifyToken(ctx echo.Context) {
 	email, err := c.Container.Auth.ValidateEmailVerificationToken(token)
 	if err != nil {
 		msg.Warning(ctx, "The link is either invalid or has expired.")
-		return
+		return c.Redirect(ctx, "home")
 	}
 
 	// Check if it matches the authenticated user
@@ -47,24 +41,23 @@ func (c *VerifyEmail) verifyToken(ctx echo.Context) {
 			Only(ctx.Request().Context())
 
 		if err != nil {
-			ctx.Logger().Errorf("error querying user during email verification: %v", err)
-			msg.Danger(ctx, "An error occurred. Please try again.")
-			return
+			return c.Fail(ctx, err, "query failed loading email verification token user")
 		}
 	}
 
-	// Verify the user
-	err = c.Container.ORM.User.
-		Update().
-		SetVerified(true).
-		Where(user.ID(usr.ID)).
-		Exec(ctx.Request().Context())
+	// Verify the user, if needed
+	if !usr.Verified {
+		err = c.Container.ORM.User.
+			Update().
+			SetVerified(true).
+			Where(user.ID(usr.ID)).
+			Exec(ctx.Request().Context())
 
-	if err != nil {
-		ctx.Logger().Errorf("error setting user as verified: %v", err)
-		msg.Danger(ctx, "An error occurred. Please try again.")
-		return
+		if err != nil {
+			return c.Fail(ctx, err, "failed to set user as verified")
+		}
 	}
 
 	msg.Success(ctx, "Your email has been successfully verified.")
+	return c.Redirect(ctx, "home")
 }

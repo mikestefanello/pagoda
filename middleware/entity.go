@@ -32,6 +32,9 @@ func LoadUser(orm *ent.Client) echo.MiddlewareFunc {
 			case *ent.NotFoundError:
 				return echo.NewHTTPError(http.StatusNotFound)
 			default:
+				if context.IsCanceledError(err) {
+					return nil
+				}
 				c.Logger().Error(err)
 				return echo.NewHTTPError(http.StatusInternalServerError)
 			}

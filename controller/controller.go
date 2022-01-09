@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/middleware"
 	"github.com/mikestefanello/pagoda/services"
 
@@ -143,7 +144,10 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 
 	err := marshaler.New(c.Container.Cache).Set(ctx.Request().Context(), key, cp, opts)
 	if err != nil {
-		ctx.Logger().Errorf("failed to cache page: %v", err)
+		if !context.IsCanceledError(err) {
+			ctx.Logger().Errorf("failed to cache page: %v", err)
+		}
+
 		return
 	}
 
@@ -158,6 +162,9 @@ func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...int
 
 // Fail is a helper to fail a request by returning a 500 error and logging the error
 func (c *Controller) Fail(ctx echo.Context, err error, log string) error {
+	if context.IsCanceledError(err) {
+		return nil
+	}
 	ctx.Logger().Errorf("%s: %v", log, err)
 	return echo.NewHTTPError(http.StatusInternalServerError)
 }

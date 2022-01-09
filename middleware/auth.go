@@ -24,6 +24,9 @@ func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc 
 				c.Set(context.AuthenticatedUserKey, u)
 				c.Logger().Infof("auth user loaded in to context: %d", u.ID)
 			default:
+				if context.IsCanceledError(err) {
+					return nil
+				}
 				c.Logger().Errorf("error querying for authenticated user: %v", err)
 			}
 
@@ -55,6 +58,9 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
 				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
 			default:
+				if context.IsCanceledError(err) {
+					return nil
+				}
 				c.Logger().Error(err)
 				return echo.NewHTTPError(http.StatusInternalServerError)
 			}

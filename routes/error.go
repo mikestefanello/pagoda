@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/controller"
 
 	"github.com/labstack/echo/v4"
@@ -12,8 +13,8 @@ type Error struct {
 	controller.Controller
 }
 
-func (e *Error) Get(err error, c echo.Context) {
-	if c.Response().Committed {
+func (e *Error) Get(err error, ctx echo.Context) {
+	if ctx.Response().Committed || context.IsCanceledError(err) {
 		return
 	}
 
@@ -23,19 +24,19 @@ func (e *Error) Get(err error, c echo.Context) {
 	}
 
 	if code >= 500 {
-		c.Logger().Error(err)
+		ctx.Logger().Error(err)
 	} else {
-		c.Logger().Info(err)
+		ctx.Logger().Info(err)
 	}
 
-	p := controller.NewPage(c)
-	p.Layout = "main"
-	p.Title = http.StatusText(code)
-	p.Name = "error"
-	p.StatusCode = code
-	p.HTMX.Request.Enabled = false
+	page := controller.NewPage(ctx)
+	page.Layout = "main"
+	page.Title = http.StatusText(code)
+	page.Name = "error"
+	page.StatusCode = code
+	page.HTMX.Request.Enabled = false
 
-	if err = e.RenderPage(c, p); err != nil {
-		c.Logger().Error(err)
+	if err = e.RenderPage(ctx, page); err != nil {
+		ctx.Logger().Error(err)
 	}
 }
