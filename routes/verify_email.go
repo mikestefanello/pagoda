@@ -47,11 +47,10 @@ func (c *VerifyEmail) Get(ctx echo.Context) error {
 
 	// Verify the user, if needed
 	if !usr.Verified {
-		err = c.Container.ORM.User.
+		usr, err = usr.
 			Update().
 			SetVerified(true).
-			Where(user.ID(usr.ID)).
-			Exec(ctx.Request().Context())
+			Save(ctx.Request().Context())
 
 		if err != nil {
 			return c.Fail(ctx, err, "failed to set user as verified")

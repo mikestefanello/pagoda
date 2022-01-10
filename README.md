@@ -118,7 +118,7 @@ Go server-side rendered HTML combined with the projects below enable you to crea
 
 ### Screenshots
 
-#### Inline validation
+#### Inline form validation
 
 <img src="https://user-images.githubusercontent.com/552328/147838632-570a3116-1e74-428f-8bfc-523ed309ef06.png" alt="Inline validation"/>
 
@@ -761,6 +761,7 @@ Many examples of its usage are available in the included examples:
 - All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
 - All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
 - The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
+- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts vi AJAX.
 
 All of this can be easily accomplished without writing any JavaScript at all.
 
@@ -947,6 +948,7 @@ Thank you to all of the following amazing projects for making this possible.
 - [bulma](https://github.com/jgthms/bulma)
 - [docker](https://www.docker.com/)
 - [echo](https://github.com/labstack/echo)
+- [echo-contrib](https://github.com/labstack/echo-contrib)
 - [ent](https://github.com/ent/ent)
 - [envdecode](https://github.com/joeshaw/envdecode)
 - [go](https://go.dev/)

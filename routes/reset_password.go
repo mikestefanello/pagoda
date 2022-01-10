@@ -4,7 +4,6 @@ import (
 	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/controller"
 	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/ent/user"
 	"github.com/mikestefanello/pagoda/msg"
 
 	"github.com/labstack/echo/v4"
@@ -63,10 +62,9 @@ func (c *ResetPassword) Post(ctx echo.Context) error {
 	usr := ctx.Get(context.UserKey).(*ent.User)
 
 	// Update the user
-	_, err = c.Container.ORM.User.
+	_, err = usr.
 		Update().
 		SetPassword(hash).
-		Where(user.ID(usr.ID)).
 		Save(ctx.Request().Context())
 
 	if err != nil {
