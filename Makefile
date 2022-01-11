@@ -50,3 +50,19 @@ run:
 .PHONY: test
 test:
 	go test -p 1 ./...
+
+# Run the application using cosmtrek/air for live-reloading
+.PHONY: dev
+dev:
+	docker-compose -f docker-compose.dev.yml up -d
+	make -s dev-logs
+
+# Stop the docker-compose resources
+.PHONY: dev-down
+dev-down:
+	docker-compose -f docker-compose.dev.yml down
+
+# Follow the logs for the specified docker-compose services. Additional services can be added after api if desired.
+.PHONY: dev-logs
+dev-logs:
+	docker-compose -f docker-compose.dev.yml logs -f api

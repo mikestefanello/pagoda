@@ -150,6 +150,17 @@ Once that completes, you can start the application by executing `make run`. By d
 
 If you ever want to quickly drop the Docker containers and restart them in order to wipe all data, execute `make reset`.
 
+Alternatively, to automatically restart the application when changes are detected, execute `make dev` to start a Docker container with "live-reloading" enabled. Alongside this container are a few helpful services that allow for ease of development.
+
+Bring down the services by executing `make dev-down`.
+
+#### Local Services
+
+- [Live reload of Go app](https://github.com/cosmtrek/air)
+- [Redis UI](https://github.com/patrikx3/redis-ui)
+- [Postgres Admin](https://hub.docker.com/r/dpage/pgadmin4/)
+- [SMTP Server](https://github.com/maildev/maildev)
+
 ### Running tests
 
 To run all tests in the application, execute `make test`. This ensures that the tests from each package are not run in parallel. This is required since many packages contain tests that connect to the test database which is dropped and recreated automatically for each package.

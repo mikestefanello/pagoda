@@ -1,0 +1,94 @@
+version: '3'
+services:
+  api:
+    build:
+      context: container
+      dockerfile: dev.Dockerfile
+    container_name: api
+    environment:
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
+      - CACHE_HOSTNAME=cache
+      - DB_HOSTNAME=db
+      - MAIL_HOSTNAME=mail
+      - MAIL_PORT=25
+    volumes:
+      - ./:/app
+      - type: bind
+        source: /run/host-services/ssh-auth.sock
+        target: /run/host-services/ssh-auth.sock
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    links:
+      - cache
+      - db
+      - mail
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.2
+  
+  cache:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.3
+  
+  cache-ui:
+    image: patrikx3/p3x-redis-ui:latest
+    ports:
+      - '7843:7843'
+    volumes:
+      - tmp:/settings
+    links:
+      - cache
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.4
+
+  db:
+    image: postgres:alpine
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=app
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.5
+  
+  db-admin:
+    image: dpage/pgadmin4
+    container_name: db-admin
+    restart: unless-stopped
+    ports:
+      - '5433:80'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@local.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    links:
+      - db
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.6
+  
+  mail:
+    image: maildev/maildev
+    ports:
+      - '1080:80'
+    networks:
+      pagoda-network:
+        ipv4_address: 172.10.0.7
+
+networks:
+  pagoda-network:
+    name: 'pagoda-network'
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.10.0.0/16
+
+volumes:
+  tmp:
