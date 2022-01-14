@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"fmt"
+
 	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/controller"
 
@@ -47,7 +49,14 @@ func (c *Contact) Post(ctx echo.Context) error {
 	}
 
 	if !form.Submission.HasErrors() {
-		if err := c.Container.Mail.Send(ctx, form.Email, "Hello!"); err != nil {
+		err := c.Container.Mail.
+			Compose().
+			To(form.Email).
+			Subject("Contact form submitted").
+			Body(fmt.Sprintf("The message is: %s", form.Message)).
+			Send(ctx)
+
+		if err != nil {
 			return c.Fail(ctx, err, "unable to send email")
 		}
 	}

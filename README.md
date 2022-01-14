@@ -662,7 +662,7 @@ if form := ctx.Get(context.FormKey); form != nil {
 ```
 
 And finally, your template:
-```
+```html
 <input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
 ```
 
@@ -675,7 +675,7 @@ While [validator](https://github.com/go-playground/validator) is a great package
 To provide the inline validation in your template, there are two things that need to be done.
 
 First, include a status class on the element so it will highlight green or red based on the validation:
-```
+```html
 <input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
 ```
 
@@ -964,7 +964,7 @@ The cache max-life is controlled by the configuration at `Config.Cache.Expiratio
 While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function is provided in the [funcmap](#funcmap) to generate a static file URL for a given file that appends a cache-buster query. This query string is randomly generated and persisted until the application restarts.
 
 For example, to render a file located in `static/picture.png`, you would use:
-```go
+```html
 <img src="{{File "picture.png"}}"/>
 ```
 
@@ -979,7 +979,36 @@ Where `9fhe73kaf3` is the randomly-generated cache-buster.
 
 An email client was added as a _Service_ to the `Container` but it is just a skeleton without any actual email-sending functionality. The reason is because there are a lot of ways to send email and most prefer using a SaaS solution for that. That makes it difficult to provide a generic solution that will work for most applications.
 
-Two starter methods were added to the `MailClient`, one to send an email via plain-text and one to send via a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction.
+The structure in the client (`MailClient`) makes composing emails very easy and you have the option to construct the body using either a simple string or with a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction. **You must** finish the implementation of `mail.Send`.
+
+The _from_ address will default to the configuration value at `Config.Mail.FromAddress`. This can be overridden per-email by calling `From()` on the email and passing in the desired address.
+
+See below for examples on how to use the client to compose emails.
+
+**Sending with a string body**:
+
+```go
+err = c.Mail.
+    Compose().
+    To("hello@example.com").
+    Subject("Welcome!").
+    Body("Thank you for registering.").
+    Send(ctx)
+```
+
+**Sending with a template body**:
+
+```go
+err = c.Mail.
+    Compose().
+    To("hello@example.com").
+    Subject("Welcome!").
+    Template("welcome").
+    TemplateData(templateData).
+    Send(ctx)
+```
+
+This will use the template located at `templates/emails/welcome.gohtml` and pass `templateData` to it.
 
 ## HTTPS
 

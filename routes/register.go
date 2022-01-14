@@ -105,12 +105,16 @@ func (c *Register) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	}
 
 	// Send the email
-	err = c.Container.Mail.Send(ctx, usr.Email, fmt.Sprintf(
-		"Confirm your email address: %s",
-		ctx.Echo().Reverse("verify_email", token),
-	))
+	url := ctx.Echo().Reverse("verify_email", token)
+	err = c.Container.Mail.
+		Compose().
+		To(usr.Email).
+		Subject("Confirm your email address").
+		Body(fmt.Sprintf("Click here to confirm your email address: %s", url)).
+		Send(ctx)
+
 	if err != nil {
-		ctx.Logger().Errorf("unable to send email verification token: %v", err)
+		ctx.Logger().Errorf("unable to send email verification link: %v", err)
 		return
 	}
 
