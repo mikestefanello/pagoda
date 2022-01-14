@@ -14,10 +14,6 @@ import (
 	"github.com/mikestefanello/pagoda/services"
 	"github.com/mikestefanello/pagoda/tests"
 
-	"github.com/eko/gocache/v2/store"
-
-	"github.com/eko/gocache/v2/marshaler"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -151,8 +147,12 @@ func TestController_RenderPage(t *testing.T) {
 		require.NoError(t, err)
 
 		// Fetch from the cache
-		res, err := marshaler.New(c.Cache).
-			Get(context.Background(), p.URL, new(middleware.CachedPage))
+		res, err := c.Cache.
+			Get().
+			Group(middleware.CachedPageGroup).
+			Key(p.URL).
+			Type(new(middleware.CachedPage)).
+			Fetch(context.Background())
 		require.NoError(t, err)
 
 		// Compare the cached page
@@ -164,14 +164,19 @@ func TestController_RenderPage(t *testing.T) {
 		assert.Equal(t, rec.Body.Bytes(), cp.HTML)
 
 		// Clear the tag
-		err = c.Cache.Invalidate(context.Background(), store.InvalidateOptions{
-			Tags: []string{p.Cache.Tags[0]},
-		})
+		err = c.Cache.
+			Flush().
+			Tags([]string{p.Cache.Tags[0]}).
+			Exec(context.Background())
 		require.NoError(t, err)
 
 		// Refetch from the cache and expect no results
-		_, err = marshaler.New(c.Cache).
-			Get(context.Background(), p.URL, new(middleware.CachedPage))
+		_, err = c.Cache.
+			Get().
+			Group(middleware.CachedPageGroup).
+			Key(p.URL).
+			Type(new(middleware.CachedPage)).
+			Fetch(context.Background())
 		assert.Error(t, err)
 	})
 }

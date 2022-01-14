@@ -75,6 +75,10 @@
   * [File configuration](#file-configuration)
 * [Funcmap](#funcmap)
 * [Cache](#cache)
+  * [Set data](#set-data)
+  * [Get data](#get-data)
+  * [Flush data](#flush-data)
+  * [Flush tags](#flush-tags)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
   * [Cache-buster](#cache-buster)
@@ -568,13 +572,7 @@ By default, the cache expiration time will be set according to the configuration
 
 You can optionally specify cache tags for the `Page` by setting a slice of strings on `Page.Cache.Tags`. This provides the ability to build in cache invalidation logic in your application driven by events such as entity operations, for example.
 
-The cache client on the `Container` is currently handled by [gocache](https://github.com/eko/gocache) which makes it easy to perform operations such as tag-invalidation, for example:
-
-```go
-c.Cache.Invalidate(ctx, store.InvalidateOptions{
-    Tags: []string{"my-tag"},
-})
-```
+You can use the [cache client](#cache) on the `Container` to easily [flush cache tags](#flush-tags), if needed.
 
 #### Cache middleware
 
@@ -866,9 +864,90 @@ To include additional custom functions, add to the slice in `GetFuncMap()` and d
 
 ## Cache
 
-As previously mentioned, [Redis](https://redis.io/) was chosen as the cache but it can be easily swapped out for something else. [go-redis](https://github.com/go-redis/redis) is used as the underlying client but the `Container` currently only exposes [gocache](https://github.com/eko/gocache) which was chosen because it makes interfacing with the cache client much easier, and it provides a consistent interface if you were to use a cache backend other than Redis.
+As previously mentioned, [Redis](https://redis.io/) was chosen as the cache but it can be easily swapped out for something else. [go-redis](https://github.com/go-redis/redis) is used as the underlying client but the `Container` contains a custom client wrapper (`CacheClient`) that makes typical cache operations extremely simple. This wrapper does expose the [go-redis]() client however, at `CacheClient.Client`, in case you have a need for it.
 
-The built-in usage of the cache is currently only for optional [page caching](#cached-responses) but it can be used for practically anything.
+The cache functionality within the `CacheClient` is powered by [gocache](https://github.com/eko/gocache) which was chosen because it makes interfacing with the cache service much easier, and it provides a consistent interface if you were to use a cache backend other than Redis.
+
+The built-in usage of the cache is currently only for optional [page caching](#cached-responses) but it can be used for practically anything. See examples below:
+
+### Set data
+
+**Set data with just a key:**
+
+```go
+err := c.Cache.
+    Set().
+    Key("my-key").
+    Data(myData).
+    Save(ctx)
+```
+
+**Set data within a group:**
+
+```go
+err := c.Cache.
+    Set().
+    Group("my-group")
+    Key("my-key").
+    Data(myData).
+    Save(ctx)
+```
+
+**Include cache tags:**
+
+```go
+err := c.Cache.
+    Set().
+    Key("my-key").
+    Tags([]string{"tag1", "tag2"})
+    Data(myData).
+    Save(ctx)
+```
+
+**Include an expiration:**
+
+```go
+err := c.Cache.
+    Set().
+    Key("my-key").
+    Expiration(time.Hour * 2)
+    Data(myData).
+    Save(ctx)
+```
+
+### Get data
+
+```go
+data, err := c.Cache.
+    Get().
+    Group("my-group").
+    Key("my-key").
+    Type(myType).
+    Fetch(ctx)
+```
+
+The `Type` method tells the cache what type of data you stored so it can be cast afterwards with: `result, ok := data.(myType)`
+
+### Flush data
+
+```go
+err := c.Cache.
+    Flush().
+    Group("my-group").
+    Key("my-key").
+    Exec(ctx)
+```
+
+### Flush tags
+
+This will flush all cache entries that were tagged with the given tags.
+
+```go
+err := c.Cache.
+    Flush().
+    Tags([]string{"tag1"}).
+    Exec(ctx)
+```
 
 ## Static files
 

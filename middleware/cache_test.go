@@ -10,8 +10,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/eko/gocache/v2/marshaler"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +23,13 @@ func TestServeCachedPage(t *testing.T) {
 	}
 	cp.Headers["a"] = "b"
 	cp.Headers["c"] = "d"
-	err := marshaler.New(c.Cache).Set(context.Background(), cp.URL, cp, nil)
+
+	err := c.Cache.
+		Set().
+		Group(CachedPageGroup).
+		Key(cp.URL).
+		Data(cp).
+		Save(context.Background())
 	require.NoError(t, err)
 
 	// Request the URL of the cached page

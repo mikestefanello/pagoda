@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/services"
 
-	"github.com/eko/gocache/v2/cache"
-	"github.com/eko/gocache/v2/marshaler"
 	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 )
+
+// CachedPageGroup stores the cache group for cached pages
+const CachedPageGroup = "page"
 
 // CachedPage is what is used to store a rendered Page in the cache
 type CachedPage struct {
@@ -31,7 +33,7 @@ type CachedPage struct {
 // ServeCachedPage attempts to load a page from the cache by matching on the complete request URL
 // If a page is cached for the requested URL, it will be served here and the request terminated.
 // Any request made by an authenticated user or that is not a GET will be skipped.
-func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
+func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Skip non GET requests
@@ -45,11 +47,13 @@ func ServeCachedPage(ch *cache.Cache) echo.MiddlewareFunc {
 			}
 
 			// Attempt to load from cache
-			res, err := marshaler.New(ch).Get(
-				c.Request().Context(),
-				c.Request().URL.String(),
-				new(CachedPage),
-			)
+			res, err := ch.
+				Get().
+				Group(CachedPageGroup).
+				Key(c.Request().URL.String()).
+				Type(new(CachedPage)).
+				Fetch(c.Request().Context())
+
 			if err != nil {
 				switch {
 				case err == redis.Nil:

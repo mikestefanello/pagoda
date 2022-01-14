@@ -7,9 +7,6 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"github.com/eko/gocache/v2/cache"
-	"github.com/eko/gocache/v2/store"
-	"github.com/go-redis/redis/v8"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -31,11 +28,8 @@ type Container struct {
 	// Config stores the application configuration
 	Config *config.Config
 
-	// Cache contains the cache interface
-	Cache *cache.Cache
-
-	// cacheClient stores the client to the underlying cache service
-	cacheClient *redis.Client
+	// Cache contains the cache client
+	Cache *CacheClient
 
 	// Database stores the connection to the database
 	Database *sql.DB
@@ -70,7 +64,7 @@ func NewContainer() *Container {
 
 // Shutdown shuts the Container down and disconnects all connections
 func (c *Container) Shutdown() error {
-	if err := c.cacheClient.Close(); err != nil {
+	if err := c.Cache.Close(); err != nil {
 		return err
 	}
 	if err := c.ORM.Close(); err != nil {
@@ -114,15 +108,10 @@ func (c *Container) initWeb() {
 
 // initCache initializes the cache
 func (c *Container) initCache() {
-	c.cacheClient = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", c.Config.Cache.Hostname, c.Config.Cache.Port),
-		Password: c.Config.Cache.Password,
-	})
-	if _, err := c.cacheClient.Ping(context.Background()).Result(); err != nil {
-		panic(fmt.Sprintf("failed to connect to cache server: %v", err))
+	var err error
+	if c.Cache, err = NewCacheClient(c.Config.Cache); err != nil {
+		panic(err)
 	}
-	cacheStore := store.NewRedis(c.cacheClient, nil)
-	c.Cache = cache.New(cacheStore)
 }
 
 // initDatabase initializes the database

@@ -9,10 +9,6 @@ import (
 	"github.com/mikestefanello/pagoda/middleware"
 	"github.com/mikestefanello/pagoda/services"
 
-	"github.com/eko/gocache/v2/marshaler"
-
-	"github.com/eko/gocache/v2/store"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -131,10 +127,6 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 	// The request URL is used as the cache key so the middleware can serve the
 	// cached page on matching requests
 	key := ctx.Request().URL.String()
-	opts := &store.Options{
-		Expiration: page.Cache.Expiration,
-		Tags:       page.Cache.Tags,
-	}
 	cp := middleware.CachedPage{
 		URL:        key,
 		HTML:       html.Bytes(),
@@ -142,16 +134,21 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 		StatusCode: ctx.Response().Status,
 	}
 
-	err := marshaler.New(c.Container.Cache).Set(ctx.Request().Context(), key, cp, opts)
-	if err != nil {
-		if !context.IsCanceledError(err) {
-			ctx.Logger().Errorf("failed to cache page: %v", err)
-		}
+	err := c.Container.Cache.
+		Set().
+		Group(middleware.CachedPageGroup).
+		Key(key).
+		Tags(page.Cache.Tags).
+		Expiration(page.Cache.Expiration).
+		Data(cp).
+		Save(ctx.Request().Context())
 
-		return
+	switch {
+	case err == nil:
+		ctx.Logger().Info("cached page")
+	case !context.IsCanceledError(err):
+		ctx.Logger().Errorf("failed to cache page: %v", err)
 	}
-
-	ctx.Logger().Infof("cached page")
 }
 
 // Redirect redirects to a given route name with optional route parameters
