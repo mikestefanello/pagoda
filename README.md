@@ -887,7 +887,7 @@ err := c.Cache.
 ```go
 err := c.Cache.
     Set().
-    Group("my-group")
+    Group("my-group").
     Key("my-key").
     Data(myData).
     Save(ctx)
@@ -899,7 +899,7 @@ err := c.Cache.
 err := c.Cache.
     Set().
     Key("my-key").
-    Tags([]string{"tag1", "tag2"})
+    Tags("tag1", "tag2").
     Data(myData).
     Save(ctx)
 ```
@@ -910,7 +910,7 @@ err := c.Cache.
 err := c.Cache.
     Set().
     Key("my-key").
-    Expiration(time.Hour * 2)
+    Expiration(time.Hour * 2).
     Data(myData).
     Save(ctx)
 ```
@@ -945,7 +945,7 @@ This will flush all cache entries that were tagged with the given tags.
 ```go
 err := c.Cache.
     Flush().
-    Tags([]string{"tag1"}).
+    Tags("tag1", "tag2").
     Exec(ctx)
 ```
 
@@ -965,7 +965,7 @@ While it's ideal to use cache control headers on your static files so browsers c
 
 For example, to render a file located in `static/picture.png`, you would use:
 ```go
-<img src="{{File "picture.png"}"/>
+<img src="{{File "picture.png"}}"/>
 ```
 
 Which would result in:

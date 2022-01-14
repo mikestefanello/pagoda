@@ -138,7 +138,7 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 		Set().
 		Group(middleware.CachedPageGroup).
 		Key(key).
-		Tags(page.Cache.Tags).
+		Tags(page.Cache.Tags...).
 		Expiration(page.Cache.Expiration).
 		Data(cp).
 		Save(ctx.Request().Context())

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -124,13 +125,17 @@ func (c *cacheSet) Expiration(expiration time.Duration) *cacheSet {
 }
 
 // Tags sets the cache tags
-func (c *cacheSet) Tags(tags []string) *cacheSet {
+func (c *cacheSet) Tags(tags ...string) *cacheSet {
 	c.tags = tags
 	return c
 }
 
 // Save saves the data in the cache
 func (c *cacheSet) Save(ctx context.Context) error {
+	if c.key == "" {
+		return errors.New("no cache key specified")
+	}
+
 	opts := &store.Options{
 		Expiration: c.expiration,
 		Tags:       c.tags,
@@ -161,6 +166,10 @@ func (c *cacheGet) Type(expectedType interface{}) *cacheGet {
 
 // Fetch fetches the data from the cache
 func (c *cacheGet) Fetch(ctx context.Context) (interface{}, error) {
+	if c.key == "" {
+		return nil, errors.New("no cache key specified")
+	}
+
 	return marshaler.New(c.client.cache).Get(
 		ctx,
 		c.client.cacheKey(c.group, c.key),
@@ -181,7 +190,7 @@ func (c *cacheFlush) Group(group string) *cacheFlush {
 }
 
 // Tags sets the cache tags
-func (c *cacheFlush) Tags(tags []string) *cacheFlush {
+func (c *cacheFlush) Tags(tags ...string) *cacheFlush {
 	c.tags = tags
 	return c
 }

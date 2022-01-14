@@ -73,14 +73,14 @@ func TestCacheClient(t *testing.T) {
 		Group(group).
 		Key(key).
 		Data(data).
-		Tags([]string{"tag1"}).
+		Tags("tag1").
 		Save(context.Background())
 	require.NoError(t, err)
 
 	// Flush the tag
 	err = c.Cache.
 		Flush().
-		Tags([]string{"tag1"}).
+		Tags("tag1").
 		Exec(context.Background())
 	require.NoError(t, err)
 

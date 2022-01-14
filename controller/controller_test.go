@@ -166,7 +166,7 @@ func TestController_RenderPage(t *testing.T) {
 		// Clear the tag
 		err = c.Cache.
 			Flush().
-			Tags([]string{p.Cache.Tags[0]}).
+			Tags(p.Cache.Tags[0]).
 			Exec(context.Background())
 		require.NoError(t, err)
 
