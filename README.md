@@ -70,6 +70,7 @@
   * [HTMX support](#htmx-support)
   * [Rendering the page](#rendering-the-page)
 * [Template renderer](#template-renderer)
+  * [Custom functions](#custom-functions)
   * [Caching](#caching)
   * [Hot-reload for development](#hot-reload-for-development)
   * [File configuration](#file-configuration)
@@ -759,7 +760,7 @@ Many examples of its usage are available in the included examples:
 - All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
 - All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
 - The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
-- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts vi AJAX.
+- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts via AJAX.
 
 All of this can be easily accomplished without writing any JavaScript at all.
 
@@ -814,35 +815,64 @@ func (c *Home) Get(ctx echo.Context) error {
 
 The _template renderer_ is a _Service_ on the `Container` that aims to make template parsing and rendering easy and flexible. It is the mechanism that allows the `Page` to do [automatic template parsing](#automatic-template-parsing). The standard `html/template` is still the engine used behind the scenes. The code can be found in `services/template_renderer.go`.
 
-While there are several methods available, the following is the primary one used:
+Here is an example of a complex rendering that uses multiple template files as well as an entire directory of template files:
 
-`ParseAndExecute(cacheGroup, cacheID, baseName string, files []string, directories []string, data interface{})`
+```go
+buf, err = c.TemplateRenderer.
+    Parse().
+    Group("page").
+    Key("home").
+    Base("main").
+    Files("layouts/main", "pages/home").
+    Directories("components").
+    Execute(data)
+```
+
+This will do the following:
+- [Cache](#caching) the parsed template with a _group_ of `page` and _key_ of `home` so this parse only happens once
+- Set the _base template file_ as `main`
+- Include the templates `templates/layout/main.gohtml` and `templates/pages/home.gohtml`
+- Include all templates located within the directory `templates/components`
+- Include the [funcmap](#funcmap)
+- Execute the parsed template with `data` being passed in to the templates
 
 Using the example from the [page rendering](#rendering-the-page), this is what the `Controller` will execute:
 
 ```go
-buf, err = c.TemplateRenderer.ParseAndExecute(
-    "page",
-    page.Name,
-    page.Layout,
-    []string{
+buf, err = c.Container.TemplateRenderer.
+    Parse().
+    Group("page").
+    Key(page.Name).
+    Base(page.Layout).
+    Files(
         fmt.Sprintf("layouts/%s", page.Layout),
         fmt.Sprintf("pages/%s", page.Name),
-    },
-    []string{"components"},
-    page,
-)
+    ).
+    Directories("components").
+    Execute(page)
 ```
 
-The parameters represent:
- - `cacheGroup`: The _group_ to cache the parsed templates in
- - `cacheID`: The _ID_ of the cache within the _group_
- - `baseName`: The name of the base template, excluding the extension
- - `files`: A list of individual template files to include, excluding the extension and template directory
- - `directories`: A list of directories to include all templates contained
- - `data`: The data object to send to the templates
+If you have a need to _separately_ parse and cache the templates then later execute, you can separate the operations:
 
-All templates will be parsed with the [funcap](#funcmap).
+```go
+_, err := c.TemplateRenderer.
+    Parse().
+    Group("my-group").
+    Key("my-key").
+    Base("auth").
+    Files("layouts/auth", "pages/login").
+    Directories("components").
+    Store()
+```
+
+```go
+tpl, err := c.TemplateRenderer.Load("my-group", "my-key")
+buf, err := tpl.Execute(data)
+```
+
+### Custom functions
+
+All templates will be parsed with the [funcmap](#funcmap) so all of your custom functions as well as the functions provided by [sprig](https://github.com/Masterminds/sprig) will be available.
 
 ### Caching
 
@@ -935,7 +965,7 @@ err := c.Cache.
     Flush().
     Group("my-group").
     Key("my-key").
-    Exec(ctx)
+    Execute(ctx)
 ```
 
 ### Flush tags
@@ -946,7 +976,7 @@ This will flush all cache entries that were tagged with the given tags.
 err := c.Cache.
     Flush().
     Tags("tag1", "tag2").
-    Exec(ctx)
+    Execute(ctx)
 ```
 
 ## Static files
@@ -979,7 +1009,7 @@ Where `9fhe73kaf3` is the randomly-generated cache-buster.
 
 An email client was added as a _Service_ to the `Container` but it is just a skeleton without any actual email-sending functionality. The reason is because there are a lot of ways to send email and most prefer using a SaaS solution for that. That makes it difficult to provide a generic solution that will work for most applications.
 
-The structure in the client (`MailClient`) makes composing emails very easy and you have the option to construct the body using either a simple string or with a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction. **You must** finish the implementation of `mail.Send`.
+The structure in the client (`MailClient`) makes composing emails very easy and you have the option to construct the body using either a simple string or with a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction. **You must** finish the implementation of `MailClient.send`.
 
 The _from_ address will default to the configuration value at `Config.Mail.FromAddress`. This can be overridden per-email by calling `From()` on the email and passing in the desired address.
 

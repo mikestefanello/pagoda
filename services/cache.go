@@ -195,8 +195,8 @@ func (c *cacheFlush) Tags(tags ...string) *cacheFlush {
 	return c
 }
 
-// Exec flushes the data from the cache
-func (c *cacheFlush) Exec(ctx context.Context) error {
+// Execute flushes the data from the cache
+func (c *cacheFlush) Execute(ctx context.Context) error {
 	if len(c.tags) > 0 {
 		if err := c.client.cache.Invalidate(ctx, store.InvalidateOptions{
 			Tags: c.tags,

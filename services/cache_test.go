@@ -51,7 +51,7 @@ func TestCacheClient(t *testing.T) {
 		Flush().
 		Group(group).
 		Key(key).
-		Exec(context.Background())
+		Execute(context.Background())
 	require.NoError(t, err)
 
 	// The data should be gone
@@ -81,7 +81,7 @@ func TestCacheClient(t *testing.T) {
 	err = c.Cache.
 		Flush().
 		Tags("tag1").
-		Exec(context.Background())
+		Execute(context.Background())
 	require.NoError(t, err)
 
 	// The data should be gone

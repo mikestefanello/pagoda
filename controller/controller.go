@@ -52,17 +52,17 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		// 2. The content template specified in Page.Name
 		// 3. All templates within the components directory
 		// Also included is the function map provided by the funcmap package
-		buf, err = c.Container.TemplateRenderer.ParseAndExecute(
-			"page:htmx",
-			page.Name,
-			"htmx",
-			[]string{
+		buf, err = c.Container.TemplateRenderer.
+			Parse().
+			Group("page:htmx").
+			Key(page.Name).
+			Base("htmx").
+			Files(
 				"htmx",
 				fmt.Sprintf("pages/%s", page.Name),
-			},
-			[]string{"components"},
-			page,
-		)
+			).
+			Directories("components").
+			Execute(page)
 	} else {
 		// Parse and execute the templates for the Page
 		// As mentioned in the documentation for the Page struct, the templates used for the page will be:
@@ -70,17 +70,17 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		// 2. The content template specified in Page.Name
 		// 3. All templates within the components directory
 		// Also included is the function map provided by the funcmap package
-		buf, err = c.Container.TemplateRenderer.ParseAndExecute(
-			"page",
-			page.Name,
-			page.Layout,
-			[]string{
+		buf, err = c.Container.TemplateRenderer.
+			Parse().
+			Group("page").
+			Key(page.Name).
+			Base(page.Layout).
+			Files(
 				fmt.Sprintf("layouts/%s", page.Layout),
 				fmt.Sprintf("pages/%s", page.Name),
-			},
-			[]string{"components"},
-			page,
-		)
+			).
+			Directories("components").
+			Execute(page)
 	}
 
 	if err != nil {

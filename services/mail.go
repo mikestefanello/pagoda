@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/mikestefanello/pagoda/config"
@@ -21,6 +22,7 @@ type (
 		templates *TemplateRenderer
 	}
 
+	// mail represents an email to be sent
 	mail struct {
 		client       *MailClient
 		from         string
@@ -51,6 +53,43 @@ func (m *MailClient) Compose() *mail {
 // skipSend determines if mail sending should be skipped
 func (m *MailClient) skipSend() bool {
 	return m.config.App.Environment != config.EnvProduction
+}
+
+// send attempts to send the email
+func (m *MailClient) send(email *mail, ctx echo.Context) error {
+	switch {
+	case email.to == "":
+		return errors.New("email cannot be sent without a to address")
+	case email.body == "" && email.template == "":
+		return errors.New("email cannot be sent without a body or template")
+	}
+
+	// Check if a template was supplied
+	if email.template != "" {
+		// Parse and execute template
+		buf, err := m.templates.
+			Parse().
+			Group("mail").
+			Key(email.template).
+			Base(email.template).
+			Files(fmt.Sprintf("emails/%s", email.template)).
+			Execute(email.templateData)
+
+		if err != nil {
+			return err
+		}
+
+		email.body = buf.String()
+	}
+
+	// Check if mail sending should be skipped
+	if m.skipSend() {
+		ctx.Logger().Debugf("skipping email sent to: %s", email.to)
+		return nil
+	}
+
+	// TODO: Finish based on your mail sender of choice!
+	return nil
 }
 
 // From sets the email from address
@@ -96,30 +135,5 @@ func (m *mail) TemplateData(data interface{}) *mail {
 
 // Send attempts to send the email
 func (m *mail) Send(ctx echo.Context) error {
-	// Check if a template was supplied
-	if m.template != "" {
-		// Parse and execute template
-		buf, err := m.client.templates.ParseAndExecute(
-			"mail",
-			m.template,
-			m.template,
-			[]string{fmt.Sprintf("emails/%s", m.template)},
-			[]string{},
-			m.templateData,
-		)
-		if err != nil {
-			return err
-		}
-
-		m.body = buf.String()
-	}
-
-	// Check if mail sending should be skipped
-	if m.client.skipSend() {
-		ctx.Logger().Debugf("skipping email sent to: %s", m.to)
-		return nil
-	}
-
-	// TODO: Finish based on your mail sender of choice!
-	return nil
+	return m.client.send(m, ctx)
 }

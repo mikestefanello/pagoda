@@ -100,7 +100,7 @@ func TestController_RenderPage(t *testing.T) {
 			expectedTemplates[f.Name()] = true
 		}
 
-		for _, v := range parsed.Templates() {
+		for _, v := range parsed.Template.Templates() {
 			delete(expectedTemplates, v.Name())
 		}
 		assert.Empty(t, expectedTemplates)
@@ -133,7 +133,7 @@ func TestController_RenderPage(t *testing.T) {
 			expectedTemplates[f.Name()] = true
 		}
 
-		for _, v := range parsed.Templates() {
+		for _, v := range parsed.Template.Templates() {
 			delete(expectedTemplates, v.Name())
 		}
 		assert.Empty(t, expectedTemplates)
@@ -167,7 +167,7 @@ func TestController_RenderPage(t *testing.T) {
 		err = c.Cache.
 			Flush().
 			Tags(p.Cache.Tags[0]).
-			Exec(context.Background())
+			Execute(context.Background())
 		require.NoError(t, err)
 
 		// Refetch from the cache and expect no results

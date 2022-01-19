@@ -19,13 +19,14 @@ func TestTemplateRenderer(t *testing.T) {
 	assert.Error(t, err)
 
 	// Parse in to the cache
-	err = c.TemplateRenderer.Parse(
-		group,
-		id,
-		"htmx",
-		[]string{"htmx", "pages/error"},
-		[]string{"components"},
-	)
+	tpl, err := c.TemplateRenderer.
+		Parse().
+		Group(group).
+		Key(id).
+		Base("htmx").
+		Files("htmx", "pages/error").
+		Directories("components").
+		Store()
 	require.NoError(t, err)
 
 	// Should exist now
@@ -41,7 +42,7 @@ func TestTemplateRenderer(t *testing.T) {
 	for _, f := range components {
 		expectedTemplates[f.Name()] = true
 	}
-	for _, v := range parsed.Templates() {
+	for _, v := range parsed.Template.Templates() {
 		delete(expectedTemplates, v.Name())
 	}
 	assert.Empty(t, expectedTemplates)
@@ -51,19 +52,20 @@ func TestTemplateRenderer(t *testing.T) {
 	}{
 		StatusCode: 500,
 	}
-	buf, err := c.TemplateRenderer.Execute(group, id, "htmx", data)
+	buf, err := tpl.Execute(data)
 	require.NoError(t, err)
 	require.NotNil(t, buf)
 	assert.Contains(t, buf.String(), "Please try again")
 
-	buf, err = c.TemplateRenderer.ParseAndExecute(
-		group,
-		id,
-		"htmx",
-		[]string{"htmx", "pages/error"},
-		[]string{"components"},
-		data,
-	)
+	buf, err = c.TemplateRenderer.
+		Parse().
+		Group(group).
+		Key(id).
+		Base("htmx").
+		Files("htmx", "pages/error").
+		Directories("components").
+		Execute(data)
+
 	require.NoError(t, err)
 	require.NotNil(t, buf)
 	assert.Contains(t, buf.String(), "Please try again")

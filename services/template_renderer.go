@@ -14,21 +14,47 @@ import (
 	"github.com/mikestefanello/pagoda/funcmap"
 )
 
-// TemplateRenderer provides a flexible and easy to use method of rendering simple templates or complex sets of
-// templates while also providing caching and/or hot-reloading depending on your current environment
-type TemplateRenderer struct {
-	// templateCache stores a cache of parsed page templates
-	templateCache sync.Map
+type (
+	// TemplateRenderer provides a flexible and easy to use method of rendering simple templates or complex sets of
+	// templates while also providing caching and/or hot-reloading depending on your current environment
+	TemplateRenderer struct {
+		// templateCache stores a cache of parsed page templates
+		templateCache sync.Map
 
-	// funcMap stores the template function map
-	funcMap template.FuncMap
+		// funcMap stores the template function map
+		funcMap template.FuncMap
 
-	// templatePath stores the complete path to the templates directory
-	templatesPath string
+		// templatePath stores the complete path to the templates directory
+		templatesPath string
 
-	// config stores application configuration
-	config *config.Config
-}
+		// config stores application configuration
+		config *config.Config
+	}
+
+	// TemplateParsed is a wrapper around parsed templates which are stored in the TemplateRenderer cache
+	TemplateParsed struct {
+		// Template is the parsed template
+		Template *template.Template
+
+		// build stores the build data used to parse the template
+		build *templateBuild
+	}
+
+	// templateBuild stores the build data used to parse a template
+	templateBuild struct {
+		group       string
+		key         string
+		base        string
+		files       []string
+		directories []string
+	}
+
+	// templateBuilder handles chaining a template parse operation
+	templateBuilder struct {
+		build    *templateBuild
+		renderer *TemplateRenderer
+	}
+)
 
 // NewTemplateRenderer creates a new TemplateRenderer
 func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
@@ -47,123 +73,12 @@ func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
 	return t
 }
 
-// Parse parses a set of templates and caches them for quick execution
-// If the application environment is set to local, the cache will be bypassed and templates will be
-// parsed upon each request so hot-reloading is possible without restarts.
-//
-// All template files and template directories must be provided relative to the templates directory
-// and without template extensions. Those two values can be altered via the config package.
-//
-// cacheGroup is used to separate templates in to groups within the cache to avoid potential conflicts
-// with the cacheID.
-//
-// baseName is the filename of the base template without any paths or an extension.
-// files is a slice of all individual template files that will be included in the parse.
-// directories is a slice of directories which all template files witin them will be included in the parse
-//
-// Also included will be the function map provided by the funcmap package.
-//
-// An example usage of this:
-// t.Parse(
-//		"page",
-//		"home",
-//		"main",
-//		[]string{
-//			"layouts/main",
-//			"pages/home",
-//		},
-//		[]string{"components"},
-//)
-//
-// This will perform a template parse which will:
-//		- Be cached using a key of "page:home"
-//		- Include the layouts/main.gohtml and pages/home.gohtml templates
-//		- Include all templates within the components directory
-//		- Include the function map within the funcmap package
-//		- Set the base template as main.gohtml
-func (t *TemplateRenderer) Parse(cacheGroup, cacheID, baseName string, files []string, directories []string) error {
-	cacheKey := t.getCacheKey(cacheGroup, cacheID)
-
-	// Check if the template has not yet been parsed or if the app environment is local, so that
-	// templates reflect changes without having the restart the server
-	if _, err := t.Load(cacheGroup, cacheID); err != nil || t.config.App.Environment == config.EnvLocal {
-		// Initialize the parsed template with the function map
-		parsed := template.New(baseName + config.TemplateExt).
-			Funcs(t.funcMap)
-
-		// Parse all files provided
-		if len(files) > 0 {
-			for k, v := range files {
-				files[k] = fmt.Sprintf("%s/%s%s", t.templatesPath, v, config.TemplateExt)
-			}
-
-			parsed, err = parsed.ParseFiles(files...)
-			if err != nil {
-				return err
-			}
-		}
-
-		// Parse all templates within the provided directories
-		for _, dir := range directories {
-			dir = fmt.Sprintf("%s/%s/*%s", t.templatesPath, dir, config.TemplateExt)
-			parsed, err = parsed.ParseGlob(dir)
-			if err != nil {
-				return err
-			}
-		}
-
-		// Store the template so this process only happens once
-		t.templateCache.Store(cacheKey, parsed)
+// Parse creates a template build operation
+func (t *TemplateRenderer) Parse() *templateBuilder {
+	return &templateBuilder{
+		renderer: t,
+		build:    &templateBuild{},
 	}
-
-	return nil
-}
-
-// Execute executes a cached template with the data provided
-// See Parse() for an explanation of the parameters
-func (t *TemplateRenderer) Execute(cacheGroup, cacheID, baseName string, data interface{}) (*bytes.Buffer, error) {
-	tmpl, err := t.Load(cacheGroup, cacheID)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(bytes.Buffer)
-	err = tmpl.ExecuteTemplate(buf, baseName+config.TemplateExt, data)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf, nil
-}
-
-// ParseAndExecute is a wrapper around Parse() and Execute()
-func (t *TemplateRenderer) ParseAndExecute(cacheGroup, cacheID, baseName string, files []string, directories []string, data interface{}) (*bytes.Buffer, error) {
-	var buf *bytes.Buffer
-	var err error
-
-	if err = t.Parse(cacheGroup, cacheID, baseName, files, directories); err != nil {
-		return nil, err
-	}
-	if buf, err = t.Execute(cacheGroup, cacheID, baseName, data); err != nil {
-		return nil, err
-	}
-
-	return buf, nil
-}
-
-// Load loads a template from the cache
-func (t *TemplateRenderer) Load(cacheGroup, cacheID string) (*template.Template, error) {
-	load, ok := t.templateCache.Load(t.getCacheKey(cacheGroup, cacheID))
-	if !ok {
-		return nil, errors.New("uncached page template requested")
-	}
-
-	tmpl, ok := load.(*template.Template)
-	if !ok {
-		return nil, errors.New("unable to cast cached template")
-	}
-
-	return tmpl, nil
 }
 
 // GetTemplatesPath gets the complete path to the templates directory
@@ -172,6 +87,147 @@ func (t *TemplateRenderer) GetTemplatesPath() string {
 }
 
 // getCacheKey gets a cache key for a given group and ID
-func (t *TemplateRenderer) getCacheKey(cacheGroup, cacheID string) string {
-	return fmt.Sprintf("%s:%s", cacheGroup, cacheID)
+func (t *TemplateRenderer) getCacheKey(group, key string) string {
+	if group != "" {
+		return fmt.Sprintf("%s:%s", group, key)
+	}
+	return key
+}
+
+// parse parses a set of templates and caches them for quick execution
+// If the application environment is set to local, the cache will be bypassed and templates will be
+// parsed upon each request so hot-reloading is possible without restarts.
+// Also included will be the function map provided by the funcmap package.
+func (t *TemplateRenderer) parse(build *templateBuild) (*TemplateParsed, error) {
+	var tp *TemplateParsed
+	var err error
+
+	switch {
+	case build.key == "":
+		return nil, errors.New("cannot parse template without key")
+	case len(build.files) == 0 && len(build.directories) == 0:
+		return nil, errors.New("cannot parse template without files or directories")
+	case build.base == "":
+		return nil, errors.New("cannot parse template without base")
+	}
+
+	// Generate the cache key
+	cacheKey := t.getCacheKey(build.group, build.key)
+
+	// Check if the template has not yet been parsed or if the app environment is local, so that
+	// templates reflect changes without having the restart the server
+	if tp, err = t.Load(build.group, build.key); err != nil || t.config.App.Environment == config.EnvLocal {
+		// Initialize the parsed template with the function map
+		parsed := template.New(build.base + config.TemplateExt).
+			Funcs(t.funcMap)
+
+		// Parse all files provided
+		if len(build.files) > 0 {
+			for k, v := range build.files {
+				build.files[k] = fmt.Sprintf("%s/%s%s", t.templatesPath, v, config.TemplateExt)
+			}
+
+			parsed, err = parsed.ParseFiles(build.files...)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Parse all templates within the provided directories
+		for _, dir := range build.directories {
+			dir = fmt.Sprintf("%s/%s/*%s", t.templatesPath, dir, config.TemplateExt)
+			parsed, err = parsed.ParseGlob(dir)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Store the template so this process only happens once
+		tp = &TemplateParsed{
+			Template: parsed,
+			build:    build,
+		}
+		t.templateCache.Store(cacheKey, tp)
+	}
+
+	return tp, nil
+}
+
+// Load loads a template from the cache
+func (t *TemplateRenderer) Load(group, key string) (*TemplateParsed, error) {
+	load, ok := t.templateCache.Load(t.getCacheKey(group, key))
+	if !ok {
+		return nil, errors.New("uncached page template requested")
+	}
+
+	tmpl, ok := load.(*TemplateParsed)
+	if !ok {
+		return nil, errors.New("unable to cast cached template")
+	}
+
+	return tmpl, nil
+}
+
+// Execute executes a template with the given data and provides the output
+func (t *TemplateParsed) Execute(data interface{}) (*bytes.Buffer, error) {
+	if t.Template == nil {
+		return nil, errors.New("cannot execute template: template not initialized")
+	}
+
+	buf := new(bytes.Buffer)
+	err := t.Template.ExecuteTemplate(buf, t.build.base+config.TemplateExt, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf, nil
+}
+
+// Group sets the cache group for the template being built
+func (t *templateBuilder) Group(group string) *templateBuilder {
+	t.build.group = group
+	return t
+}
+
+// Key sets the cache key for the template being built
+func (t *templateBuilder) Key(key string) *templateBuilder {
+	t.build.key = key
+	return t
+}
+
+// Base sets the name of the base template to be used during template parsing and execution.
+// This should be only the file name without a directory or extension.
+func (t *templateBuilder) Base(base string) *templateBuilder {
+	t.build.base = base
+	return t
+}
+
+// Files sets a list of template files to include in the parse.
+// This should not include the file extension and the paths should be relative to the templates directory.
+func (t *templateBuilder) Files(files ...string) *templateBuilder {
+	t.build.files = files
+	return t
+}
+
+// Directories sets a list of directories that all template files within will be parsed.
+// The paths should be relative to the templates directory.
+func (t *templateBuilder) Directories(directories ...string) *templateBuilder {
+	t.build.directories = directories
+	return t
+}
+
+// Store parsed the templates and stores them in the cache
+func (t *templateBuilder) Store() (*TemplateParsed, error) {
+	return t.renderer.parse(t.build)
+}
+
+// Execute executes the template with the given data.
+// If the template has not already been cached, this will parse and cache the template
+func (t *templateBuilder) Execute(data interface{}) (*bytes.Buffer, error) {
+	tp, err := t.Store()
+	if err != nil {
+		return nil, err
+	}
+
+	return tp.Execute(data)
 }
