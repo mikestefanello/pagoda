@@ -5,7 +5,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/tests"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/labstack/echo/v4"

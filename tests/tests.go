@@ -12,7 +12,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/gorilla/sessions"
