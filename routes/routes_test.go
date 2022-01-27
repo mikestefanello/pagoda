@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -51,8 +52,14 @@ type httpRequest struct {
 }
 
 func request(t *testing.T) *httpRequest {
+	jar, err := cookiejar.New(nil)
+	require.NoError(t, err)
 	r := httpRequest{
-		t: t,
+		t:    t,
+		body: url.Values{},
+		client: http.Client{
+			Jar: jar,
+		},
 	}
 	return &r
 }
@@ -83,6 +90,18 @@ func (h *httpRequest) get() *httpResponse {
 }
 
 func (h *httpRequest) post() *httpResponse {
+	// Make a get request to get the CSRF token
+	doc := h.get().
+		assertStatusCode(http.StatusOK).
+		toDoc()
+
+	// Extract the CSRF and include it in the POST request body
+	csrf := doc.Find(`input[name="csrf"]`).First()
+	token, exists := csrf.Attr("value")
+	assert.True(h.t, exists)
+	h.body["csrf"] = []string{token}
+
+	// Make the POST requests
 	resp, err := h.client.PostForm(h.route, h.body)
 	require.NoError(h.t, err)
 	r := httpResponse{
