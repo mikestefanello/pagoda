@@ -104,6 +104,6 @@ func userRoutes(c *services.Container, g *echo.Group, ctr controller.Controller)
 		middleware.LoadValidPasswordToken(c.Auth),
 	)
 	reset := ResetPassword{Controller: ctr}
-	resetGroup.GET("/token/:user/:password_token", reset.Get).Name = "reset_password"
-	resetGroup.POST("/token/:user/:password_token", reset.Post).Name = "reset_password.post"
+	resetGroup.GET("/token/:user/:password_token/:token", reset.Get).Name = "reset_password"
+	resetGroup.POST("/token/:user/:password_token/:token", reset.Post).Name = "reset_password.post"
 }

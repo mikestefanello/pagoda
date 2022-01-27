@@ -79,17 +79,17 @@ func TestLoadValidPasswordToken(t *testing.T) {
 	err := tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
 	tests.AssertHTTPErrorCode(t, err, http.StatusInternalServerError)
 
-	// Add user context but no password token and expect a redirect
-	ctx.SetParamNames("user")
-	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID))
+	// Add user and password token context but no token and expect a redirect
+	ctx.SetParamNames("user", "password_token")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), "1")
 	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
 	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusFound, ctx.Response().Status)
 
 	// Add user context and invalid password token and expect a redirect
-	ctx.SetParamNames("user", "password_token")
-	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), "faketoken")
+	ctx.SetParamNames("user", "password_token", "token")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), "1", "faketoken")
 	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
 	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
 	assert.NoError(t, err)
@@ -100,8 +100,8 @@ func TestLoadValidPasswordToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Add user and valid password token
-	ctx.SetParamNames("user", "password_token")
-	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), token)
+	ctx.SetParamNames("user", "password_token", "token")
+	ctx.SetParamValues(fmt.Sprintf("%d", usr.ID), fmt.Sprintf("%d", pt.ID), token)
 	_ = tests.ExecuteMiddleware(ctx, LoadUser(c.ORM))
 	err = tests.ExecuteMiddleware(ctx, LoadValidPasswordToken(c.Auth))
 	assert.Nil(t, err)

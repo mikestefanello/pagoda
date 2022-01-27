@@ -277,12 +277,13 @@ The generated code is extremely flexible and impressive. An example to highlight
 ```go
 entity, err := c.ORM.PasswordToken.
     Query().
+    Where(passwordtoken.ID(tokenID)).
     Where(passwordtoken.HasUserWith(user.ID(userID))).
     Where(passwordtoken.CreatedAtGTE(expiration)).
-    All(ctx.Request().Context())
+    Only(ctx.Request().Context())
 ```
 
-This executes a database query to return all _password token_ entities that belong to a user with a given ID and have a _created at_ timestamp field that is greater than or equal to a given time.
+This executes a database query to return the _password token_ entity with a given ID that belong to a user with a given ID and has a _created at_ timestamp field that is greater than or equal to a given time.
 
 ## Sessions
 
@@ -326,11 +327,11 @@ Users can reset their password in a secure manner by issuing a new password toke
 
 Tokens have a configurable expiration. By default, they expire within 1 hour. This can be controlled in the `config` package. The expiration of the token is not stored in the database, but rather is used only when tokens are loaded for potential usage. This allows you to change the expiration duration and affect existing tokens.
 
-Since the actual tokens are not stored in the database, the reset URL must contain the user's ID. Using that, `GetValidPasswordToken()` will load all non-expired _password token_ entities belonging to the user, and use `bcrypt` to determine if the token in the URL matches any of the stored hashes.
+Since the actual tokens are not stored in the database, the reset URL must contain the user and password token ID. Using that, `GetValidPasswordToken()` will load a matching, non-expired _password token_ entity belonging to the user, and use `bcrypt` to determine if the token in the URL matches stored hash of the password token entity.
 
 Once a user claims a valid password token, all tokens for that user should be deleted using `DeletePasswordTokens()`.
 
-Routes are provided to request a password reset email at `user/password` and to reset your password at `user/password/reset/token/:uid/:password_token`.
+Routes are provided to request a password reset email at `user/password` and to reset your password at `user/password/reset/token/:user/:password_token/:token`.
 
 ### Registration
 

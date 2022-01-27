@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/mikestefanello/pagoda/context"
 	"github.com/mikestefanello/pagoda/ent"
@@ -48,7 +49,19 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 			}
 			usr := c.Get(context.UserKey).(*ent.User)
 
-			token, err := authClient.GetValidPasswordToken(c, c.Param("password_token"), usr.ID)
+			// Extract the token ID
+			tokenID, err := strconv.Atoi(c.Param("password_token"))
+			if err != nil {
+				return echo.NewHTTPError(http.StatusNotFound)
+			}
+
+			// Attempt to load a valid password token
+			token, err := authClient.GetValidPasswordToken(
+				c,
+				usr.ID,
+				tokenID,
+				c.Param("token"),
+			)
 
 			switch err.(type) {
 			case nil:

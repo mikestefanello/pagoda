@@ -59,13 +59,13 @@ func TestAuthClient_GeneratePasswordResetToken(t *testing.T) {
 
 func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	// Check that a fake token is not valid
-	_, err := c.Auth.GetValidPasswordToken(ctx, "faketoken", usr.ID)
+	_, err := c.Auth.GetValidPasswordToken(ctx, usr.ID, 1, "faketoken")
 	assert.Error(t, err)
 
 	// Generate a valid token and check that it is returned
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
-	pt2, err := c.Auth.GetValidPasswordToken(ctx, token, usr.ID)
+	pt2, err := c.Auth.GetValidPasswordToken(ctx, usr.ID, pt.ID, token)
 	require.NoError(t, err)
 	assert.Equal(t, pt.ID, pt2.ID)
 
@@ -78,7 +78,7 @@ func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Expired tokens should not be valid
-	_, err = c.Auth.GetValidPasswordToken(ctx, token, usr.ID)
+	_, err = c.Auth.GetValidPasswordToken(ctx, usr.ID, pt.ID, token)
 	assert.Error(t, err)
 }
 

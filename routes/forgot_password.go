@@ -76,7 +76,7 @@ func (c *ForgotPassword) Post(ctx echo.Context) error {
 	}
 
 	// Generate the token
-	token, _, err := c.Container.Auth.GeneratePasswordResetToken(ctx, u.ID)
+	token, pt, err := c.Container.Auth.GeneratePasswordResetToken(ctx, u.ID)
 	if err != nil {
 		return c.Fail(ctx, err, "error generating password reset token")
 	}
@@ -84,7 +84,7 @@ func (c *ForgotPassword) Post(ctx echo.Context) error {
 	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
 
 	// Email the user
-	url := ctx.Echo().Reverse("reset_password", u.ID, token)
+	url := ctx.Echo().Reverse("reset_password", u.ID, pt.ID, token)
 	err = c.Container.Mail.
 		Compose().
 		To(u.Email).
