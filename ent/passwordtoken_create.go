@@ -132,18 +132,18 @@ func (ptc *PasswordTokenCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ptc *PasswordTokenCreate) check() error {
 	if _, ok := ptc.mutation.Hash(); !ok {
-		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "hash"`)}
+		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "PasswordToken.hash"`)}
 	}
 	if v, ok := ptc.mutation.Hash(); ok {
 		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "hash": %w`, err)}
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PasswordToken.created_at"`)}
 	}
 	if _, ok := ptc.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PasswordToken.user"`)}
 	}
 	return nil
 }

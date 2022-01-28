@@ -135,11 +135,11 @@ func (ptu *PasswordTokenUpdate) ExecX(ctx context.Context) {
 func (ptu *PasswordTokenUpdate) check() error {
 	if v, ok := ptu.mutation.Hash(); ok {
 		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf("ent: validator failed for field \"hash\": %w", err)}
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
 	if _, ok := ptu.mutation.UserID(); ptu.mutation.UserCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"user\"")
+		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
 }
@@ -343,11 +343,11 @@ func (ptuo *PasswordTokenUpdateOne) ExecX(ctx context.Context) {
 func (ptuo *PasswordTokenUpdateOne) check() error {
 	if v, ok := ptuo.mutation.Hash(); ok {
 		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf("ent: validator failed for field \"hash\": %w", err)}
+			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
 	if _, ok := ptuo.mutation.UserID(); ptuo.mutation.UserCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"user\"")
+		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
 }
@@ -365,7 +365,7 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 	}
 	id, ok := ptuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing PasswordToken.ID for update")}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "PasswordToken.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := ptuo.fields; len(fields) > 0 {

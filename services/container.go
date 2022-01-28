@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/schema"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
@@ -158,7 +159,7 @@ func (c *Container) initDatabase() {
 func (c *Container) initORM() {
 	drv := entsql.OpenDB(dialect.Postgres, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
-	if err := c.ORM.Schema.Create(context.Background()); err != nil {
+	if err := c.ORM.Schema.Create(context.Background(), schema.WithAtlas(true)); err != nil {
 		panic(fmt.Sprintf("failed to create database schema: %v", err))
 	}
 }

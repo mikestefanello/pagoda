@@ -415,6 +415,10 @@ func (ptq *PasswordTokenQuery) sqlAll(ctx context.Context) ([]*PasswordToken, er
 
 func (ptq *PasswordTokenQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ptq.querySpec()
+	_spec.Node.Columns = ptq.fields
+	if len(ptq.fields) > 0 {
+		_spec.Unique = ptq.unique != nil && *ptq.unique
+	}
 	return sqlgraph.CountNodes(ctx, ptq.driver, _spec)
 }
 
@@ -485,6 +489,9 @@ func (ptq *PasswordTokenQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if ptq.sql != nil {
 		selector = ptq.sql
 		selector.Select(selector.Columns(columns...)...)
+	}
+	if ptq.unique != nil && *ptq.unique {
+		selector.Distinct()
 	}
 	for _, p := range ptq.predicates {
 		p(selector)
@@ -764,9 +771,7 @@ func (ptgb *PasswordTokenGroupBy) sqlQuery() *sql.Selector {
 		for _, f := range ptgb.fields {
 			columns = append(columns, selector.C(f))
 		}
-		for _, c := range aggregation {
-			columns = append(columns, c)
-		}
+		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
 	return selector.GroupBy(selector.Columns(ptgb.fields...)...)
