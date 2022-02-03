@@ -28,11 +28,6 @@ func TestMain(m *testing.M) {
 
 	// Start a new container
 	c = services.NewContainer()
-	defer func() {
-		if err := c.Shutdown(); err != nil {
-			c.Web.Logger.Fatal(err)
-		}
-	}()
 
 	// Start a test HTTP server
 	BuildRouter(c)
@@ -40,7 +35,13 @@ func TestMain(m *testing.M) {
 
 	// Run tests
 	exitVal := m.Run()
+
+	// Shutdown the container and test server
+	if err := c.Shutdown(); err != nil {
+		panic(err)
+	}
 	srv.Close()
+
 	os.Exit(exitVal)
 }
 

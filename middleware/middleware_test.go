@@ -21,11 +21,6 @@ func TestMain(m *testing.M) {
 
 	// Create a new container
 	c = services.NewContainer()
-	defer func() {
-		if err := c.Shutdown(); err != nil {
-			c.Web.Logger.Fatal(err)
-		}
-	}()
 
 	// Create a user
 	var err error
@@ -35,5 +30,11 @@ func TestMain(m *testing.M) {
 
 	// Run tests
 	exitVal := m.Run()
+
+	// Shutdown the container
+	if err = c.Shutdown(); err != nil {
+		panic(err)
+	}
+
 	os.Exit(exitVal)
 }

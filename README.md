@@ -3,7 +3,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda)
 [![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Reference](https://pkg.go.dev/badge/github.com/mikestefanello/pagoda.svg)](https://pkg.go.dev/github.com/mikestefanello/pagoda)
 [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
+
 
 <p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
@@ -80,6 +82,11 @@
   * [Get data](#get-data)
   * [Flush data](#flush-data)
   * [Flush tags](#flush-tags)
+* [Tasks](#tasks)
+  * [Queues](#queues)
+  * [Scheduled tasks](#scheduled-tasks)
+  * [Workers](#workers)
+  * [Monitoring](#monitoring)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
   * [Cache-buster](#cache-buster)
@@ -180,6 +187,7 @@ The container is located at `services/container.go` and is meant to house all of
 - Authentication
 - Mail
 - Template renderer
+- Tasks
 
 A new container can be created and initialized via `services.NewContainer()`. It can be later shutdown via `Shutdown()`.
 
@@ -216,20 +224,21 @@ A helper function (`config.SwitchEnvironment`) is available to make switching th
 
 ```go
 func TestMain(m *testing.M) {
-	// Set the environment to test
-	config.SwitchEnvironment(config.EnvTest)
+    // Set the environment to test
+    config.SwitchEnvironment(config.EnvTest)
 
-	// Start a new container
-	c = services.NewContainer()
-	defer func() {
-		if err := c.Shutdown(); err != nil {
-			c.Web.Logger.Fatal(err)
-		}
-	}()
+    // Start a new container
+    c = services.NewContainer()
 
-	// Run tests
-	exitVal := m.Run()
-	os.Exit(exitVal)
+    // Run tests
+    exitVal := m.Run()
+
+    // Shutdown the container
+    if err := c.Shutdown(); err != nil {
+        panic(err)
+    }
+
+    os.Exit(exitVal)
 }
 ```
 
@@ -980,6 +989,110 @@ err := c.Cache.
     Execute(ctx)
 ```
 
+## Tasks
+
+Tasks are operations to be executed in the background, either in a queue, at a specfic time, after a given amount of time, or according to a periodic interval (like _cron_). Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, and so on.
+
+Since we're already using [Redis](https://redis.io) as a _cache_, it's available to act as a message broker as well and handle the processing of queued tasks. [Asynq](https://github.com/hibiken/asynq) is the library chosen to interface with Redis and handle queueing tasks and processing them asynchronously with workers.
+
+To make things even easier, a custom client (`TaskClient`) is provided as a _Service_ on the `Container` which exposes a simple interface with [asynq](https://github.com/hibiken/asynq).
+
+For more detailed information about [asynq](https://github.com/hibiken/asynq) and it's usage, review the [wiki](https://github.com/hibiken/asynq/wiki).
+
+### Queues
+
+All tasks must be placed in to queues in order to be executed by [workers](#workers). You are not required to specify a queue when creating a task, as it will be placed in the default queue if one is not provided. [Asynq](https://github.com/hibiken/asynq) supports multiple queues which allows for functionality such as [prioritization](https://github.com/hibiken/asynq/wiki/Queue-Priority).
+
+Creating a queued task is easy and at the minimum only requires the name of the task:
+
+```go
+err := c.Tasks.
+    New("my_task").
+    Save()
+```
+
+This will add a task to the _default_ queue with a task _name_ of `my_task`. The name is used to route the task to the correct [worker](#workers).
+
+#### Options
+
+Tasks can be created and queued with various chained options:
+
+```go
+err := c.Tasks.
+    New("my_task").
+    Payload(taskData).
+    Queue("critical").
+    MaxRetries(5).
+    Timeout(30 * time.Second).
+    Wait(5 * time.Second).
+    Retain(2 * time.Hour).
+    Save()
+```
+
+In this example, this task will be:
+- Assigned a task name of `my_task`
+- The task worker will be sent `taskData` as the payload
+- Put in to the `critical` queue
+- Be retried up to 5 times in the event of a failure
+- Timeout after 30 seconds of execution
+- Wait 5 seconds before execution starts
+- Retain the task data in Redis for 2 hours after execution completes
+
+### Scheduled tasks
+
+Tasks can be scheduled to execute at a single point in the future or at a periodic interval. These tasks can also use the options highlighted in the previous section.
+
+**To execute a task once at a specific time:**
+
+```go
+err := c.Tasks.
+    New("my_task").
+    At(time.Date(2022, time.November, 10, 23, 0, 0, 0, time.UTC)).
+    Save()
+```
+
+**To execute a periodic task using a cron schedule:**
+
+```go
+err := c.Tasks.
+    New("my_task").
+    Periodic("*/10 * * * *")
+    Save()
+```
+
+**To execute a periodic task using a simple syntax:**
+
+```go
+err := c.Tasks.
+    New("my_task").
+    Periodic("@every 10m")
+    Save()
+```
+
+#### Scheduler
+
+A service needs to run in order to add periodic tasks to the queue at the specified intervals. When the application is started, this _scheduler_ service will also be started. In `main.go`, this is done with the following code:
+
+```go
+go func() {
+    if err := c.Tasks.StartScheduler(); err != nil {
+        c.Web.Logger.Fatalf("scheduler shutdown: %v", err)
+    }
+}()
+```
+
+In the event of an application restart, periodic tasks must be re-registered with the _scheduler_ in order to continue being queued for execution.
+
+### Workers
+
+Workers are what executes the queued tasks. No workers are included so you will have to implement your own for each task you need to support. You have the option of listening to and executing tasks within this application, or creating a separate application to faciliate this.
+
+The [asynq quickstarter](https://github.com/hibiken/asynq#quickstart) provides a clear example of how to go about implementing this by leveraging `asynq.NewServer` to listen for queued tasks and `asynq.NewServeMux` to route tasks to their workers much like an HTTP router does.
+
+### Monitoring
+
+[Asynq](https://github.com/hibiken/asynq) comes with two options to monitor your queues: 1) [Command-line tool](https://github.com/hibiken/asynq#command-line-tool) and 2) [Web UI](https://github.com/hibiken/asynqmon)
+
 ## Static files
 
 Static files are currently configured in the router (`routes/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
@@ -1084,6 +1197,7 @@ Future work includes but is not limited to:
 Thank you to all of the following amazing projects for making this possible.
 
 - [alpinejs](https://github.com/alpinejs/alpine)
+- [asynq](https://github.com/hibiken/asynq)
 - [bulma](https://github.com/jgthms/bulma)
 - [docker](https://www.docker.com/)
 - [echo](https://github.com/labstack/echo)
