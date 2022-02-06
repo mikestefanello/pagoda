@@ -910,6 +910,8 @@ The cache functionality within the `CacheClient` is powered by [gocache](https:/
 
 The built-in usage of the cache is currently only for optional [page caching](#cached-responses) but it can be used for practically anything. See examples below:
 
+Similar to how there is a separate [test database](#separate-test-database) to avoid writing to your primary database when running tests, the cache supports a separate database as well for tests. Within the `config`, the test database number can be specified at `Config.Cache.TestDatabase`. By default, the primary database is `0` and the test database is `1`.
+
 ### Set data
 
 **Set data with just a key:**

@@ -81,10 +81,12 @@ type (
 
 	// CacheConfig stores the cache configuration
 	CacheConfig struct {
-		Hostname   string `env:"CACHE_HOSTNAME,default=localhost"`
-		Port       uint16 `env:"CACHE_PORT,default=6379"`
-		Password   string `env:"CACHE_PASSWORD"`
-		Expiration struct {
+		Hostname     string `env:"CACHE_HOSTNAME,default=localhost"`
+		Port         uint16 `env:"CACHE_PORT,default=6379"`
+		Password     string `env:"CACHE_PASSWORD"`
+		Database     int    `env:"CACHE_DB,default=0"`
+		TestDatabase int    `env:"CACHE_DB_TEST,default=1"`
+		Expiration   struct {
 			StaticFile time.Duration `env:"CACHE_EXPIRATION_STATIC_FILE,default=4380h"`
 			Page       time.Duration `env:"CACHE_EXPIRATION_PAGE,default=24h"`
 		}

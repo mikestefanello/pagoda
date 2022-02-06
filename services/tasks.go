@@ -36,10 +36,17 @@ type (
 )
 
 // NewTaskClient creates a new task client
-func NewTaskClient(cfg config.CacheConfig) *TaskClient {
+func NewTaskClient(cfg *config.Config) *TaskClient {
+	// Determine the database based on the environment
+	db := cfg.Cache.Database
+	if cfg.App.Environment == config.EnvTest {
+		db = cfg.Cache.TestDatabase
+	}
+
 	conn := asynq.RedisClientOpt{
-		Addr:     fmt.Sprintf("%s:%d", cfg.Hostname, cfg.Port),
-		Password: cfg.Password,
+		Addr:     fmt.Sprintf("%s:%d", cfg.Cache.Hostname, cfg.Cache.Port),
+		Password: cfg.Cache.Password,
+		DB:       db,
 	}
 
 	return &TaskClient{

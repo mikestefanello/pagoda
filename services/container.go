@@ -69,6 +69,9 @@ func NewContainer() *Container {
 
 // Shutdown shuts the Container down and disconnects all connections
 func (c *Container) Shutdown() error {
+	if err := c.Tasks.Close(); err != nil {
+		return err
+	}
 	if err := c.Cache.Close(); err != nil {
 		return err
 	}
@@ -76,9 +79,6 @@ func (c *Container) Shutdown() error {
 		return err
 	}
 	if err := c.Database.Close(); err != nil {
-		return err
-	}
-	if err := c.Tasks.Close(); err != nil {
 		return err
 	}
 
@@ -117,7 +117,7 @@ func (c *Container) initWeb() {
 // initCache initializes the cache
 func (c *Container) initCache() {
 	var err error
-	if c.Cache, err = NewCacheClient(c.Config.Cache); err != nil {
+	if c.Cache, err = NewCacheClient(c.Config); err != nil {
 		panic(err)
 	}
 }
@@ -192,5 +192,5 @@ func (c *Container) initMail() {
 
 // initTasks initializes the task client
 func (c *Container) initTasks() {
-	c.Tasks = NewTaskClient(c.Config.Cache)
+	c.Tasks = NewTaskClient(c.Config)
 }

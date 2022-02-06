@@ -51,14 +51,29 @@ type (
 )
 
 // NewCacheClient creates a new cache client
-func NewCacheClient(cfg config.CacheConfig) (*CacheClient, error) {
+func NewCacheClient(cfg *config.Config) (*CacheClient, error) {
+	// Determine the database based on the environment
+	db := cfg.Cache.Database
+	if cfg.App.Environment == config.EnvTest {
+		db = cfg.Cache.TestDatabase
+	}
+
+	// Connect to the cache
 	c := &CacheClient{}
 	c.Client = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", cfg.Hostname, cfg.Port),
-		Password: cfg.Password,
+		Addr:     fmt.Sprintf("%s:%d", cfg.Cache.Hostname, cfg.Cache.Port),
+		Password: cfg.Cache.Password,
+		DB:       db,
 	})
 	if _, err := c.Client.Ping(context.Background()).Result(); err != nil {
 		return c, err
+	}
+
+	// Flush the database if this is the test environment
+	if cfg.App.Environment == config.EnvTest {
+		if err := c.Client.FlushDB(context.Background()).Err(); err != nil {
+			return c, err
+		}
 	}
 
 	cacheStore := store.NewRedis(c.Client, nil)
