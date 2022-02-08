@@ -22,7 +22,7 @@ type (
 	// task handles task creation operations
 	task struct {
 		client     *TaskClient
-		name       string
+		typ        string
 		payload    interface{}
 		periodic   *string
 		queue      *string
@@ -67,10 +67,10 @@ func (t *TaskClient) StartScheduler() error {
 }
 
 // New starts a task creation operation
-func (t *TaskClient) New(name string) *task {
+func (t *TaskClient) New(typ string) *task {
 	return &task{
 		client: t,
-		name:   name,
+		typ:    typ,
 	}
 }
 
@@ -167,7 +167,7 @@ func (t *task) Save() error {
 	}
 
 	// Build the task
-	task := asynq.NewTask(t.name, payload, opts...)
+	task := asynq.NewTask(t.typ, payload, opts...)
 
 	// Schedule, if needed
 	if t.periodic != nil {

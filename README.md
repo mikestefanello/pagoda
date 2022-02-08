@@ -85,7 +85,7 @@
 * [Tasks](#tasks)
   * [Queues](#queues)
   * [Scheduled tasks](#scheduled-tasks)
-  * [Workers](#workers)
+  * [Worker](#worker)
   * [Monitoring](#monitoring)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
@@ -1004,7 +1004,7 @@ For more detailed information about [asynq](https://github.com/hibiken/asynq) an
 
 ### Queues
 
-All tasks must be placed in to queues in order to be executed by [workers](#workers). You are not required to specify a queue when creating a task, as it will be placed in the default queue if one is not provided. [Asynq](https://github.com/hibiken/asynq) supports multiple queues which allows for functionality such as [prioritization](https://github.com/hibiken/asynq/wiki/Queue-Priority).
+All tasks must be placed in to queues in order to be executed by the [worker](#worker). You are not required to specify a queue when creating a task, as it will be placed in the default queue if one is not provided. [Asynq](https://github.com/hibiken/asynq) supports multiple queues which allows for functionality such as [prioritization](https://github.com/hibiken/asynq/wiki/Queue-Priority).
 
 Creating a queued task is easy and at the minimum only requires the name of the task:
 
@@ -1014,7 +1014,7 @@ err := c.Tasks.
     Save()
 ```
 
-This will add a task to the _default_ queue with a task _name_ of `my_task`. The name is used to route the task to the correct [worker](#workers).
+This will add a task to the _default_ queue with a task _type_ of `my_task`. The type is used to route the task to the correct [worker](#worker).
 
 #### Options
 
@@ -1033,7 +1033,7 @@ err := c.Tasks.
 ```
 
 In this example, this task will be:
-- Assigned a task name of `my_task`
+- Assigned a task type of `my_task`
 - The task worker will be sent `taskData` as the payload
 - Put in to the `critical` queue
 - Be retried up to 5 times in the event of a failure
@@ -1086,11 +1086,30 @@ go func() {
 
 In the event of an application restart, periodic tasks must be re-registered with the _scheduler_ in order to continue being queued for execution.
 
-### Workers
+### Worker
 
-Workers are what executes the queued tasks. No workers are included so you will have to implement your own for each task you need to support. You have the option of listening to and executing tasks within this application, or creating a separate application to faciliate this.
+The worker is a service that executes the queued tasks using task processors. Included is a basic implementation of a separate worker service that will listen for and execute tasks being added to the queues. If you prefer to move the worker so it runs alongside the web server, you can do that, though it's recommended to keep these processes separate for performance and scalability reasons.
 
-The [asynq quickstarter](https://github.com/hibiken/asynq#quickstart) provides a clear example of how to go about implementing this by leveraging `asynq.NewServer` to listen for queued tasks and `asynq.NewServeMux` to route tasks to their workers much like an HTTP router does.
+The underlying functionality of the worker service is provided by [asynq](https://github.com/hibiken/asynq), so it's highly recommended that you review the documentation for that project first.
+
+#### Starting the worker
+
+A make target was added to allow you to start the worker service easily. From the root of the repository, execute `make worker`.
+
+#### Understanding the service
+
+The worker service is located in [worker/worker.go](/worker/worker.go) and starts with the creation of a new `*asynq.Server` provided by `asynq.NewServer()`. There are various configuration options available, so be sure to review them all.
+
+Prior to starting the service, we need to route tasks according to their _type_ to their handlers which will process the tasks. This is done by using `async.ServeMux` much like you would use an HTTP router:
+
+```go
+mux := asynq.NewServeMux()
+mux.Handle(tasks.TypeExample, new(tasks.ExampleProcessor))
+```
+
+In this example, all tasks of _type_ `tasks.TypeExample` will be routed to `ExampleProcessor` which is a struct that implements `ProcessTask()`. See the included [basic example](/worker/tasks/example.go).
+
+Finally, the service is started with `async.Server.Run(mux)`.
 
 ### Monitoring
 

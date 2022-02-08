@@ -21,7 +21,7 @@ func TestTaskClient_New(t *testing.T) {
 		Wait(6 * time.Second).
 		Retain(7 * time.Second)
 
-	assert.Equal(t, "task1", tk.name)
+	assert.Equal(t, "task1", tk.typ)
 	assert.Equal(t, "payload", tk.payload.(string))
 	assert.Equal(t, "queue", *tk.queue)
 	assert.Equal(t, "@every 5s", *tk.periodic)
