@@ -1,17 +1,22 @@
 # Connect to the primary database
 .PHONY: db
 db:
-	 psql postgresql://admin:admin@localhost:5432/app
+	psql postgresql://admin:admin@localhost:5432/app
 
 # Connect to the test database
 .PHONY: db-test
 db-test:
-	 psql postgresql://admin:admin@localhost:5432/app_test
+	psql postgresql://admin:admin@localhost:5432/app_test
 
-# Connect to the cache
+# Connect to the primary cache
 .PHONY: cache
 cache:
-	 redis-cli
+	redis-cli
+
+ # Connect to the test cache
+.PHONY: cache-test
+cache-test:
+	redis-cli -n 1
 
 # Install Ent code-generation module
 .PHONY: ent-install

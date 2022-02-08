@@ -172,7 +172,8 @@ The following _make_ commands are available to make it easy to connect to the da
 
 - `make db`: Connects to the primary database
 - `make db-test`: Connects to the test database
-- `make cache`: Connects to the cache
+- `make cache`: Connects to the primary cache
+- `make cache-test`: Connects to the test cache
 
 ## Service container
 
