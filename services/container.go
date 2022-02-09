@@ -128,10 +128,11 @@ func (c *Container) initDatabase() {
 	var err error
 
 	getAddr := func(dbName string) string {
-		return fmt.Sprintf("postgresql://%s:%s@%s/%s",
+		return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
 			c.Config.Database.User,
 			c.Config.Database.Password,
 			c.Config.Database.Hostname,
+			c.Config.Database.Port,
 			dbName,
 		)
 	}
