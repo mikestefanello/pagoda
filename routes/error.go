@@ -9,11 +9,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Error struct {
+type errorHandler struct {
 	controller.Controller
 }
 
-func (e *Error) Get(err error, ctx echo.Context) {
+func (e *errorHandler) Get(err error, ctx echo.Context) {
 	if ctx.Response().Committed || context.IsCanceledError(err) {
 		return
 	}

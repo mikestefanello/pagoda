@@ -56,7 +56,7 @@ func BuildRouter(c *services.Container) {
 	ctr := controller.NewController(c)
 
 	// Error handler
-	err := Error{Controller: ctr}
+	err := errorHandler{Controller: ctr}
 	c.Web.HTTPErrorHandler = err.Get
 
 	// Example routes
@@ -65,37 +65,37 @@ func BuildRouter(c *services.Container) {
 }
 
 func navRoutes(c *services.Container, g *echo.Group, ctr controller.Controller) {
-	home := Home{Controller: ctr}
+	home := home{Controller: ctr}
 	g.GET("/", home.Get).Name = "home"
 
-	search := Search{Controller: ctr}
+	search := search{Controller: ctr}
 	g.GET("/search", search.Get).Name = "search"
 
-	about := About{Controller: ctr}
+	about := about{Controller: ctr}
 	g.GET("/about", about.Get).Name = "about"
 
-	contact := Contact{Controller: ctr}
+	contact := contact{Controller: ctr}
 	g.GET("/contact", contact.Get).Name = "contact"
 	g.POST("/contact", contact.Post).Name = "contact.post"
 }
 
 func userRoutes(c *services.Container, g *echo.Group, ctr controller.Controller) {
-	logout := Logout{Controller: ctr}
+	logout := logout{Controller: ctr}
 	g.GET("/logout", logout.Get, middleware.RequireAuthentication()).Name = "logout"
 
-	verifyEmail := VerifyEmail{Controller: ctr}
+	verifyEmail := verifyEmail{Controller: ctr}
 	g.GET("/email/verify/:token", verifyEmail.Get).Name = "verify_email"
 
 	noAuth := g.Group("/user", middleware.RequireNoAuthentication())
-	login := Login{Controller: ctr}
+	login := login{Controller: ctr}
 	noAuth.GET("/login", login.Get).Name = "login"
 	noAuth.POST("/login", login.Post).Name = "login.post"
 
-	register := Register{Controller: ctr}
+	register := register{Controller: ctr}
 	noAuth.GET("/register", register.Get).Name = "register"
 	noAuth.POST("/register", register.Post).Name = "register.post"
 
-	forgot := ForgotPassword{Controller: ctr}
+	forgot := forgotPassword{Controller: ctr}
 	noAuth.GET("/password", forgot.Get).Name = "forgot_password"
 	noAuth.POST("/password", forgot.Post).Name = "forgot_password.post"
 
@@ -103,7 +103,7 @@ func userRoutes(c *services.Container, g *echo.Group, ctr controller.Controller)
 		middleware.LoadUser(c.ORM),
 		middleware.LoadValidPasswordToken(c.Auth),
 	)
-	reset := ResetPassword{Controller: ctr}
+	reset := resetPassword{Controller: ctr}
 	resetGroup.GET("/token/:user/:password_token/:token", reset.Get).Name = "reset_password"
 	resetGroup.POST("/token/:user/:password_token/:token", reset.Post).Name = "reset_password.post"
 }

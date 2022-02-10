@@ -21,21 +21,32 @@ const (
 	StaticPrefix = "files"
 )
 
-type Environment string
+type environment string
 
 const (
-	EnvLocal      Environment = "local"
-	EnvTest       Environment = "test"
-	EnvDevelop    Environment = "dev"
-	EnvStaging    Environment = "staging"
-	EnvQA         Environment = "qa"
-	EnvProduction Environment = "prod"
+	// EnvLocal represents the local environment
+	EnvLocal environment = "local"
+
+	// EnvTest represents the test environment
+	EnvTest environment = "test"
+
+	// EnvDevelop represents the development environment
+	EnvDevelop environment = "dev"
+
+	// EnvStaging represents the staging environment
+	EnvStaging environment = "staging"
+
+	// EnvQA represents the qa environment
+	EnvQA environment = "qa"
+
+	// EnvProduction represents the production environment
+	EnvProduction environment = "prod"
 )
 
 // SwitchEnvironment sets the environment variable used to dictate which environment the application is
 // currently running in.
 // This must be called prior to loading the configuration in order for it to take effect.
-func SwitchEnvironment(env Environment) {
+func SwitchEnvironment(env environment) {
 	if err := os.Setenv("APP_ENVIRONMENT", string(env)); err != nil {
 		panic(err)
 	}
@@ -68,7 +79,7 @@ type (
 	// AppConfig stores application configuration
 	AppConfig struct {
 		Name        string      `env:"APP_NAME,default=Pagoda"`
-		Environment Environment `env:"APP_ENVIRONMENT,default=local"`
+		Environment environment `env:"APP_ENVIRONMENT,default=local"`
 		// THIS MUST BE OVERRIDDEN ON ANY LIVE ENVIRONMENTS
 		EncryptionKey string        `env:"APP_ENCRYPTION_KEY,default=?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"`
 		Timeout       time.Duration `env:"APP_TIMEOUT,default=20s"`

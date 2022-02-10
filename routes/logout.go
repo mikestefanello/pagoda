@@ -7,11 +7,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Logout struct {
+type logout struct {
 	controller.Controller
 }
 
-func (l *Logout) Get(c echo.Context) error {
+func (l *logout) Get(c echo.Context) error {
 	if err := l.Container.Auth.Logout(c); err == nil {
 		msg.Success(c, "You have been logged out successfully.")
 	} else {

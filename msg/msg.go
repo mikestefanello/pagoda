@@ -6,13 +6,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Type is a message type
 type Type string
 
 const (
+	// TypeSuccess represents a success message type
 	TypeSuccess Type = "success"
-	TypeInfo    Type = "info"
+
+	// TypeInfo represents a info message type
+	TypeInfo Type = "info"
+
+	// TypeWarning represents a warning message type
 	TypeWarning Type = "warning"
-	TypeDanger  Type = "danger"
+
+	// TypeDanger represents a danger message type
+	TypeDanger Type = "danger"
 )
 
 const (

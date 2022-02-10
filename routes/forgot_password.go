@@ -14,32 +14,32 @@ import (
 )
 
 type (
-	ForgotPassword struct {
+	forgotPassword struct {
 		controller.Controller
 	}
 
-	ForgotPasswordForm struct {
+	forgotPasswordForm struct {
 		Email      string `form:"email" validate:"required,email"`
 		Submission controller.FormSubmission
 	}
 )
 
-func (c *ForgotPassword) Get(ctx echo.Context) error {
+func (c *forgotPassword) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "auth"
 	page.Name = "forgot-password"
 	page.Title = "Forgot password"
-	page.Form = ForgotPasswordForm{}
+	page.Form = forgotPasswordForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*ForgotPasswordForm)
+		page.Form = form.(*forgotPasswordForm)
 	}
 
 	return c.RenderPage(ctx, page)
 }
 
-func (c *ForgotPassword) Post(ctx echo.Context) error {
-	var form ForgotPasswordForm
+func (c *forgotPassword) Post(ctx echo.Context) error {
+	var form forgotPasswordForm
 	ctx.Set(context.FormKey, &form)
 
 	succeed := func() error {

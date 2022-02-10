@@ -12,11 +12,11 @@ import (
 )
 
 type (
-	Register struct {
+	register struct {
 		controller.Controller
 	}
 
-	RegisterForm struct {
+	registerForm struct {
 		Name            string `form:"name" validate:"required"`
 		Email           string `form:"email" validate:"required,email"`
 		Password        string `form:"password" validate:"required"`
@@ -25,22 +25,22 @@ type (
 	}
 )
 
-func (c *Register) Get(ctx echo.Context) error {
+func (c *register) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "auth"
 	page.Name = "register"
 	page.Title = "Register"
-	page.Form = RegisterForm{}
+	page.Form = registerForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*RegisterForm)
+		page.Form = form.(*registerForm)
 	}
 
 	return c.RenderPage(ctx, page)
 }
 
-func (c *Register) Post(ctx echo.Context) error {
-	var form RegisterForm
+func (c *register) Post(ctx echo.Context) error {
+	var form registerForm
 	ctx.Set(context.FormKey, &form)
 
 	// Parse the form values
@@ -96,7 +96,7 @@ func (c *Register) Post(ctx echo.Context) error {
 	return c.Redirect(ctx, "home")
 }
 
-func (c *Register) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
+func (c *register) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	// Generate a token
 	token, err := c.Container.Auth.GenerateEmailVerificationToken(usr.Email)
 	if err != nil {

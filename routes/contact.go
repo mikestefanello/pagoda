@@ -10,33 +10,33 @@ import (
 )
 
 type (
-	Contact struct {
+	contact struct {
 		controller.Controller
 	}
 
-	ContactForm struct {
+	contactForm struct {
 		Email      string `form:"email" validate:"required,email"`
 		Message    string `form:"message" validate:"required"`
 		Submission controller.FormSubmission
 	}
 )
 
-func (c *Contact) Get(ctx echo.Context) error {
+func (c *contact) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "main"
 	page.Name = "contact"
 	page.Title = "Contact us"
-	page.Form = ContactForm{}
+	page.Form = contactForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*ContactForm)
+		page.Form = form.(*contactForm)
 	}
 
 	return c.RenderPage(ctx, page)
 }
 
-func (c *Contact) Post(ctx echo.Context) error {
-	var form ContactForm
+func (c *contact) Post(ctx echo.Context) error {
+	var form contactForm
 	ctx.Set(context.FormKey, &form)
 
 	// Parse the form values

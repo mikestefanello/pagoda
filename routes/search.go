@@ -10,29 +10,29 @@ import (
 )
 
 type (
-	Search struct {
+	search struct {
 		controller.Controller
 	}
 
-	SearchResult struct {
+	searchResult struct {
 		Title string
 		URL   string
 	}
 )
 
-func (c *Search) Get(ctx echo.Context) error {
+func (c *search) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "main"
 	page.Name = "search"
 
 	// Fake search results
-	var results []SearchResult
+	var results []searchResult
 	if search := ctx.QueryParam("query"); search != "" {
 		for i := 0; i < 5; i++ {
 			title := "Lorem ipsum example ddolor sit amet"
 			index := rand.Intn(len(title))
 			title = title[:index] + search + title[index:]
-			results = append(results, SearchResult{
+			results = append(results, searchResult{
 				Title: title,
 				URL:   fmt.Sprintf("https://www.%s.com", search),
 			})

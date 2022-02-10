@@ -9,17 +9,17 @@ import (
 )
 
 type (
-	Home struct {
+	home struct {
 		controller.Controller
 	}
 
-	Post struct {
+	post struct {
 		Title string
 		Body  string
 	}
 )
 
-func (c *Home) Get(ctx echo.Context) error {
+func (c *home) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "main"
 	page.Name = "home"
@@ -32,12 +32,12 @@ func (c *Home) Get(ctx echo.Context) error {
 }
 
 // fetchPosts is an mock example of fetching posts to illustrate how paging works
-func (c *Home) fetchPosts(pager *controller.Pager) []Post {
+func (c *home) fetchPosts(pager *controller.Pager) []post {
 	pager.SetItems(20)
-	posts := make([]Post, 20)
+	posts := make([]post, 20)
 
 	for k := range posts {
-		posts[k] = Post{
+		posts[k] = post{
 			Title: fmt.Sprintf("Post example #%d", k+1),
 			Body:  fmt.Sprintf("Lorem ipsum example #%d ddolor sit amet, consectetur adipiscing elit. Nam elementum vulputate tristique.", k+1),
 		}

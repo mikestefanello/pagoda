@@ -9,23 +9,23 @@ import (
 )
 
 type (
-	About struct {
+	about struct {
 		controller.Controller
 	}
 
-	AboutData struct {
+	aboutData struct {
 		ShowCacheWarning bool
-		FrontendTabs     []AboutTab
-		BackendTabs      []AboutTab
+		FrontendTabs     []aboutTab
+		BackendTabs      []aboutTab
 	}
 
-	AboutTab struct {
+	aboutTab struct {
 		Title string
 		Body  template.HTML
 	}
 )
 
-func (c *About) Get(ctx echo.Context) error {
+func (c *about) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "main"
 	page.Name = "about"
@@ -37,9 +37,9 @@ func (c *About) Get(ctx echo.Context) error {
 
 	// A simple example of how the Data field can contain anything you want to send to the templates
 	// even though you wouldn't normally send markup like this
-	page.Data = AboutData{
+	page.Data = aboutData{
 		ShowCacheWarning: true,
-		FrontendTabs: []AboutTab{
+		FrontendTabs: []aboutTab{
 			{
 				Title: "HTMX",
 				Body:  template.HTML(`Completes HTML as a hypertext by providing attributes to AJAXify anything and much more. Visit <a href="https://htmx.org/">htmx.org</a> to learn more.`),
@@ -53,7 +53,7 @@ func (c *About) Get(ctx echo.Context) error {
 				Body:  template.HTML(`Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href="https://bulma.io/">bulma.io</a> to learn more.`),
 			},
 		},
-		BackendTabs: []AboutTab{
+		BackendTabs: []aboutTab{
 			{
 				Title: "Echo",
 				Body:  template.HTML(`High performance, extensible, minimalist Go web framework. Visit <a href="https://echo.labstack.com/">echo.labstack.com</a> to learn more.`),

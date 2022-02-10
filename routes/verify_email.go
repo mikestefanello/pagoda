@@ -9,11 +9,11 @@ import (
 	"github.com/mikestefanello/pagoda/msg"
 )
 
-type VerifyEmail struct {
+type verifyEmail struct {
 	controller.Controller
 }
 
-func (c *VerifyEmail) Get(ctx echo.Context) error {
+func (c *verifyEmail) Get(ctx echo.Context) error {
 	var usr *ent.User
 
 	// Validate the token

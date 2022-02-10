@@ -401,19 +401,19 @@ These patterns are not required, but were designed to make development as easy a
 To declare a new route that will have methods to handle a GET and POST request, for example, start with a new _struct_ type, that embeds the `Controller`:
 
 ```go
-type Home struct {
+type home struct {
     controller.Controller
 }
 
-func (c *Home) Get(ctx echo.Context) error {}
+func (c *home) Get(ctx echo.Context) error {}
 
-func (c *Home) Post(ctx echo.Context) error {}
+func (c *home) Post(ctx echo.Context) error {}
 ```
 
 Then create the route and add to the router:
 
 ```go
-home := Home{Controller: controller.NewController(c)}
+home := home{Controller: controller.NewController(c)}
 g.GET("/", home.Get).Name = "home"
 g.POST("/", home.Post).Name = "home.post"
 ```
@@ -485,7 +485,7 @@ As you develop your application, the `Page` can be easily extended to include wh
 Initializing a new page is simple:
 
 ```go
-func (c *Home) Get(ctx echo.Context) error {
+func (c *home) Get(ctx echo.Context) error {
     page := controller.NewPage(ctx)
 }
 ```
@@ -814,7 +814,7 @@ If [CSRF](#csrf) protection is enabled, the token value will automatically be pa
 Once your `Page` is fully built, rendering it via the embedded `Controller` in your _route_ can be done simply by calling `RenderPage()`:
 
 ```go
-func (c *Home) Get(ctx echo.Context) error {
+func (c *home) Get(ctx echo.Context) error {
     page := controller.NewPage(ctx)
     page.Layout = "main"
     page.Name = "home"
@@ -1191,7 +1191,7 @@ To use _Let's Encrypt_ follow [this guide](https://echo.labstack.com/cookbook/au
 Logging is provided by [Echo](https://echo.labstack.com/guide/customization/#logging) and is accessible within the _Echo_ instance, which is located in the `Web` field of the `Container`, or within any of the _context_ parameters, for example:
 
 ```go
-func (c *Home) Get(ctx echo.Context) error {
+func (c *home) Get(ctx echo.Context) error {
     ctx.Logger().Info("something happened")
 	
     if err := someOperation(); err != nil {

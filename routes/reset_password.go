@@ -10,33 +10,33 @@ import (
 )
 
 type (
-	ResetPassword struct {
+	resetPassword struct {
 		controller.Controller
 	}
 
-	ResetPasswordForm struct {
+	resetPasswordForm struct {
 		Password        string `form:"password" validate:"required"`
 		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
 		Submission      controller.FormSubmission
 	}
 )
 
-func (c *ResetPassword) Get(ctx echo.Context) error {
+func (c *resetPassword) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "auth"
 	page.Name = "reset-password"
 	page.Title = "Reset password"
-	page.Form = ResetPasswordForm{}
+	page.Form = resetPasswordForm{}
 
 	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*ResetPasswordForm)
+		page.Form = form.(*resetPasswordForm)
 	}
 
 	return c.RenderPage(ctx, page)
 }
 
-func (c *ResetPassword) Post(ctx echo.Context) error {
-	var form ResetPasswordForm
+func (c *resetPassword) Post(ctx echo.Context) error {
+	var form resetPasswordForm
 	ctx.Set(context.FormKey, &form)
 
 	// Parse the form values
