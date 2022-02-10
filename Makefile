@@ -61,3 +61,8 @@ test:
 worker:
 	clear
 	go run worker/worker.go
+
+# Check for direct dependency updates
+.PHONY: check-updates
+check-updates:
+	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all
