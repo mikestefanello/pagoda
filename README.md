@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Reference](https://pkg.go.dev/badge/github.com/mikestefanello/pagoda.svg)](https://pkg.go.dev/github.com/mikestefanello/pagoda)
 [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
-
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
 <p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
@@ -156,7 +156,15 @@ Ensure the following are installed on your system:
 
 ### Start the application
 
-After checking out the repository, from within the root, start the Docker containers for the database and cache by executing `make up`.
+After checking out the repository, from within the root, start the Docker containers for the database and cache by executing `make up`:
+
+```
+git clone git@github.com:mikestefanello/pagoda.git
+cd pagoda
+make up
+```
+
+Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
 
 Once that completes, you can start the application by executing `make run`. By default, you should be able to access the application in your browser at `localhost:8000`.
 
