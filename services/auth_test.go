@@ -69,10 +69,10 @@ func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, pt.ID, pt2.ID)
 
-	// Expire the token by pushed the date far enough back
+	// Expire the token by pushing the date far enough back
 	_, err = c.ORM.PasswordToken.
 		Update().
-		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + 10))).
+		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + 3600))).
 		Where(passwordtoken.ID(pt.ID)).
 		Save(context.Background())
 	require.NoError(t, err)
