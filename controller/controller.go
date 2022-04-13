@@ -163,7 +163,7 @@ func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...int
 
 		return nil
 	} else {
-		return ctx.Redirect(303, url)
+		return ctx.Redirect(http.StatusFound, url)
 	}
 }
 
