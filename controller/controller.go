@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/mikestefanello/pagoda/context"
+	"github.com/mikestefanello/pagoda/htmx"
 	"github.com/mikestefanello/pagoda/middleware"
 	"github.com/mikestefanello/pagoda/services"
 
@@ -154,7 +155,16 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 // Redirect redirects to a given route name with optional route parameters
 func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
 	url := ctx.Echo().Reverse(route, routeParams)
-	return ctx.Redirect(http.StatusFound, url)
+
+	if htmx.GetRequest(ctx).Boosted {
+		htmx.Response{
+			Redirect: url,
+		}.Apply(ctx)
+
+		return nil
+	} else {
+		return ctx.Redirect(303, url)
+	}
 }
 
 // Fail is a helper to fail a request by returning a 500 error and logging the error
