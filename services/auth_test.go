@@ -70,12 +70,13 @@ func TestAuthClient_GetValidPasswordToken(t *testing.T) {
 	assert.Equal(t, pt.ID, pt2.ID)
 
 	// Expire the token by pushing the date far enough back
-	_, err = c.ORM.PasswordToken.
+	count, err := c.ORM.PasswordToken.
 		Update().
-		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + 3600))).
+		SetCreatedAt(time.Now().Add(-(c.Config.App.PasswordToken.Expiration + time.Hour))).
 		Where(passwordtoken.ID(pt.ID)).
 		Save(context.Background())
 	require.NoError(t, err)
+	require.Equal(t, 1, count)
 
 	// Expired tokens should not be valid
 	_, err = c.Auth.GetValidPasswordToken(ctx, usr.ID, pt.ID, token)

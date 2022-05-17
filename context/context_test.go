@@ -16,7 +16,7 @@ func TestIsCanceled(t *testing.T) {
 	assert.True(t, IsCanceledError(ctx.Err()))
 
 	ctx, cancel = context.WithTimeout(context.Background(), time.Microsecond)
-	time.Sleep(time.Microsecond * 2)
+	time.Sleep(time.Microsecond * 5)
 	cancel()
 	assert.False(t, IsCanceledError(ctx.Err()))
 
