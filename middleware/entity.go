@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -32,11 +33,10 @@ func LoadUser(orm *ent.Client) echo.MiddlewareFunc {
 			case *ent.NotFoundError:
 				return echo.NewHTTPError(http.StatusNotFound)
 			default:
-				if context.IsCanceledError(err) {
-					return nil
-				}
-				c.Logger().Error(err)
-				return echo.NewHTTPError(http.StatusInternalServerError)
+				return echo.NewHTTPError(
+					http.StatusInternalServerError,
+					fmt.Sprintf("error querying user: %v", err),
+				)
 			}
 		}
 	}

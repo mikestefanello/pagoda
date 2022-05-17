@@ -52,11 +52,11 @@ func (c *login) Post(ctx echo.Context) error {
 
 	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(ctx, err, "unable to parse login form")
+		return c.Fail(err, "unable to parse login form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		return c.Fail(ctx, err, "unable to process form submission")
+		return c.Fail(err, "unable to process form submission")
 	}
 
 	if form.Submission.HasErrors() {
@@ -74,7 +74,7 @@ func (c *login) Post(ctx echo.Context) error {
 		return authFailed()
 	case nil:
 	default:
-		return c.Fail(ctx, err, "error querying user during login")
+		return c.Fail(err, "error querying user during login")
 	}
 
 	// Check if the password is correct
@@ -86,7 +86,7 @@ func (c *login) Post(ctx echo.Context) error {
 	// Log the user in
 	err = c.Container.Auth.Login(ctx, u.ID)
 	if err != nil {
-		return c.Fail(ctx, err, "unable to log in user")
+		return c.Fail(err, "unable to log in user")
 	}
 
 	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))

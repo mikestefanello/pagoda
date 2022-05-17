@@ -41,11 +41,11 @@ func (c *contact) Post(ctx echo.Context) error {
 
 	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(ctx, err, "unable to bind form")
+		return c.Fail(err, "unable to bind form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		return c.Fail(ctx, err, "unable to process form submission")
+		return c.Fail(err, "unable to process form submission")
 	}
 
 	if !form.Submission.HasErrors() {
@@ -57,7 +57,7 @@ func (c *contact) Post(ctx echo.Context) error {
 			Send(ctx)
 
 		if err != nil {
-			return c.Fail(ctx, err, "unable to send email")
+			return c.Fail(err, "unable to send email")
 		}
 	}
 

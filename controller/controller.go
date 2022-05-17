@@ -35,8 +35,7 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 
 	// Page name is required
 	if page.Name == "" {
-		ctx.Logger().Error("page render failed due to missing name")
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return echo.NewHTTPError(http.StatusInternalServerError, "page render failed due to missing name")
 	}
 
 	// Use the app name in configuration if a value was not set
@@ -85,8 +84,7 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 	}
 
 	if err != nil {
-		ctx.Logger().Errorf("failed to parse and execute templates: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return c.Fail(err, "failed to parse and execute templates")
 	}
 
 	// Set the status code
@@ -168,10 +166,6 @@ func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...int
 }
 
 // Fail is a helper to fail a request by returning a 500 error and logging the error
-func (c *Controller) Fail(ctx echo.Context, err error, log string) error {
-	if context.IsCanceledError(err) {
-		return nil
-	}
-	ctx.Logger().Errorf("%s: %v", log, err)
-	return echo.NewHTTPError(http.StatusInternalServerError)
+func (c *Controller) Fail(err error, log string) error {
+	return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("%s: %v", log, err))
 }

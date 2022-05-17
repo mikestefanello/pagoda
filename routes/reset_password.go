@@ -41,11 +41,11 @@ func (c *resetPassword) Post(ctx echo.Context) error {
 
 	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(ctx, err, "unable to parse password reset form")
+		return c.Fail(err, "unable to parse password reset form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		return c.Fail(ctx, err, "unable to process form submission")
+		return c.Fail(err, "unable to process form submission")
 	}
 
 	if form.Submission.HasErrors() {
@@ -55,7 +55,7 @@ func (c *resetPassword) Post(ctx echo.Context) error {
 	// Hash the new password
 	hash, err := c.Container.Auth.HashPassword(form.Password)
 	if err != nil {
-		return c.Fail(ctx, err, "unable to hash password")
+		return c.Fail(err, "unable to hash password")
 	}
 
 	// Get the requesting user
@@ -68,13 +68,13 @@ func (c *resetPassword) Post(ctx echo.Context) error {
 		Save(ctx.Request().Context())
 
 	if err != nil {
-		return c.Fail(ctx, err, "unable to update password")
+		return c.Fail(err, "unable to update password")
 	}
 
 	// Delete all password tokens for this user
 	err = c.Container.Auth.DeletePasswordTokens(ctx, usr.ID)
 	if err != nil {
-		return c.Fail(ctx, err, "unable to delete password tokens")
+		return c.Fail(err, "unable to delete password tokens")
 	}
 
 	msg.Success(ctx, "Your password has been updated.")

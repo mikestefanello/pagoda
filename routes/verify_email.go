@@ -41,7 +41,7 @@ func (c *verifyEmail) Get(ctx echo.Context) error {
 			Only(ctx.Request().Context())
 
 		if err != nil {
-			return c.Fail(ctx, err, "query failed loading email verification token user")
+			return c.Fail(err, "query failed loading email verification token user")
 		}
 	}
 
@@ -53,7 +53,7 @@ func (c *verifyEmail) Get(ctx echo.Context) error {
 			Save(ctx.Request().Context())
 
 		if err != nil {
-			return c.Fail(ctx, err, "failed to set user as verified")
+			return c.Fail(err, "failed to set user as verified")
 		}
 	}
 

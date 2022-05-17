@@ -50,11 +50,11 @@ func (c *forgotPassword) Post(ctx echo.Context) error {
 
 	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(ctx, err, "unable to parse forgot password form")
+		return c.Fail(err, "unable to parse forgot password form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		return c.Fail(ctx, err, "unable to process form submission")
+		return c.Fail(err, "unable to process form submission")
 	}
 
 	if form.Submission.HasErrors() {
@@ -72,13 +72,13 @@ func (c *forgotPassword) Post(ctx echo.Context) error {
 		return succeed()
 	case nil:
 	default:
-		return c.Fail(ctx, err, "error querying user during forgot password")
+		return c.Fail(err, "error querying user during forgot password")
 	}
 
 	// Generate the token
 	token, pt, err := c.Container.Auth.GeneratePasswordResetToken(ctx, u.ID)
 	if err != nil {
-		return c.Fail(ctx, err, "error generating password reset token")
+		return c.Fail(err, "error generating password reset token")
 	}
 
 	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
@@ -93,7 +93,7 @@ func (c *forgotPassword) Post(ctx echo.Context) error {
 		Send(ctx)
 
 	if err != nil {
-		return c.Fail(ctx, err, "error sending password reset email")
+		return c.Fail(err, "error sending password reset email")
 	}
 
 	return succeed()

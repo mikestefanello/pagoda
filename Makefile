@@ -54,7 +54,7 @@ run:
 # Run all tests
 .PHONY: test
 test:
-	go test -p 1 ./...
+	go test -count=1 -p 1 ./...
 
 # Run the worker
 .PHONY: worker
@@ -65,4 +65,4 @@ worker:
 # Check for direct dependency updates
 .PHONY: check-updates
 check-updates:
-	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all
+	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all | grep "\["

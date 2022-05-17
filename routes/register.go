@@ -45,11 +45,11 @@ func (c *register) Post(ctx echo.Context) error {
 
 	// Parse the form values
 	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(ctx, err, "unable to parse register form")
+		return c.Fail(err, "unable to parse register form")
 	}
 
 	if err := form.Submission.Process(ctx, form); err != nil {
-		return c.Fail(ctx, err, "unable to process form submission")
+		return c.Fail(err, "unable to process form submission")
 	}
 
 	if form.Submission.HasErrors() {
@@ -59,7 +59,7 @@ func (c *register) Post(ctx echo.Context) error {
 	// Hash the password
 	pwHash, err := c.Container.Auth.HashPassword(form.Password)
 	if err != nil {
-		return c.Fail(ctx, err, "unable to hash password")
+		return c.Fail(err, "unable to hash password")
 	}
 
 	// Attempt creating the user
@@ -77,7 +77,7 @@ func (c *register) Post(ctx echo.Context) error {
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
 		return c.Redirect(ctx, "login")
 	default:
-		return c.Fail(ctx, err, "unable to create user")
+		return c.Fail(err, "unable to create user")
 	}
 
 	// Log the user in
