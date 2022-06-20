@@ -108,7 +108,7 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 
 // cachePage caches the HTML for a given Page if the Page has caching enabled
 func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) {
-	if !page.Cache.Enabled {
+	if !page.Cache.Enabled || page.IsAuth {
 		return
 	}
 
