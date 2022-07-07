@@ -51,6 +51,15 @@ func TestController_Redirect(t *testing.T) {
 	assert.Equal(t, http.StatusFound, ctx.Response().Status)
 }
 
+func TestController_Redirect_Params(t *testing.T) {
+	ctx, _ := tests.NewContext(c.Web, "/abc")
+	ctr := NewController(c)
+	err := ctr.Redirect(ctx, "/params/:foo/bar/:qux", "one", "two")
+	require.NoError(t, err)
+	assert.Equal(t, "/params/one/bar/two", ctx.Response().Header().Get(echo.HeaderLocation))
+	assert.Equal(t, http.StatusFound, ctx.Response().Status)
+}
+
 func TestController_RenderPage(t *testing.T) {
 	setup := func() (echo.Context, *httptest.ResponseRecorder, Controller, Page) {
 		ctx, rec := tests.NewContext(c.Web, "/test/TestController_RenderPage")

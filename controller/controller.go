@@ -152,7 +152,7 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 
 // Redirect redirects to a given route name with optional route parameters
 func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
-	url := ctx.Echo().Reverse(route, routeParams)
+	url := ctx.Echo().Reverse(route, routeParams...)
 
 	if htmx.GetRequest(ctx).Boosted {
 		htmx.Response{
