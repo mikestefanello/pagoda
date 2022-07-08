@@ -43,11 +43,15 @@ func TestMain(m *testing.M) {
 }
 
 func TestController_Redirect(t *testing.T) {
+	c.Web.GET("/path/:first/and/:second", func(c echo.Context) error {
+		return nil
+	}).Name = "redirect-test"
+
 	ctx, _ := tests.NewContext(c.Web, "/abc")
 	ctr := NewController(c)
-	err := ctr.Redirect(ctx, "home")
+	err := ctr.Redirect(ctx, "redirect-test", "one", "two")
 	require.NoError(t, err)
-	assert.Equal(t, "", ctx.Response().Header().Get(echo.HeaderLocation))
+	assert.Equal(t, "/path/one/and/two", ctx.Response().Header().Get(echo.HeaderLocation))
 	assert.Equal(t, http.StatusFound, ctx.Response().Status)
 }
 
