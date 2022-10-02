@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.1
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
 	github.com/labstack/echo-contrib v0.13.0
-	github.com/labstack/echo/v4 v4.8.0
+	github.com/labstack/echo/v4 v4.9.0
 	github.com/labstack/gommon v0.3.1
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d
