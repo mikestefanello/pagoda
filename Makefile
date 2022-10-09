@@ -11,12 +11,12 @@ db-test:
 # Connect to the primary cache
 .PHONY: cache
 cache:
-	redis-cli
+	docker compose exec -it cache redis-cli
 
  # Connect to the test cache
 .PHONY: cache-test
 cache-test:
-	redis-cli -n 1
+	docker compose exec -it cache redis-cli -n 1
 
 # Install Ent code-generation module
 .PHONY: ent-install
