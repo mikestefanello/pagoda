@@ -10,98 +10,99 @@
 <p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
 ## Table of Contents
-* [Introduction](#introduction)
-    * [Overview](#overview)
-    * [Foundation](#foundation)
-      * [Backend](#backend)
-      * [Frontend](#frontend)
-      * [Storage](#storage)
-    * [Screenshots](#screenshots)
-* [Getting started](#getting-started)
-  * [Dependencies](#dependencies)
-  * [Start the application](#start-the-application)
-  * [Running tests](#running-tests)
-  * [Clients](#clients)
-* [Service container](#service-container)
-  * [Dependency injection](#dependency-injection)
-  * [Test dependencies](#test-dependencies)
-* [Configuration](#configuration)
-    * [Environment overrides](#environment-overrides)
-    * [Environments](#environments)
-* [Database](#database)
-    * [Auto-migrations](#auto-migrations)
-    * [Separate test database](#separate-test-database)
-* [ORM](#orm)
-  * [Entity types](#entity-types)
-  * [New entity type](#new-entity-type)
-* [Sessions](#sessions)
-  * [Encryption](#encryption)
-* [Authentication](#authentication)
-  * [Login / Logout](#login--logout)
-  * [Forgot password](#forgot-password)
-  * [Registration](#registration)
-  * [Authenticated user](#authenticated-user)
-    * [Middleware](#middleware)
-  * [Email verification](#email-verification)
-* [Routes](#routes)
-  * [Custom middleware](#custom-middleware)
-  * [Controller / Dependencies](#controller--dependencies)
-  * [Patterns](#patterns)
-  * [Errors](#errors)
-  * [Testing](#testing)
-    * [HTTP server](#http-server)
-    * [Request / Request helpers](#request--response-helpers)
-    * [Goquery](#goquery)
-* [Controller](#controller)
-  * [Page](#page)
-  * [Flash messaging](#flash-messaging)
-  * [Pager](#pager)
-  * [CSRF](#csrf)
-  * [Automatic template parsing](#automatic-template-parsing)
-  * [Cached responses](#cached-responses)
-    * [Cache tags](#cache-tags)
-    * [Cache middleware](#cache-middleware)
-  * [Data](#data)
-  * [Forms](#forms)
-    * [Submission processing](#submission-processing)
-    * [Inline validation](#inline-validation)
-  * [Headers](#headers)
-  * [Status code](#status-code)
-  * [Metatags](#metatags)
-  * [URL and link generation](#url-and-link-generation)
-  * [HTMX support](#htmx-support)
-  * [Rendering the page](#rendering-the-page)
-* [Template renderer](#template-renderer)
-  * [Custom functions](#custom-functions)
-  * [Caching](#caching)
-  * [Hot-reload for development](#hot-reload-for-development)
-  * [File configuration](#file-configuration)
-* [Funcmap](#funcmap)
-* [Cache](#cache)
-  * [Set data](#set-data)
-  * [Get data](#get-data)
-  * [Flush data](#flush-data)
-  * [Flush tags](#flush-tags)
-* [Tasks](#tasks)
-  * [Queues](#queues)
-  * [Scheduled tasks](#scheduled-tasks)
-  * [Worker](#worker)
-  * [Monitoring](#monitoring)
-* [Static files](#static-files)
-  * [Cache control headers](#cache-control-headers)
-  * [Cache-buster](#cache-buster)
-* [Email](#email)
-* [HTTPS](#https)
-* [Logging](#logging)
-* [Roadmap](#roadmap)
-* [Credits](#credits)
+
+- [Introduction](#introduction)
+  - [Overview](#overview)
+  - [Foundation](#foundation)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+    - [Storage](#storage)
+  - [Screenshots](#screenshots)
+- [Getting started](#getting-started)
+  - [Dependencies](#dependencies)
+  - [Start the application](#start-the-application)
+  - [Running tests](#running-tests)
+  - [Clients](#clients)
+- [Service container](#service-container)
+  - [Dependency injection](#dependency-injection)
+  - [Test dependencies](#test-dependencies)
+- [Configuration](#configuration)
+  - [Environment overrides](#environment-overrides)
+  - [Environments](#environments)
+- [Database](#database)
+  - [Auto-migrations](#auto-migrations)
+  - [Separate test database](#separate-test-database)
+- [ORM](#orm)
+  - [Entity types](#entity-types)
+  - [New entity type](#new-entity-type)
+- [Sessions](#sessions)
+  - [Encryption](#encryption)
+- [Authentication](#authentication)
+  - [Login / Logout](#login--logout)
+  - [Forgot password](#forgot-password)
+  - [Registration](#registration)
+  - [Authenticated user](#authenticated-user)
+    - [Middleware](#middleware)
+  - [Email verification](#email-verification)
+- [Routes](#routes)
+  - [Custom middleware](#custom-middleware)
+  - [Controller / Dependencies](#controller--dependencies)
+  - [Patterns](#patterns)
+  - [Errors](#errors)
+  - [Testing](#testing)
+    - [HTTP server](#http-server)
+    - [Request / Request helpers](#request--response-helpers)
+    - [Goquery](#goquery)
+- [Controller](#controller)
+  - [Page](#page)
+  - [Flash messaging](#flash-messaging)
+  - [Pager](#pager)
+  - [CSRF](#csrf)
+  - [Automatic template parsing](#automatic-template-parsing)
+  - [Cached responses](#cached-responses)
+    - [Cache tags](#cache-tags)
+    - [Cache middleware](#cache-middleware)
+  - [Data](#data)
+  - [Forms](#forms)
+    - [Submission processing](#submission-processing)
+    - [Inline validation](#inline-validation)
+  - [Headers](#headers)
+  - [Status code](#status-code)
+  - [Metatags](#metatags)
+  - [URL and link generation](#url-and-link-generation)
+  - [HTMX support](#htmx-support)
+  - [Rendering the page](#rendering-the-page)
+- [Template renderer](#template-renderer)
+  - [Custom functions](#custom-functions)
+  - [Caching](#caching)
+  - [Hot-reload for development](#hot-reload-for-development)
+  - [File configuration](#file-configuration)
+- [Funcmap](#funcmap)
+- [Cache](#cache)
+  - [Set data](#set-data)
+  - [Get data](#get-data)
+  - [Flush data](#flush-data)
+  - [Flush tags](#flush-tags)
+- [Tasks](#tasks)
+  - [Queues](#queues)
+  - [Scheduled tasks](#scheduled-tasks)
+  - [Worker](#worker)
+  - [Monitoring](#monitoring)
+- [Static files](#static-files)
+  - [Cache control headers](#cache-control-headers)
+  - [Cache-buster](#cache-buster)
+- [Email](#email)
+- [HTTPS](#https)
+- [Logging](#logging)
+- [Roadmap](#roadmap)
+- [Credits](#credits)
 
 ## Introduction
 
 ### Overview
 
 _Pagoda_ is not a framework but rather a base starter-kit for rapid, easy full-stack web development in Go, aiming to provide much of the functionality you would expect from a complete web framework as well as establishing patterns, procedures and structure for your web application.
- 
+
 Built on a solid [foundation](#foundation) of well-established frameworks and modules, _Pagoda_ aims to be a starting point for any web application with the benefit over a mega-framework in that you have full control over all of the code, the ability to easily swap any frameworks or modules in or out, no strict patterns or interfaces to follow, and no fear of lock-in.
 
 While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that _Go_ templates can be powerful and easy to work with, and interesting [frontend](#frontend) libraries can provide the same modern functionality and behavior without having to write any JS at all.
@@ -148,11 +149,9 @@ Go server-side rendered HTML combined with the projects below enable you to crea
 
 Ensure the following are installed on your system:
 
- - [Go](https://go.dev/)
- - [Docker](https://www.docker.com/)
- - [Docker Compose](https://docs.docker.com/compose/install/)
- - [psql](https://www.postgresql.org/docs/13/app-psql.html) _(optional)_
- - [redis-cli](https://redis.io/topics/rediscli) _(optional)_
+- [Go](https://go.dev/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Start the application
 
@@ -203,7 +202,7 @@ A new container can be created and initialized via `services.NewContainer()`. It
 ### Dependency injection
 
 The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is passed to and stored within the `Controller`
- so that the controller and the route using it have full, easy access to all services.
+so that the controller and the route using it have full, easy access to all services.
 
 ### Test dependencies
 
@@ -211,7 +210,7 @@ It is common that your tests will require access to dependencies, like the datab
 
 ## Configuration
 
-The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application. 
+The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application.
 
 Be sure to review and adjust all of the default configuration values provided.
 
@@ -269,7 +268,7 @@ When a `Container` is created, if the [environment](#environments) is set to `co
 
 ## ORM
 
-As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started). 
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
 
 An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
 
@@ -278,6 +277,7 @@ Ent relies on code-generation for the entities you create to provide robust, typ
 ### Entity types
 
 The two included entity types are:
+
 - User
 - PasswordToken
 
@@ -395,8 +395,8 @@ A `middleware` package is included which you can easily add to along with the cu
 
 The `Controller`, which is described in a section below, serves two purposes for routes:
 
-1) It provides base functionality which can be embedded in each route, most importantly `Page` rendering (described in the `Controller` section below)
-2) It stores a pointer to the `Container`, making all _Services_ available within your route
+1. It provides base functionality which can be embedded in each route, most importantly `Page` rendering (described in the `Controller` section below)
+2. It stores a pointer to the `Container`, making all _Services_ available within your route
 
 While using the `Controller` is not required for your routes, it will certainly make development easier.
 
@@ -522,6 +522,7 @@ Flash messaging requires that [sessions](#sessions) and the session middleware a
 #### Creating messages
 
 There are four types of messages, and each can be created as follows:
+
 - Success: `msg.Success(ctx echo.Context, message string)`
 - Info: `msg.Info(ctx echo.Context, message string)`
 - Warning: `msg.Warning(ctx echo.Context, message string)`
@@ -575,10 +576,10 @@ page.Layout = "main"
 
 That alone will result in the following templates being parsed and executed when the `Page` is rendered:
 
-1) `layouts/main.gohtml` as the base template
-2) `pages/home.gohtml` to provide the `content` template for the layout
-3) All template files located within the `components` directory
-4) The entire [funcmap](#funcmap)
+1. `layouts/main.gohtml` as the base template
+2. `pages/home.gohtml` to provide the `content` template for the layout
+3. All template files located within the `components` directory
+4. The entire [funcmap](#funcmap)
 
 The [template renderer](#template-renderer) also provides caching and local hot-reloading.
 
@@ -599,8 +600,9 @@ You can use the [cache client](#cache) on the `Container` to easily [flush cache
 Cached pages are served via the middleware `ServeCachedPage()` in the `middleware` package.
 
 The cache is bypassed if the requests meet any of the following criteria:
-1) Is not a GET request
-2) Is made by an authenticated user
+
+1. Is not a GET request
+2. Is made by an authenticated user
 
 Cached pages are looked up for a key that matches the exact, full URL of the given request.
 
@@ -638,12 +640,14 @@ Form submission processing is made extremely simple by leveraging functionality 
 Using the example form above, these are the steps you would take within the _POST_ callback for your route:
 
 Start by storing a pointer to the form in the conetxt so that your _GET_ callback can access the form values, which will be showed at the end:
+
 ```go
 var form ContactForm
 ctx.Set(context.FormKey, &form)
 ```
 
 Parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
+
 ```go
 if err := ctx.Bind(&form); err != nil {
     // Something went wrong...
@@ -651,6 +655,7 @@ if err := ctx.Bind(&form); err != nil {
 ```
 
 Process the submission which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
+
 ```go
 if err := form.Submission.Process(ctx, form); err != nil {
     // Something went wrong...
@@ -658,6 +663,7 @@ if err := form.Submission.Process(ctx, form); err != nil {
 ```
 
 Check if the form submission has any validation errors:
+
 ```go
 if !form.Submission.HasErrors() {
     // All good, now execute something!
@@ -665,6 +671,7 @@ if !form.Submission.HasErrors() {
 ```
 
 In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
+
 ```go
 if form.Submission.HasErrors() {
     return c.Get(ctx)
@@ -672,6 +679,7 @@ if form.Submission.HasErrors() {
 ```
 
 Then, in your _GET_ handler, extract the form from the context so it can be passed to the templates:
+
 ```go
 page := controller.NewPage(ctx)
 page.Form = ContactForm{}
@@ -682,8 +690,15 @@ if form := ctx.Get(context.FormKey); form != nil {
 ```
 
 And finally, your template:
+
 ```html
-<input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
+<input
+  id="email"
+  name="email"
+  type="email"
+  class="input"
+  value="{{.Form.Email}}"
+/>
 ```
 
 #### Inline validation
@@ -695,11 +710,14 @@ While [validator](https://github.com/go-playground/validator) is a great package
 To provide the inline validation in your template, there are two things that need to be done.
 
 First, include a status class on the element so it will highlight green or red based on the validation:
+
 ```html
-<input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
+<input id="email" name="email" type="email" class="input
+{{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
 ```
 
 Second, render the error messages, if there are any for a given field:
+
 ```go
 {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
 ```
@@ -744,15 +762,17 @@ A _component_ template is included to render metatags in `core.gohtml` which can
 
 ### URL and link generation
 
-Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`. 
+Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`.
 
 As an example, if you have route such as:
+
 ```go
 profile := Profile{Controller: ctr}
 e.GET("/user/profile/:user", profile.Get).Name = "user_profile"
 ```
 
 And you want to generate a URL in the template, you can:
+
 ```go
 {{call .ToURL "user_profile" 1}
 ```
@@ -766,9 +786,11 @@ There is also a helper function provided in the [funcmap](#funcmap) to generate 
 ```
 
 Will generate:
+
 ```html
 <a href="/user/profile/1" class="is-active extra-class">Profile</a>
 ```
+
 Assuming the current _path_ is `/user/profile/1`; otherwise the `is-active` class will be excluded.
 
 ### HTMX support
@@ -776,6 +798,7 @@ Assuming the current _path_ is `/user/profile/1`; otherwise the `is-active` clas
 [HTMX](https://htmx.org/) is an awesome JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
 
 Many examples of its usage are available in the included examples:
+
 - All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
 - All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
 - The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
@@ -848,6 +871,7 @@ buf, err = c.TemplateRenderer.
 ```
 
 This will do the following:
+
 - [Cache](#caching) the parsed template with a _group_ of `page` and _key_ of `home` so this parse only happens once
 - Set the _base template file_ as `main`
 - Include the templates `templates/layout/main.gohtml` and `templates/pages/home.gohtml`
@@ -1041,6 +1065,7 @@ err := c.Tasks.
 ```
 
 In this example, this task will be:
+
 - Assigned a task type of `my_task`
 - The task worker will be sent `taskData` as the payload
 - Put in to the `critical` queue
@@ -1138,13 +1163,15 @@ The cache max-life is controlled by the configuration at `Config.Cache.Expiratio
 While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function is provided in the [funcmap](#funcmap) to generate a static file URL for a given file that appends a cache-buster query. This query string is randomly generated and persisted until the application restarts.
 
 For example, to render a file located in `static/picture.png`, you would use:
+
 ```html
 <img src="{{File "picture.png"}}"/>
 ```
 
 Which would result in:
+
 ```html
-<img src="/files/picture.png?v=9fhe73kaf3"/>
+<img src="/files/picture.png?v=9fhe73kaf3" />
 ```
 
 Where `9fhe73kaf3` is the randomly-generated cache-buster.
@@ -1201,7 +1228,7 @@ Logging is provided by [Echo](https://echo.labstack.com/guide/customization/#log
 ```go
 func (c *home) Get(ctx echo.Context) error {
     ctx.Logger().Info("something happened")
-	
+
     if err := someOperation(); err != nil {
         ctx.Logger().Errorf("the operation failed: %v", err)
     }
