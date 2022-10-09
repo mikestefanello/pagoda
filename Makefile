@@ -36,13 +36,13 @@ ent-new:
 # Start the Docker containers
 .PHONY: up
 up:
-	docker-compose up -d
+	docker compose up -d
 	sleep 3
 
 # Rebuild Docker containers to wipe all data
 .PHONY: reset
 reset:
-	docker-compose down
+	docker compose down
 	make up
 
 # Run the application
