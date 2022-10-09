@@ -1,12 +1,12 @@
 # Connect to the primary database
 .PHONY: db
 db:
-	psql postgresql://admin:admin@localhost:5432/app
+	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app
 
 # Connect to the test database
 .PHONY: db-test
 db-test:
-	psql postgresql://admin:admin@localhost:5432/app_test
+	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app_test
 
 # Connect to the primary cache
 .PHONY: cache
