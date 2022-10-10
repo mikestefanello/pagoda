@@ -101,7 +101,7 @@
 ### Overview
 
 _Pagoda_ is not a framework but rather a base starter-kit for rapid, easy full-stack web development in Go, aiming to provide much of the functionality you would expect from a complete web framework as well as establishing patterns, procedures and structure for your web application.
- 
+
 Built on a solid [foundation](#foundation) of well-established frameworks and modules, _Pagoda_ aims to be a starting point for any web application with the benefit over a mega-framework in that you have full control over all of the code, the ability to easily swap any frameworks or modules in or out, no strict patterns or interfaces to follow, and no fear of lock-in.
 
 While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that _Go_ templates can be powerful and easy to work with, and interesting [frontend](#frontend) libraries can provide the same modern functionality and behavior without having to write any JS at all.
@@ -151,8 +151,6 @@ Ensure the following are installed on your system:
  - [Go](https://go.dev/)
  - [Docker](https://www.docker.com/)
  - [Docker Compose](https://docs.docker.com/compose/install/)
- - [psql](https://www.postgresql.org/docs/13/app-psql.html) _(optional)_
- - [redis-cli](https://redis.io/topics/rediscli) _(optional)_
 
 ### Start the application
 
@@ -211,7 +209,7 @@ It is common that your tests will require access to dependencies, like the datab
 
 ## Configuration
 
-The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application. 
+The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application.
 
 Be sure to review and adjust all of the default configuration values provided.
 
@@ -269,7 +267,7 @@ When a `Container` is created, if the [environment](#environments) is set to `co
 
 ## ORM
 
-As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started). 
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
 
 An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
 
@@ -744,7 +742,7 @@ A _component_ template is included to render metatags in `core.gohtml` which can
 
 ### URL and link generation
 
-Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`. 
+Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`.
 
 As an example, if you have route such as:
 ```go
@@ -1201,7 +1199,7 @@ Logging is provided by [Echo](https://echo.labstack.com/guide/customization/#log
 ```go
 func (c *home) Get(ctx echo.Context) error {
     ctx.Logger().Info("something happened")
-	
+
     if err := someOperation(); err != nil {
         ctx.Logger().Errorf("the operation failed: %v", err)
     }

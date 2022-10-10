@@ -1,22 +1,22 @@
 # Connect to the primary database
 .PHONY: db
 db:
-	psql postgresql://admin:admin@localhost:5432/app
+	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app
 
 # Connect to the test database
 .PHONY: db-test
 db-test:
-	psql postgresql://admin:admin@localhost:5432/app_test
+	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app_test
 
 # Connect to the primary cache
 .PHONY: cache
 cache:
-	redis-cli
+	docker compose exec -it cache redis-cli
 
  # Connect to the test cache
 .PHONY: cache-test
 cache-test:
-	redis-cli -n 1
+	docker compose exec -it cache redis-cli -n 1
 
 # Install Ent code-generation module
 .PHONY: ent-install
@@ -36,13 +36,13 @@ ent-new:
 # Start the Docker containers
 .PHONY: up
 up:
-	docker-compose up -d
+	docker compose up -d
 	sleep 3
 
 # Rebuild Docker containers to wipe all data
 .PHONY: reset
 reset:
-	docker-compose down
+	docker compose down
 	make up
 
 # Run the application
