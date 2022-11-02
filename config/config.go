@@ -10,7 +10,7 @@ import (
 
 const (
 	// TemplateDir stores the name of the directory that contains templates
-	TemplateDir = "templates"
+	TemplateDir = "../templates"
 
 	// TemplateExt stores the extension used for the template files
 	TemplateExt = ".gohtml"

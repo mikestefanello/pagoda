@@ -183,7 +183,7 @@ The following _make_ commands are available to make it easy to connect to the da
 
 ## Service container
 
-The container is located at `services/container.go` and is meant to house all of your application's services and/or dependencies. It is easily extensible and can be created and initialized in a single call. The services currently included in the container are:
+The container is located at `pkg/services/container.go` and is meant to house all of your application's services and/or dependencies. It is easily extensible and can be created and initialized in a single call. The services currently included in the container are:
 
 - Configuration
 - Cache
@@ -306,7 +306,7 @@ This executes a database query to return the _password token_ entity with a give
 
 ## Sessions
 
-Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured as middleware in the router located at `routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
+Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured as middleware in the router located at `pkg/routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
 
 Here's a simple example of loading data from a session and saving new values:
 
@@ -384,7 +384,7 @@ To generate a new verification token, the `AuthClient` has a method `GenerateEma
 
 ## Routes
 
-The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `routes/router.go`. Since the _Echo_ instance is a _Service_ on the `Container` which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
+The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `pkg/routes/router.go`. Since the _Echo_ instance is a _Service_ on the `Container` which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
 
 ### Custom middleware
 
@@ -435,13 +435,13 @@ Your route will now have all methods available on the `Controller` as well as ac
 
 Routes can return errors to indicate that something wrong happened. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code. You can use `return echo.NewHTTPError(http.StatusInternalServerError)`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
 
-The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `routes/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `pkg/routes/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
 
 ### Testing
 
 Since most of your web application logic will live in your routes, being able to easily test them is important. The following aims to help facilitate that.
 
-The test setup and helpers reside in `routes/router_test.go`.
+The test setup and helpers reside in `pkg/routes/router_test.go`.
 
 Only a brief example of route tests were provided in order to highlight what is available. Adding full tests did not seem logical since these routes will most likely be changed or removed in your project.
 
@@ -451,7 +451,7 @@ When the route tests initialize, a new `Container` is created which provides ful
 
 #### Request / Response helpers
 
-With the test HTTP server setup, test helpers for making HTTP requests and evaluating responses are made available to reduce the amount of code you need to write. See `httpRequest` and `httpResponse` within `routes/router_test.go`.
+With the test HTTP server setup, test helpers for making HTTP requests and evaluating responses are made available to reduce the amount of code you need to write. See `httpRequest` and `httpResponse` within `pkg/routes/router_test.go`.
 
 Here is an example how to easily make a request and evaluate the response:
 
@@ -485,7 +485,7 @@ As previously mentioned, the `Controller` acts as a base for your routes, though
 
 ### Page
 
-The `Page` is the major building block of your `Controller` responses. It is a _struct_ type located at `controller/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates.
+The `Page` is the major building block of your `Controller` responses. It is a _struct_ type located at `pkg/controller/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates.
 
 All example routes provided construct and _render_ a `Page`. It's recommended that you review both the `Page` and the example routes as they try to illustrate all included functionality.
 
@@ -540,7 +540,7 @@ To make things easier, a template _component_ is already provided, located at `t
 
 ### Pager
 
-A very basic mechanism is provided to handle and facilitate paging located in `controller/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
+A very basic mechanism is provided to handle and facilitate paging located in `pkg/controller/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
 
 During initialization, the _items per page_ amount will be set to the default, controlled via constant, which has a value of 20. It can be overridden by changing `Pager.ItemsPerPage` but should be done before other values are set in order to not provide incorrect calculations.
 
@@ -634,7 +634,7 @@ How the _form_ gets populated with values so that your template can render them 
 
 #### Submission processing
 
-Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `FormSubmission` struct located in `controller/form.go`.
+Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `FormSubmission` struct located in `pkg/controller/form.go`.
 
 Using the example form above, these are the steps you would take within the _POST_ callback for your route:
 
@@ -833,7 +833,7 @@ func (c *home) Get(ctx echo.Context) error {
 
 ## Template renderer
 
-The _template renderer_ is a _Service_ on the `Container` that aims to make template parsing and rendering easy and flexible. It is the mechanism that allows the `Page` to do [automatic template parsing](#automatic-template-parsing). The standard `html/template` is still the engine used behind the scenes. The code can be found in `services/template_renderer.go`.
+The _template renderer_ is a _Service_ on the `Container` that aims to make template parsing and rendering easy and flexible. It is the mechanism that allows the `Page` to do [automatic template parsing](#automatic-template-parsing). The standard `html/template` is still the engine used behind the scenes. The code can be found in `pkg/services/template_renderer.go`.
 
 Here is an example of a complex rendering that uses multiple template files as well as an entire directory of template files:
 
@@ -1083,7 +1083,7 @@ err := c.Tasks.
 
 #### Scheduler
 
-A service needs to run in order to add periodic tasks to the queue at the specified intervals. When the application is started, this _scheduler_ service will also be started. In `main.go`, this is done with the following code:
+A service needs to run in order to add periodic tasks to the queue at the specified intervals. When the application is started, this _scheduler_ service will also be started. In `cmd/web/main.go`, this is done with the following code:
 
 ```go
 go func() {
@@ -1107,7 +1107,7 @@ A make target was added to allow you to start the worker service easily. From th
 
 #### Understanding the service
 
-The worker service is located in [worker/worker.go](/worker/worker.go) and starts with the creation of a new `*asynq.Server` provided by `asynq.NewServer()`. There are various configuration options available, so be sure to review them all.
+The worker service is located in [cmd/worker/main.go](/cmd/worker/main.go) and starts with the creation of a new `*asynq.Server` provided by `asynq.NewServer()`. There are various configuration options available, so be sure to review them all.
 
 Prior to starting the service, we need to route tasks according to their _type_ to their handlers which will process the tasks. This is done by using `async.ServeMux` much like you would use an HTTP router:
 
@@ -1116,7 +1116,7 @@ mux := asynq.NewServeMux()
 mux.Handle(tasks.TypeExample, new(tasks.ExampleProcessor))
 ```
 
-In this example, all tasks of _type_ `tasks.TypeExample` will be routed to `ExampleProcessor` which is a struct that implements `ProcessTask()`. See the included [basic example](/worker/tasks/example.go).
+In this example, all tasks of _type_ `tasks.TypeExample` will be routed to `ExampleProcessor` which is a struct that implements `ProcessTask()`. See the included [basic example](/pkg/tasks/example.go).
 
 Finally, the service is started with `async.Server.Run(mux)`.
 
@@ -1126,7 +1126,7 @@ Finally, the service is started with `async.Server.Run(mux)`.
 
 ## Static files
 
-Static files are currently configured in the router (`routes/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
+Static files are currently configured in the router (`pkg/routes/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
 
 ### Cache control headers
 

@@ -49,7 +49,7 @@ reset:
 .PHONY: run
 run:
 	clear
-	go run main.go
+	go run cmd/web/main.go
 
 # Run all tests
 .PHONY: test
@@ -60,7 +60,7 @@ test:
 .PHONY: worker
 worker:
 	clear
-	go run worker/worker.go
+	go run cmd/worker/worker.go
 
 # Check for direct dependency updates
 .PHONY: check-updates
