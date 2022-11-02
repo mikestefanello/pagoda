@@ -211,17 +211,20 @@ It is common that your tests will require access to dependencies, like the datab
 
 The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application.
 
-Be sure to review and adjust all of the default configuration values provided.
+Be sure to review and adjust all of the default configuration values provided in `config/config.yaml`.
 
 ### Environment overrides
 
-Leveraging the functionality of [envdecode](https://github.com/joeshaw/envdecode), all configuration values can be overridden by environment variables. Here is an example of what a configuration value looks like, each of which is a field on a struct:
+Leveraging the functionality of [viper](https://github.com/spf13/viper) to manage configuration, all configuration values can be overridden by environment variables. The name of the variable is determined by the set prefix and the name of the configuration field in `config/config.yaml`.
 
-```go
-Port  uint16  `env:"HTTP_PORT,default=8000"`
+In `config/config.go`, the prefix is set as `pagoda` via `viper.SetEnvPrefix("pagoda")`. Nested fields require an underscore between levels. For example:
+
+```yaml
+cache:
+  port: 1234
 ```
 
-The value for this field will be set to `8000`, the default, unless the `HTTP_PORT` environment variable is set, in which case the value of the variable will be used. This allows you to easily override configuration values per-environment.
+can be overridden by setting an environment variable with the name `PAGODA_CACHE_PORT`.
 
 ### Environments
 
@@ -1231,7 +1234,6 @@ Thank you to all of the following amazing projects for making this possible.
 - [echo](https://github.com/labstack/echo)
 - [echo-contrib](https://github.com/labstack/echo-contrib)
 - [ent](https://github.com/ent/ent)
-- [envdecode](https://github.com/joeshaw/envdecode)
 - [go](https://go.dev/)
 - [gocache](https://github.com/eko/gocache)
 - [goquery](https://github.com/PuerkitoBio/goquery)
@@ -1245,3 +1247,4 @@ Thank you to all of the following amazing projects for making this possible.
 - [sessions](https://github.com/gorilla/sessions)
 - [testify](https://github.com/stretchr/testify)
 - [validator](https://github.com/go-playground/validator)
+- [viper](https://github.com/spf13/viper)

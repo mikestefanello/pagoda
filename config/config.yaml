@@ -1,0 +1,46 @@
+http:
+  hostname: ""
+  port: 8000
+  readTimeout: "5s"
+  writeTimeout: "10s"
+  idleTimeout: "2m"
+  tls:
+    enabled: false
+    certificate: ""
+    key: ""
+
+app:
+  name: "Pagoda"
+  environment: "local"
+  # Change this on any live environments
+  encryptionKey: "?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"
+  timeout: "20s"
+  passwordToken:
+      expiration: "60m"
+      length: 64
+  emailVerificationTokenExpiration: "12h"
+
+cache:
+  hostname: "localhost"
+  port: 6379
+  password: ""
+  database: 0
+  testDatabase: 1
+  expiration:
+    staticFile: "4380h"
+    page: "24h"
+
+database:
+  hostname: "localhost"
+  port: 5432
+  user: "admin"
+  password: "admin"
+  database: "app"
+  testDatabase: "app_test"
+
+mail:
+  hostname: "localhost"
+  port: 25
+  user: "admin"
+  password: "admin"
+  fromAddress: "admin@localhost"
