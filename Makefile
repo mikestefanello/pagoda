@@ -1,22 +1,26 @@
+# Determine if you have docker-compose or docker compose installed locally
+# If this does not work on your system, just set the name of the executable you have installed
+DCO_BIN := $(shell { command -v docker-compose || command -v docker compose; } 2>/dev/null)
+
 # Connect to the primary database
 .PHONY: db
 db:
-	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app
+	docker exec -it pagoda_db psql postgresql://admin:admin@localhost:5432/app
 
-# Connect to the test database
+# Connect to the test database (you must run tests first before running this)
 .PHONY: db-test
 db-test:
-	docker compose exec -it db psql postgresql://admin:admin@localhost:5432/app_test
+	docker exec -it pagoda_db psql postgresql://admin:admin@localhost:5432/app_test
 
 # Connect to the primary cache
 .PHONY: cache
 cache:
-	docker compose exec -it cache redis-cli
+	docker exec -it pagoda_cache redis-cli
 
  # Connect to the test cache
 .PHONY: cache-test
 cache-test:
-	docker compose exec -it cache redis-cli -n 1
+	docker exec -it pagoda_cache redis-cli -n 1
 
 # Install Ent code-generation module
 .PHONY: ent-install
@@ -36,13 +40,13 @@ ent-new:
 # Start the Docker containers
 .PHONY: up
 up:
-	docker compose up -d
+	$(DCO_BIN) up -d
 	sleep 3
 
 # Rebuild Docker containers to wipe all data
 .PHONY: reset
 reset:
-	docker compose down
+	$(DCO_BIN) down
 	make up
 
 # Run the application
