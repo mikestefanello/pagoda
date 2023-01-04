@@ -43,7 +43,7 @@ up:
 	$(DCO_BIN) up -d
 	sleep 3
 
-# Stop the Docker containers
+# Delete the Docker containers
 .PHONY: down
 down:
 	$(DCO_BIN) down
@@ -52,7 +52,6 @@ down:
 .PHONY: reset
 reset:
 	$(DCO_BIN) down
-	make ent-gen
 	make up
 
 # Run the application
