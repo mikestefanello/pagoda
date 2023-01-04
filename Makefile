@@ -52,6 +52,7 @@ down:
 .PHONY: reset
 reset:
 	$(DCO_BIN) down
+	make ent-gen
 	make up
 
 # Run the application
