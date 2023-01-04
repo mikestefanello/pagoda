@@ -43,6 +43,11 @@ up:
 	$(DCO_BIN) up -d
 	sleep 3
 
+# Stop the Docker containers
+.PHONY: down
+down:
+	$(DCO_BIN) down
+
 # Rebuild Docker containers to wipe all data
 .PHONY: reset
 reset:
