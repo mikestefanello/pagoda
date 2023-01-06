@@ -64,7 +64,7 @@ test:
 .PHONY: worker
 worker:
 	clear
-	go run cmd/worker/worker.go
+	go run cmd/worker/main.go
 
 # Check for direct dependency updates
 .PHONY: check-updates
