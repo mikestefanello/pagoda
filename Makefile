@@ -35,7 +35,7 @@ ent-gen:
 # Create a new Ent entity
 .PHONY: ent-new
 ent-new:
-	go run entgo.io/ent/cmd/ent init $(name)
+	go run entgo.io/ent/cmd/ent new $(name)
 
 # Start the Docker containers
 .PHONY: up
