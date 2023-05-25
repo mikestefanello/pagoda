@@ -638,7 +638,7 @@ Form submission processing is made extremely simple by leveraging functionality 
 
 Using the example form above, these are the steps you would take within the _POST_ callback for your route:
 
-Start by storing a pointer to the form in the conetxt so that your _GET_ callback can access the form values, which will be showed at the end:
+Start by storing a pointer to the form in the context so that your _GET_ callback can access the form values, which will be showed at the end:
 ```go
 var form ContactForm
 ctx.Set(context.FormKey, &form)
