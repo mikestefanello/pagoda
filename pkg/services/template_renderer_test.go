@@ -1,7 +1,7 @@
 package services
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/mikestefanello/pagoda/config"
@@ -37,7 +37,7 @@ func TestTemplateRenderer(t *testing.T) {
 	expectedTemplates := make(map[string]bool)
 	expectedTemplates["htmx"+config.TemplateExt] = true
 	expectedTemplates["error"+config.TemplateExt] = true
-	components, err := ioutil.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
+	components, err := os.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
 	require.NoError(t, err)
 	for _, f := range components {
 		expectedTemplates[f.Name()] = true
