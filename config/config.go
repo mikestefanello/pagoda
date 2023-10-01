@@ -129,7 +129,7 @@ func GetConfig() (Config, error) {
 
 	// Load the config file
 	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("config")
 	viper.AddConfigPath("../config")
