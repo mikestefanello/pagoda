@@ -15,8 +15,13 @@ func TestIsCanceled(t *testing.T) {
 	cancel()
 	assert.True(t, IsCanceledError(ctx.Err()))
 
-	ctx, cancel = context.WithTimeout(context.Background(), time.Microsecond)
-	time.Sleep(time.Microsecond * 5)
+	ctx, cancel = context.WithTimeout(context.Background(), time.Microsecond*5)
+	doneCh := make(chan struct{})
+	go func() {
+		<-ctx.Done()
+		doneCh <- struct{}{}
+	}()
+	<-doneCh
 	cancel()
 	assert.False(t, IsCanceledError(ctx.Err()))
 
