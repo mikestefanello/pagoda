@@ -47,5 +47,10 @@
       "user": "admin",
       "password": "admin",
       "fromAddress": "admin@localhost"
+    },
+    "dependencies": {
+        "bulma": "0.9.3",
+        "htmx": "1.6.1",
+        "alpinejs": "3.x.x"
     }
   }

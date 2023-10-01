@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
@@ -32,6 +33,8 @@ type Page struct {
 
 	// Context stores the request context
 	Context echo.Context
+
+	Dependencies config.DependencyVersions
 
 	// ToURL is a function to convert a route name and optional route parameters to a URL
 	ToURL func(name string, params ...interface{}) string
@@ -143,6 +146,14 @@ func NewPage(ctx echo.Context) Page {
 		p.IsAuth = true
 		p.AuthUser = u.(*ent.User)
 	}
+
+    cfg, err := config.GetConfig()
+    if err != nil {
+        // Handle the error
+        panic(err)
+    }
+
+    p.Dependencies = cfg.Dependencies
 
 	p.HTMX.Request = htmx.GetRequest(ctx)
 

@@ -61,6 +61,7 @@ type (
 		Cache    CacheConfig
 		Database DatabaseConfig
 		Mail     MailConfig
+		Dependencies DependencyVersions
 	}
 
 	// HTTPConfig stores HTTP configuration
@@ -120,6 +121,12 @@ type (
 		User        string
 		Password    string
 		FromAddress string
+	}
+
+	DependencyVersions struct {
+		Bulma   string `json:"bulma"`
+		Htmx    string `json:"htmx"`
+		Alpinejs string `json:"alpinejs"`
 	}
 )
 
