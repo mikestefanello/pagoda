@@ -3,7 +3,7 @@ module github.com/mikestefanello/pagoda
 go 1.19
 
 require (
-	entgo.io/ent v0.11.8
+	entgo.io/ent v0.12.4
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/eko/gocache/v2 v2.3.1
@@ -17,12 +17,12 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/labstack/gommon v0.4.0
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.6.0
 )
 
 require (
-	ariga.io/atlas v0.9.1-0.20230119145809-92243f7c55cb // indirect
+	ariga.io/atlas v0.14.1-0.20230918065911-83ad451a4935 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/XiaoMi/pegasus-go-client v0.0.0-20210427083443-f3b6b08bc4c2 // indirect
@@ -82,11 +82,11 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
