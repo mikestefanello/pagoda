@@ -1,4 +1,4 @@
-package routes
+package handlers
 
 import (
 	"fmt"
@@ -9,8 +9,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const routeNameSearch = "search"
+
 type (
-	search struct {
+	Search struct {
 		controller.Controller
 	}
 
@@ -20,7 +22,11 @@ type (
 	}
 )
 
-func (c *search) Get(ctx echo.Context) error {
+func (c *Search) Routes(g *echo.Group) {
+	g.GET("/search", c.Page).Name = routeNameSearch
+}
+
+func (c *Search) Page(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = "main"
 	page.Name = "search"
