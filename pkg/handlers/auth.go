@@ -137,7 +137,7 @@ func (c *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
 
 	// Email the user
-	url := ctx.Echo().Reverse("reset_password", u.ID, pt.ID, token)
+	url := ctx.Echo().Reverse(routeNameResetPassword, u.ID, pt.ID, token)
 	err = c.Container.Mail.
 		Compose().
 		To(u.Email).
@@ -309,7 +309,7 @@ func (c *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	}
 
 	// Send the email
-	url := ctx.Echo().Reverse("verify_email", token)
+	url := ctx.Echo().Reverse(routeNameVerifyEmail, token)
 	err = c.Container.Mail.
 		Compose().
 		To(usr.Email).

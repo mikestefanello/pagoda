@@ -32,7 +32,7 @@ func TestLink(t *testing.T) {
 	assert.Equal(t, expected, link)
 }
 
-func TestGetFuncMap(t *testing.T) {
+func TestFile(t *testing.T) {
 	file := File("test.png")
 	expected := fmt.Sprintf("/%s/test.png?v=%s", config.StaticPrefix, CacheBuster)
 	assert.Equal(t, expected, file)
