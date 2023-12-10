@@ -904,7 +904,7 @@ If the current [environment](#environments) is set to `config.EnvLocal`, which i
 
 ### File configuration
 
-To make things easier and less repetitive, parameters given to the _template renderer_ must not include the `templates` directory or the template file extensions. These are stored as constants within the `config` package. If your project has a need to change either of these, simply adjust the `TemplateDir` and `TemplateExt` constants.
+To make things easier and less repetitive, parameters given to the _template renderer_ must not include the `templates` directory or the template file extensions. The file extension is stored as a constant (`TemplateExt`) within the `config` package.
 
 ## Funcmap
 

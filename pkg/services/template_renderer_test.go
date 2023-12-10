@@ -1,10 +1,10 @@
 package services
 
 import (
-	"os"
 	"testing"
 
 	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +37,7 @@ func TestTemplateRenderer(t *testing.T) {
 	expectedTemplates := make(map[string]bool)
 	expectedTemplates["htmx"+config.TemplateExt] = true
 	expectedTemplates["error"+config.TemplateExt] = true
-	components, err := os.ReadDir(c.TemplateRenderer.GetTemplatesPath() + "/components")
+	components, err := templates.Templates.ReadDir("components")
 	require.NoError(t, err)
 	for _, f := range components {
 		expectedTemplates[f.Name()] = true

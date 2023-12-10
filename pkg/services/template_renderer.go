@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"path"
-	"path/filepath"
-	"runtime"
 	"sync"
 
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/pkg/funcmap"
+	"github.com/mikestefanello/pagoda/templates"
 )
 
 type (
@@ -23,9 +21,6 @@ type (
 
 		// funcMap stores the template function map
 		funcMap template.FuncMap
-
-		// templatePath stores the complete path to the templates directory
-		templatesPath string
 
 		// config stores application configuration
 		config *config.Config
@@ -58,19 +53,11 @@ type (
 
 // NewTemplateRenderer creates a new TemplateRenderer
 func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
-	t := &TemplateRenderer{
+	return &TemplateRenderer{
 		templateCache: sync.Map{},
 		funcMap:       funcmap.GetFuncMap(),
 		config:        cfg,
 	}
-
-	// Gets the complete templates directory path
-	// This is needed in case this is called from a package outside of main, such as within tests
-	_, b, _, _ := runtime.Caller(0)
-	d := path.Join(path.Dir(b))
-	t.templatesPath = filepath.Join(filepath.Dir(d), config.TemplateDir)
-
-	return t
 }
 
 // Parse creates a template build operation
@@ -79,11 +66,6 @@ func (t *TemplateRenderer) Parse() *templateBuilder {
 		renderer: t,
 		build:    &templateBuild{},
 	}
-}
-
-// GetTemplatesPath gets the complete path to the templates directory
-func (t *TemplateRenderer) GetTemplatesPath() string {
-	return t.templatesPath
 }
 
 // getCacheKey gets a cache key for a given group and ID
@@ -124,10 +106,10 @@ func (t *TemplateRenderer) parse(build *templateBuild) (*TemplateParsed, error) 
 		// Parse all files provided
 		if len(build.files) > 0 {
 			for k, v := range build.files {
-				build.files[k] = fmt.Sprintf("%s/%s%s", t.templatesPath, v, config.TemplateExt)
+				build.files[k] = fmt.Sprintf("%s%s", v, config.TemplateExt)
 			}
 
-			parsed, err = parsed.ParseFiles(build.files...)
+			parsed, err = parsed.ParseFS(templates.Templates, build.files...)
 			if err != nil {
 				return nil, err
 			}
@@ -135,8 +117,8 @@ func (t *TemplateRenderer) parse(build *templateBuild) (*TemplateParsed, error) 
 
 		// Parse all templates within the provided directories
 		for _, dir := range build.directories {
-			dir = fmt.Sprintf("%s/%s/*%s", t.templatesPath, dir, config.TemplateExt)
-			parsed, err = parsed.ParseGlob(dir)
+			dir = fmt.Sprintf("%s/*%s", dir, config.TemplateExt)
+			parsed, err = parsed.ParseFS(templates.Templates, dir)
 			if err != nil {
 				return nil, err
 			}
