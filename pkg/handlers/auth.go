@@ -11,6 +11,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 )
 
 const (
@@ -79,8 +80,8 @@ func (c *Auth) Routes(g *echo.Group) {
 
 func (c *Auth) ForgotPasswordPage(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "forgot-password"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageForgotPassword
 	page.Title = "Forgot password"
 	page.Form = forgotPasswordForm{}
 
@@ -154,8 +155,8 @@ func (c *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 
 func (c *Auth) LoginPage(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "login"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageLogin
 	page.Title = "Log in"
 	page.Form = loginForm{}
 
@@ -231,8 +232,8 @@ func (c *Auth) Logout(ctx echo.Context) error {
 
 func (c *Auth) RegisterPage(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "register"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageRegister
 	page.Title = "Register"
 	page.Form = registerForm{}
 
@@ -327,8 +328,8 @@ func (c *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 
 func (c *Auth) ResetPasswordPage(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "reset-password"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageResetPassword
 	page.Title = "Reset password"
 	page.Form = resetPasswordForm{}
 

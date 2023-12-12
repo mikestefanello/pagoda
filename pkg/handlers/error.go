@@ -5,6 +5,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,9 +31,9 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	}
 
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageError
 	page.Title = http.StatusText(code)
-	page.Name = "error"
 	page.StatusCode = code
 	page.HTMX.Request.Enabled = false
 

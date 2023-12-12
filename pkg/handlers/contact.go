@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 )
 
 const (
@@ -32,8 +33,8 @@ func (c *Contact) Routes(g *echo.Group) {
 
 func (c *Contact) Page(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "contact"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageContact
 	page.Title = "Contact us"
 	page.Form = contactForm{}
 

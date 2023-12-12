@@ -5,6 +5,7 @@ import (
 	"html/template"
 
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -43,8 +44,8 @@ func (c *Pages) Routes(g *echo.Group) {
 
 func (c *Pages) Home(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "home"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageHome
 	page.Metatags.Description = "Welcome to the homepage."
 	page.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
 	page.Pager = controller.NewPager(ctx, 4)
@@ -69,8 +70,8 @@ func (c *Pages) fetchPosts(pager *controller.Pager) []post {
 
 func (c *Pages) About(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "about"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageAbout
 	page.Title = "About"
 
 	// This page will be cached!
