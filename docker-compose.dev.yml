@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  dev_web:
+    build:
+      context: ${PWD}
+      dockerfile: dev.Dockerfile
+    container_name: dev_web
+    environment:
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
+      - PAGODA_CACHE_HOSTNAME=dev_cache
+      - PAGODA_DATABASE_HOSTNAME=dev_db
+    volumes:
+    - ${PWD}/:/app
+    - type: bind
+      source: /run/host-services/ssh-auth.sock
+      target: /run/host-services/ssh-auth.sock
+    restart: unless-stopped
+    ports:
+    - "8000:8000"
+  dev_cache:
+    image: "redis:alpine"
+    container_name: dev_pagoda_cache
+    ports:
+      - "127.0.0.1:6379:6379"
+  dev_db:
+    # PG 16 is currenly not supported https://github.com/ent/ent/issues/3750
+    image: postgres:15-alpine
+    container_name: dev_pagoda_db
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=app
