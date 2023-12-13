@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"sync"
 
 	"github.com/mikestefanello/pagoda/config"
@@ -103,25 +104,28 @@ func (t *TemplateRenderer) parse(build *templateBuild) (*TemplateParsed, error) 
 		parsed := template.New(build.base + config.TemplateExt).
 			Funcs(t.funcMap)
 
-		// Parse all files provided
-		if len(build.files) > 0 {
-			for k, v := range build.files {
-				build.files[k] = fmt.Sprintf("%s%s", v, config.TemplateExt)
-			}
-
-			parsed, err = parsed.ParseFS(templates.Templates, build.files...)
-			if err != nil {
-				return nil, err
-			}
+		// Format the requested files
+		for k, v := range build.files {
+			build.files[k] = fmt.Sprintf("%s%s", v, config.TemplateExt)
 		}
 
-		// Parse all templates within the provided directories
-		for _, dir := range build.directories {
-			dir = fmt.Sprintf("%s/*%s", dir, config.TemplateExt)
-			parsed, err = parsed.ParseFS(templates.Templates, dir)
-			if err != nil {
-				return nil, err
-			}
+		// Include all files within the requested directories
+		for k, v := range build.directories {
+			build.directories[k] = fmt.Sprintf("%s/*%s", v, config.TemplateExt)
+		}
+
+		// Get the templates
+		var tpl fs.FS
+		if t.config.App.Environment == config.EnvLocal {
+			tpl = templates.GetOS()
+		} else {
+			tpl = templates.Get()
+		}
+
+		// Parse the templates
+		parsed, err = parsed.ParseFS(tpl, append(build.files, build.directories...)...)
+		if err != nil {
+			return nil, err
 		}
 
 		// Store the template so this process only happens once

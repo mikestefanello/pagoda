@@ -99,7 +99,7 @@ func TestController_RenderPage(t *testing.T) {
 		expectedTemplates := make(map[string]bool)
 		expectedTemplates[p.Name+config.TemplateExt] = true
 		expectedTemplates[p.Layout+config.TemplateExt] = true
-		components, err := templates.Templates.ReadDir("components")
+		components, err := templates.Get().ReadDir("components")
 		require.NoError(t, err)
 		for _, f := range components {
 			expectedTemplates[f.Name()] = true
@@ -132,7 +132,7 @@ func TestController_RenderPage(t *testing.T) {
 		expectedTemplates := make(map[string]bool)
 		expectedTemplates[p.Name+config.TemplateExt] = true
 		expectedTemplates["htmx"+config.TemplateExt] = true
-		components, err := templates.Templates.ReadDir("components")
+		components, err := templates.Get().ReadDir("components")
 		require.NoError(t, err)
 		for _, f := range components {
 			expectedTemplates[f.Name()] = true
