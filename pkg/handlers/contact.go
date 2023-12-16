@@ -1,16 +1,21 @@
-package routes
+package handlers
 
 import (
 	"fmt"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
+)
 
-	"github.com/labstack/echo/v4"
+const (
+	routeNameContact       = "contact"
+	routeNameContactSubmit = "contact.submit"
 )
 
 type (
-	contact struct {
+	Contact struct {
 		controller.Controller
 	}
 
@@ -21,10 +26,15 @@ type (
 	}
 )
 
-func (c *contact) Get(ctx echo.Context) error {
+func (c *Contact) Routes(g *echo.Group) {
+	g.GET("/contact", c.Page).Name = routeNameContact
+	g.POST("/contact", c.Submit).Name = routeNameContactSubmit
+}
+
+func (c *Contact) Page(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "contact"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageContact
 	page.Title = "Contact us"
 	page.Form = contactForm{}
 
@@ -35,7 +45,7 @@ func (c *contact) Get(ctx echo.Context) error {
 	return c.RenderPage(ctx, page)
 }
 
-func (c *contact) Post(ctx echo.Context) error {
+func (c *Contact) Submit(ctx echo.Context) error {
 	var form contactForm
 	ctx.Set(context.FormKey, &form)
 
@@ -61,5 +71,5 @@ func (c *contact) Post(ctx echo.Context) error {
 		}
 	}
 
-	return c.Get(ctx)
+	return c.Page(ctx)
 }

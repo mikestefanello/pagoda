@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 
@@ -55,13 +56,13 @@ type Page struct {
 	// Layout stores the name of the layout base template file which will be used when the page is rendered.
 	// This should match a template file located within the layouts directory inside the templates directory.
 	// The template extension should not be included in this value.
-	Layout string
+	Layout templates.Layout
 
 	// Name stores the name of the page as well as the name of the template file which will be used to render
 	// the content portion of the layout template.
 	// This should match a template file located within the pages directory inside the templates directory.
 	// The template extension should not be included in this value.
-	Name string
+	Name templates.Page
 
 	// IsHome stores whether the requested page is the home page or not
 	IsHome bool

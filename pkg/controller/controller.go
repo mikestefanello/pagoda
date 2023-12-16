@@ -55,7 +55,7 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		buf, err = c.Container.TemplateRenderer.
 			Parse().
 			Group("page:htmx").
-			Key(page.Name).
+			Key(string(page.Name)).
 			Base("htmx").
 			Files(
 				"htmx",
@@ -73,8 +73,8 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		buf, err = c.Container.TemplateRenderer.
 			Parse().
 			Group("page").
-			Key(page.Name).
-			Base(page.Layout).
+			Key(string(page.Name)).
+			Base(string(page.Layout)).
 			Files(
 				fmt.Sprintf("layouts/%s", page.Layout),
 				fmt.Sprintf("pages/%s", page.Name),
