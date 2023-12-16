@@ -23,7 +23,7 @@ type (
 	task struct {
 		client     *TaskClient
 		typ        string
-		payload    interface{}
+		payload    any
 		periodic   *string
 		queue      *string
 		maxRetries *int
@@ -75,7 +75,7 @@ func (t *TaskClient) New(typ string) *task {
 }
 
 // Payload sets the task payload data which will be sent to the task handler
-func (t *task) Payload(payload interface{}) *task {
+func (t *task) Payload(payload any) *task {
 	t.payload = payload
 	return t
 }

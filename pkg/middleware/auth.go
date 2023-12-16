@@ -70,6 +70,7 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 				return next(c)
 			case services.InvalidPasswordTokenError:
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
+				// TODO use the const for route name
 				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
 			default:
 				return echo.NewHTTPError(

@@ -18,7 +18,7 @@ func NewValidator() *Validator {
 }
 
 // Validate validates a struct
-func (v *Validator) Validate(i interface{}) error {
+func (v *Validator) Validate(i any) error {
 	if err := v.validator.Struct(i); err != nil {
 		return err
 	}

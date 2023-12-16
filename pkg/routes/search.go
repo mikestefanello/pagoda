@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -22,8 +23,8 @@ type (
 
 func (c *search) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "search"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageSearch
 
 	// Fake search results
 	var results []searchResult

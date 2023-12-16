@@ -5,6 +5,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,8 +24,8 @@ type (
 
 func (c *contact) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "contact"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageContact
 	page.Title = "Contact us"
 	page.Form = contactForm{}
 

@@ -70,7 +70,7 @@ func (h *httpRequest) setClient(client http.Client) *httpRequest {
 	return h
 }
 
-func (h *httpRequest) setRoute(route string, params ...interface{}) *httpRequest {
+func (h *httpRequest) setRoute(route string, params ...any) *httpRequest {
 	h.route = srv.URL + c.Web.Reverse(route, params)
 	return h
 }
@@ -122,7 +122,7 @@ func (h *httpResponse) assertStatusCode(code int) *httpResponse {
 	return h
 }
 
-func (h *httpResponse) assertRedirect(t *testing.T, route string, params ...interface{}) *httpResponse {
+func (h *httpResponse) assertRedirect(t *testing.T, route string, params ...any) *httpResponse {
 	assert.Equal(t, c.Web.Reverse(route, params), h.Header.Get("Location"))
 	return h
 }

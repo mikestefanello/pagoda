@@ -17,5 +17,5 @@ func (l *logout) Get(c echo.Context) error {
 	} else {
 		msg.Danger(c, "An error occurred. Please try again.")
 	}
-	return l.Redirect(c, "home")
+	return l.Redirect(c, routeNameHome)
 }

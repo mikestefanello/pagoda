@@ -11,7 +11,7 @@ import (
 // this test package
 func TestAbout_Get(t *testing.T) {
 	doc := request(t).
-		setRoute("about").
+		setRoute(routeNameAbout).
 		get().
 		assertStatusCode(http.StatusOK).
 		toDoc()

@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -26,8 +27,8 @@ type (
 
 func (c *forgotPassword) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "forgot-password"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageForgotPassword
 	page.Title = "Forgot password"
 	page.Form = forgotPasswordForm{}
 
@@ -84,7 +85,7 @@ func (c *forgotPassword) Post(ctx echo.Context) error {
 	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
 
 	// Email the user
-	url := ctx.Echo().Reverse("reset_password", u.ID, pt.ID, token)
+	url := ctx.Echo().Reverse(routeNameResetPassword, u.ID, pt.ID, token)
 	err = c.Container.Mail.
 		Compose().
 		To(u.Email).

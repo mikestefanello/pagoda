@@ -16,7 +16,7 @@ type FormSubmission struct {
 }
 
 // Process processes a submission for a form
-func (f *FormSubmission) Process(ctx echo.Context, form interface{}) error {
+func (f *FormSubmission) Process(ctx echo.Context, form any) error {
 	f.Errors = make(map[string][]string)
 	f.IsSubmitted = true
 

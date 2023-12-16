@@ -5,6 +5,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,8 +24,8 @@ type (
 
 func (c *resetPassword) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "reset-password"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageResetPassword
 	page.Title = "Reset password"
 	page.Form = resetPasswordForm{}
 
@@ -78,5 +79,5 @@ func (c *resetPassword) Post(ctx echo.Context) error {
 	}
 
 	msg.Success(ctx, "Your password has been updated.")
-	return c.Redirect(ctx, "login")
+	return c.Redirect(ctx, routeNameLogin)
 }

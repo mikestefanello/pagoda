@@ -30,7 +30,7 @@ type (
 		subject      string
 		body         string
 		template     string
-		templateData interface{}
+		templateData any
 	}
 )
 
@@ -128,7 +128,7 @@ func (m *mail) Template(template string) *mail {
 }
 
 // TemplateData sets the data that will be passed to the template specified when calling Template()
-func (m *mail) TemplateData(data interface{}) *mail {
+func (m *mail) TemplateData(data any) *mail {
 	m.templateData = data
 	return m
 }

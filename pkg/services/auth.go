@@ -213,7 +213,7 @@ func (c *AuthClient) GenerateEmailVerificationToken(email string) (string, error
 // ValidateEmailVerificationToken validates an email verification token and returns the associated email address if
 // the token is valid and has not expired
 func (c *AuthClient) ValidateEmailVerificationToken(token string) (string, error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}

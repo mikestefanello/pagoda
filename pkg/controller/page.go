@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 
@@ -34,7 +35,7 @@ type Page struct {
 	Context echo.Context
 
 	// ToURL is a function to convert a route name and optional route parameters to a URL
-	ToURL func(name string, params ...interface{}) string
+	ToURL func(name string, params ...any) string
 
 	// Path stores the path of the current request
 	Path string
@@ -44,24 +45,24 @@ type Page struct {
 
 	// Data stores whatever additional data that needs to be passed to the templates.
 	// This is what the controller uses to pass the content of the page.
-	Data interface{}
+	Data any
 
 	// Form stores a struct that represents a form on the page.
 	// This should be a struct with fields for each form field, using both "form" and "validate" tags
 	// It should also contain a Submission field of type FormSubmission if you wish to have validation
 	// messagesa and markup presented to the user
-	Form interface{}
+	Form any
 
 	// Layout stores the name of the layout base template file which will be used when the page is rendered.
 	// This should match a template file located within the layouts directory inside the templates directory.
 	// The template extension should not be included in this value.
-	Layout string
+	Layout templates.Layout
 
 	// Name stores the name of the page as well as the name of the template file which will be used to render
 	// the content portion of the layout template.
 	// This should match a template file located within the pages directory inside the templates directory.
 	// The template extension should not be included in this value.
-	Name string
+	Name templates.Page
 
 	// IsHome stores whether the requested page is the home page or not
 	IsHome bool

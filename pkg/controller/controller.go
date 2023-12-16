@@ -55,7 +55,7 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		buf, err = c.Container.TemplateRenderer.
 			Parse().
 			Group("page:htmx").
-			Key(page.Name).
+			Key(string(page.Name)).
 			Base("htmx").
 			Files(
 				"htmx",
@@ -73,8 +73,8 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 		buf, err = c.Container.TemplateRenderer.
 			Parse().
 			Group("page").
-			Key(page.Name).
-			Base(page.Layout).
+			Key(string(page.Name)).
+			Base(string(page.Layout)).
 			Files(
 				fmt.Sprintf("layouts/%s", page.Layout),
 				fmt.Sprintf("pages/%s", page.Name),
@@ -151,7 +151,7 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 }
 
 // Redirect redirects to a given route name with optional route parameters
-func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...interface{}) error {
+func (c *Controller) Redirect(ctx echo.Context, route string, routeParams ...any) error {
 	url := ctx.Echo().Reverse(route, routeParams...)
 
 	if htmx.GetRequest(ctx).Boosted {

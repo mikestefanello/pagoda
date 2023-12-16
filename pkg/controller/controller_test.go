@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -91,14 +92,14 @@ func TestController_RenderPage(t *testing.T) {
 		}
 
 		// Check the template cache
-		parsed, err := c.TemplateRenderer.Load("page", p.Name)
+		parsed, err := c.TemplateRenderer.Load("page", string(p.Name))
 		assert.NoError(t, err)
 
 		// Check that all expected templates were parsed.
 		// This includes the name, layout and all components
 		expectedTemplates := make(map[string]bool)
-		expectedTemplates[p.Name+config.TemplateExt] = true
-		expectedTemplates[p.Layout+config.TemplateExt] = true
+		expectedTemplates[fmt.Sprintf("%s%s", p.Name, config.TemplateExt)] = true
+		expectedTemplates[fmt.Sprintf("%s%s", p.Layout, config.TemplateExt)] = true
 		components, err := templates.Get().ReadDir("components")
 		require.NoError(t, err)
 		for _, f := range components {
@@ -124,13 +125,13 @@ func TestController_RenderPage(t *testing.T) {
 		assert.Equal(t, "trigger", ctx.Response().Header().Get(htmx.HeaderTrigger))
 
 		// Check the template cache
-		parsed, err := c.TemplateRenderer.Load("page:htmx", p.Name)
+		parsed, err := c.TemplateRenderer.Load("page:htmx", string(p.Name))
 		assert.NoError(t, err)
 
 		// Check that all expected templates were parsed.
 		// This includes the name, htmx and all components
 		expectedTemplates := make(map[string]bool)
-		expectedTemplates[p.Name+config.TemplateExt] = true
+		expectedTemplates[fmt.Sprintf("%s%s", p.Name, config.TemplateExt)] = true
 		expectedTemplates["htmx"+config.TemplateExt] = true
 		components, err := templates.Get().ReadDir("components")
 		require.NoError(t, err)

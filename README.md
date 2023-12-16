@@ -607,11 +607,11 @@ Cached pages are looked up for a key that matches the exact, full URL of the giv
 
 ### Data
 
-The `Data` field on the `Page` is of type `interface{}` and is what allows your route to pass whatever it requires to the templates, alongside the `Page` itself.
+The `Data` field on the `Page` is of type `any` and is what allows your route to pass whatever it requires to the templates, alongside the `Page` itself.
 
 ### Forms
 
-The `Form` field on the `Page` is similar to the `Data` field in that it's an `interface{}` type but it's meant to store a struct that represents a form being rendered on the page.
+The `Form` field on the `Page` is similar to the `Data` field in that it's an `any` type but it's meant to store a struct that represents a form being rendered on the page.
 
 An example of this pattern is:
 
@@ -825,8 +825,8 @@ Once your `Page` is fully built, rendering it via the embedded `Controller` in y
 ```go
 func (c *home) Get(ctx echo.Context) error {
     page := controller.NewPage(ctx)
-    page.Layout = "main"
-    page.Name = "home"
+    page.Layout = templates.LayoutMain
+    page.Name = templates.PageHome
     return c.RenderPage(ctx, page)
 }
 ```

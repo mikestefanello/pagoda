@@ -28,7 +28,7 @@ type (
 		client     *CacheClient
 		key        string
 		group      string
-		data       interface{}
+		data       any
 		expiration time.Duration
 		tags       []string
 	}
@@ -38,7 +38,7 @@ type (
 		client   *CacheClient
 		key      string
 		group    string
-		dataType interface{}
+		dataType any
 	}
 
 	// cacheFlush handles chaining a flush operation
@@ -128,7 +128,7 @@ func (c *cacheSet) Group(group string) *cacheSet {
 }
 
 // Data sets the data to cache
-func (c *cacheSet) Data(data interface{}) *cacheSet {
+func (c *cacheSet) Data(data any) *cacheSet {
 	c.data = data
 	return c
 }
@@ -174,13 +174,13 @@ func (c *cacheGet) Group(group string) *cacheGet {
 }
 
 // Type sets the expected Go type of the data being retrieved from the cache
-func (c *cacheGet) Type(expectedType interface{}) *cacheGet {
+func (c *cacheGet) Type(expectedType any) *cacheGet {
 	c.dataType = expectedType
 	return c
 }
 
 // Fetch fetches the data from the cache
-func (c *cacheGet) Fetch(ctx context.Context) (interface{}, error) {
+func (c *cacheGet) Fetch(ctx context.Context) (any, error) {
 	if c.key == "" {
 		return nil, errors.New("no cache key specified")
 	}

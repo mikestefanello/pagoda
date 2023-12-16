@@ -4,6 +4,7 @@ import (
 	"html/template"
 
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,8 +28,8 @@ type (
 
 func (c *about) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "main"
-	page.Name = "about"
+	page.Layout = templates.LayoutMain
+	page.Name = templates.PageAbout
 	page.Title = "About"
 
 	// This page will be cached!

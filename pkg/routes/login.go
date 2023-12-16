@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,8 +28,8 @@ type (
 
 func (c *login) Get(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
-	page.Layout = "auth"
-	page.Name = "login"
+	page.Layout = templates.LayoutAuth
+	page.Name = templates.PageLogin
 	page.Title = "Log in"
 	page.Form = loginForm{}
 
@@ -90,5 +91,5 @@ func (c *login) Post(ctx echo.Context) error {
 	}
 
 	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
-	return c.Redirect(ctx, "home")
+	return c.Redirect(ctx, routeNameHome)
 }

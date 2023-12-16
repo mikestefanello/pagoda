@@ -39,7 +39,7 @@ func GetFuncMap() template.FuncMap {
 }
 
 // HasField checks if an interface contains a given field
-func HasField(v interface{}, name string) bool {
+func HasField(v any, name string) bool {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Ptr {
 		rv = rv.Elem()
