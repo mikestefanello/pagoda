@@ -17,6 +17,11 @@ db-test:
 cache:
 	docker exec -it pagoda_cache redis-cli
 
+# Clear the primary cache
+.PHONY: cache-clear
+cache-clear:
+	docker exec -it pagoda_cache redis-cli flushall
+
  # Connect to the test cache
 .PHONY: cache-test
 cache-test:
@@ -42,6 +47,16 @@ ent-new:
 up:
 	$(DCO_BIN) up -d
 	sleep 3
+
+# Stop the Docker containers
+.PHONY: stop
+stop:
+	$(DCO_BIN) stop
+
+# Drop the Docker containers to wipe all data
+.PHONY: down
+down:
+	$(DCO_BIN) down
 
 # Rebuild Docker containers to wipe all data
 .PHONY: reset
