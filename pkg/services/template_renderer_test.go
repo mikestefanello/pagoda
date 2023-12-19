@@ -24,7 +24,7 @@ func TestTemplateRenderer(t *testing.T) {
 		Group(group).
 		Key(id).
 		Base("htmx").
-		Files("htmx", "pages/error").
+		Files("layouts/htmx", "pages/error").
 		Directories("components").
 		Store()
 	require.NoError(t, err)

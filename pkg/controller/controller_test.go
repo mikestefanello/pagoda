@@ -93,7 +93,7 @@ func TestController_RenderPage(t *testing.T) {
 
 		// Check the template cache
 		parsed, err := c.TemplateRenderer.Load("page", string(p.Name))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Check that all expected templates were parsed.
 		// This includes the name, layout and all components
@@ -126,7 +126,7 @@ func TestController_RenderPage(t *testing.T) {
 
 		// Check the template cache
 		parsed, err := c.TemplateRenderer.Load("page:htmx", string(p.Name))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// Check that all expected templates were parsed.
 		// This includes the name, htmx and all components

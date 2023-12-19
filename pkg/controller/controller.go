@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/htmx"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/templates"
 
 	"github.com/labstack/echo/v4"
 )
@@ -32,6 +33,7 @@ func NewController(c *services.Container) Controller {
 func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 	var buf *bytes.Buffer
 	var err error
+	templateGroup := "page"
 
 	// Page name is required
 	if page.Name == "" {
@@ -46,42 +48,30 @@ func (c *Controller) RenderPage(ctx echo.Context, page Page) error {
 	// Check if this is an HTMX non-boosted request which indicates that only partial
 	// content should be rendered
 	if page.HTMX.Request.Enabled && !page.HTMX.Request.Boosted {
-		// Parse and execute the templates only for the content portion of the page
-		// The templates used for this partial request will be:
-		// 1. The base htmx template which omits the layout and only includes the content template
-		// 2. The content template specified in Page.Name
-		// 3. All templates within the components directory
-		// Also included is the function map provided by the funcmap package
-		buf, err = c.Container.TemplateRenderer.
-			Parse().
-			Group("page:htmx").
-			Key(string(page.Name)).
-			Base("htmx").
-			Files(
-				"htmx",
-				fmt.Sprintf("pages/%s", page.Name),
-			).
-			Directories("components").
-			Execute(page)
-	} else {
-		// Parse and execute the templates for the Page
-		// As mentioned in the documentation for the Page struct, the templates used for the page will be:
-		// 1. The layout/base template specified in Page.Layout
-		// 2. The content template specified in Page.Name
-		// 3. All templates within the components directory
-		// Also included is the function map provided by the funcmap package
-		buf, err = c.Container.TemplateRenderer.
-			Parse().
-			Group("page").
-			Key(string(page.Name)).
-			Base(string(page.Layout)).
-			Files(
-				fmt.Sprintf("layouts/%s", page.Layout),
-				fmt.Sprintf("pages/%s", page.Name),
-			).
-			Directories("components").
-			Execute(page)
+		// Switch the layout which will only render the page content
+		page.Layout = templates.LayoutHTMX
+
+		// Alter the template group so this is cached separately
+		templateGroup = "page:htmx"
 	}
+
+	// Parse and execute the templates for the Page
+	// As mentioned in the documentation for the Page struct, the templates used for the page will be:
+	// 1. The layout/base template specified in Page.Layout
+	// 2. The content template specified in Page.Name
+	// 3. All templates within the components directory
+	// Also included is the function map provided by the funcmap package
+	buf, err = c.Container.TemplateRenderer.
+		Parse().
+		Group(templateGroup).
+		Key(string(page.Name)).
+		Base(string(page.Layout)).
+		Files(
+			fmt.Sprintf("layouts/%s", page.Layout),
+			fmt.Sprintf("pages/%s", page.Name),
+		).
+		Directories("components").
+		Execute(page)
 
 	if err != nil {
 		return c.Fail(err, "failed to parse and execute templates")

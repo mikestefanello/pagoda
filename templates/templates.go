@@ -17,6 +17,7 @@ type (
 const (
 	LayoutMain Layout = "main"
 	LayoutAuth Layout = "auth"
+	LayoutHTMX Layout = "htmx"
 )
 
 const (
