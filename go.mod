@@ -18,7 +18,7 @@ require (
 	github.com/labstack/gommon v0.4.1
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.15.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
@@ -95,7 +95,7 @@ require (
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
