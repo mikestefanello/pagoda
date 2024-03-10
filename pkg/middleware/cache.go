@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -8,8 +9,9 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
-	"github.com/go-redis/redis/v8"
+	lib_store "github.com/eko/gocache/lib/v4/store"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 )
 
 // CachedPageGroup stores the cache group for cached pages
@@ -56,7 +58,7 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 
 			if err != nil {
 				switch {
-				case err == redis.Nil:
+				case errors.Is(err, &lib_store.NotFound{}) || err == redis.Nil:
 					c.Logger().Info("no cached page found")
 				case context.IsCanceledError(err):
 					return nil

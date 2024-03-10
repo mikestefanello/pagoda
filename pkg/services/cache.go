@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eko/gocache/v2/cache"
-	"github.com/eko/gocache/v2/marshaler"
-	"github.com/eko/gocache/v2/store"
-	"github.com/go-redis/redis/v8"
+	"github.com/eko/gocache/lib/v4/cache"
+	"github.com/eko/gocache/lib/v4/marshaler"
+	lib_store "github.com/eko/gocache/lib/v4/store"
+	redis_store "github.com/eko/gocache/store/redis/v4"
 	"github.com/mikestefanello/pagoda/config"
+	"github.com/redis/go-redis/v9"
 )
 
 type (
@@ -20,7 +21,7 @@ type (
 		Client *redis.Client
 
 		// cache stores the cache interface
-		cache *cache.Cache
+		cache *cache.Cache[any]
 	}
 
 	// cacheSet handles chaining a set operation
@@ -76,8 +77,8 @@ func NewCacheClient(cfg *config.Config) (*CacheClient, error) {
 		}
 	}
 
-	cacheStore := store.NewRedis(c.Client, nil)
-	c.cache = cache.New(cacheStore)
+	cacheStore := redis_store.NewRedis(c.Client)
+	c.cache = cache.New[any](cacheStore)
 	return c, nil
 }
 
@@ -151,14 +152,14 @@ func (c *cacheSet) Save(ctx context.Context) error {
 		return errors.New("no cache key specified")
 	}
 
-	opts := &store.Options{
-		Expiration: c.expiration,
-		Tags:       c.tags,
+	opts := []lib_store.Option{
+		lib_store.WithExpiration(c.expiration),
+		lib_store.WithTags(c.tags),
 	}
 
 	return marshaler.
 		New(c.client.cache).
-		Set(ctx, c.client.cacheKey(c.group, c.key), c.data, opts)
+		Set(ctx, c.client.cacheKey(c.group, c.key), c.data, opts...)
 }
 
 // Key sets the cache key
@@ -213,9 +214,7 @@ func (c *cacheFlush) Tags(tags ...string) *cacheFlush {
 // Execute flushes the data from the cache
 func (c *cacheFlush) Execute(ctx context.Context) error {
 	if len(c.tags) > 0 {
-		if err := c.client.cache.Invalidate(ctx, store.InvalidateOptions{
-			Tags: c.tags,
-		}); err != nil {
+		if err := c.client.cache.Invalidate(ctx, lib_store.WithInvalidateTags(c.tags)); err != nil {
 			return err
 		}
 	}
