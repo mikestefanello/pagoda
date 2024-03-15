@@ -8,8 +8,8 @@ import (
 
 	"github.com/eko/gocache/lib/v4/cache"
 	"github.com/eko/gocache/lib/v4/marshaler"
-	lib_store "github.com/eko/gocache/lib/v4/store"
-	redis_store "github.com/eko/gocache/store/redis/v4"
+	libstore "github.com/eko/gocache/lib/v4/store"
+	redisstore "github.com/eko/gocache/store/redis/v4"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/redis/go-redis/v9"
 )
@@ -77,7 +77,7 @@ func NewCacheClient(cfg *config.Config) (*CacheClient, error) {
 		}
 	}
 
-	cacheStore := redis_store.NewRedis(c.Client)
+	cacheStore := redisstore.NewRedis(c.Client)
 	c.cache = cache.New[any](cacheStore)
 	return c, nil
 }
@@ -152,9 +152,9 @@ func (c *cacheSet) Save(ctx context.Context) error {
 		return errors.New("no cache key specified")
 	}
 
-	opts := []lib_store.Option{
-		lib_store.WithExpiration(c.expiration),
-		lib_store.WithTags(c.tags),
+	opts := []libstore.Option{
+		libstore.WithExpiration(c.expiration),
+		libstore.WithTags(c.tags),
 	}
 
 	return marshaler.
@@ -214,7 +214,7 @@ func (c *cacheFlush) Tags(tags ...string) *cacheFlush {
 // Execute flushes the data from the cache
 func (c *cacheFlush) Execute(ctx context.Context) error {
 	if len(c.tags) > 0 {
-		if err := c.client.cache.Invalidate(ctx, lib_store.WithInvalidateTags(c.tags)); err != nil {
+		if err := c.client.cache.Invalidate(ctx, libstore.WithInvalidateTags(c.tags)); err != nil {
 			return err
 		}
 	}
