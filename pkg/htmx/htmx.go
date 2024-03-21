@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-//  Headers (https://htmx.org/docs/#requests)
+// Headers (https://htmx.org/reference/#headers)
 const (
 	HeaderRequest            = "HX-Request"
 	HeaderBoosted            = "HX-Boosted"
@@ -16,7 +16,7 @@ const (
 	HeaderTriggerAfterSettle = "HX-Trigger-After-Settle"
 	HeaderTarget             = "HX-Target"
 	HeaderPrompt             = "HX-Prompt"
-	HeaderPush               = "HX-Push"
+	HeaderPushURL            = "HX-Push-Url"
 	HeaderRedirect           = "HX-Redirect"
 	HeaderRefresh            = "HX-Refresh"
 )
@@ -59,7 +59,7 @@ func GetRequest(ctx echo.Context) Request {
 // Apply applies data from a Response to a server response
 func (r Response) Apply(ctx echo.Context) {
 	if r.Push != "" {
-		ctx.Response().Header().Set(HeaderPush, r.Push)
+		ctx.Response().Header().Set(HeaderPushURL, r.Push)
 	}
 	if r.Redirect != "" {
 		ctx.Response().Header().Set(HeaderRedirect, r.Redirect)

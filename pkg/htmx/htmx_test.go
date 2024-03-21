@@ -42,7 +42,7 @@ func TestResponse_Apply(t *testing.T) {
 	}
 	r.Apply(ctx)
 
-	assert.Equal(t, "a", ctx.Response().Header().Get(HeaderPush))
+	assert.Equal(t, "a", ctx.Response().Header().Get(HeaderPushURL))
 	assert.Equal(t, "b", ctx.Response().Header().Get(HeaderRedirect))
 	assert.Equal(t, "true", ctx.Response().Header().Get(HeaderRefresh))
 	assert.Equal(t, "c", ctx.Response().Header().Get(HeaderTrigger))
