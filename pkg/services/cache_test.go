@@ -2,10 +2,11 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	libstore "github.com/eko/gocache/lib/v4/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -63,7 +64,7 @@ func TestCacheClient(t *testing.T) {
 			Key(key).
 			Type(new(cacheTest)).
 			Fetch(context.Background())
-		assert.Equal(t, redis.Nil, err)
+		assert.True(t, errors.Is(err, &libstore.NotFound{}))
 	}
 	assertFlushed()
 
