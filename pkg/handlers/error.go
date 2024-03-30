@@ -1,20 +1,19 @@
-package routes
+package handlers
 
 import (
 	"net/http"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/templates"
-
-	"github.com/labstack/echo/v4"
 )
 
-type errorHandler struct {
+type Error struct {
 	controller.Controller
 }
 
-func (e *errorHandler) Get(err error, ctx echo.Context) {
+func (e *Error) Page(err error, ctx echo.Context) {
 	if ctx.Response().Committed || context.IsCanceledError(err) {
 		return
 	}
@@ -31,9 +30,9 @@ func (e *errorHandler) Get(err error, ctx echo.Context) {
 	}
 
 	page := controller.NewPage(ctx)
-	page.Title = http.StatusText(code)
 	page.Layout = templates.LayoutMain
 	page.Name = templates.PageError
+	page.Title = http.StatusText(code)
 	page.StatusCode = code
 	page.HTMX.Request.Enabled = false
 

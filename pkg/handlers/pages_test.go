@@ -1,4 +1,4 @@
-package routes
+package handlers
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 
 // Simple example of how to test routes and their markup using the test HTTP server spun up within
 // this test package
-func TestAbout_Get(t *testing.T) {
+func TestPages__About(t *testing.T) {
 	doc := request(t).
 		setRoute(routeNameAbout).
 		get().
