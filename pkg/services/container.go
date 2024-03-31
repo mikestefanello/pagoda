@@ -21,12 +21,6 @@ import (
 	_ "github.com/mikestefanello/pagoda/ent/runtime"
 )
 
-// Initializer is implemented by anything that requires a service container to initialize
-type Initializer interface {
-	// Init provides the service container to initialize
-	Init(*Container) error
-}
-
 // Container contains all services used by the application and provides an easy way to handle dependency
 // injection including within tests
 type Container struct {

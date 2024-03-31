@@ -2,18 +2,23 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/services"
 )
 
-var handlers []Routable
+var handlers []Handler
 
-type Routable interface {
+type Handler interface {
+	// Routes allows for self-registration of HTTP routes on the router
 	Routes(g *echo.Group)
+
+	// Init provides the service container to initialize
+	Init(*services.Container) error
 }
 
-func Register(r Routable) {
-	handlers = append(handlers, r)
+func Register(h Handler) {
+	handlers = append(handlers, h)
 }
 
-func GetHandlers() []Routable {
+func GetHandlers() []Handler {
 	return handlers
 }

@@ -20,7 +20,7 @@ func BuildRouter(c *services.Container) error {
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
 		Static(config.StaticPrefix, config.StaticDir)
 
-	// Non static file route group
+	// Non-static file route group
 	g := c.Web.Group("")
 
 	// Force HTTPS, if enabled
@@ -53,11 +53,10 @@ func BuildRouter(c *services.Container) error {
 	err := Error{Controller: controller.NewController(c)}
 	c.Web.HTTPErrorHandler = err.Page
 
-	for _, h := range handlers {
-		if h, okay := h.(services.Initializer); okay {
-			if err := h.Init(c); err != nil {
-				return err
-			}
+	// Initialize and register all handlers
+	for _, h := range GetHandlers() {
+		if err := h.Init(c); err != nil {
+			return err
 		}
 
 		h.Routes(g)
