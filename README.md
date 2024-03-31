@@ -254,7 +254,7 @@ func TestMain(m *testing.M) {
 
 ## Database
 
-The database currently used is [PostgreSQL](https://www.postgresql.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [pgx](github.com/jackc/pgx/v4) and included in the `Container`.
+The database currently used is [PostgreSQL](https://www.postgresql.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [pgx](https://github.com/jackc/pgx/tree/v4) and included in the `Container`.
 
 Database configuration can be found and managed within the `config` package.
 
