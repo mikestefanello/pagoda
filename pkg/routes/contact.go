@@ -17,6 +17,7 @@ type (
 
 	contactForm struct {
 		Email      string `form:"email" validate:"required,email"`
+		Department string `form:"department" validate:"required,oneof=sales marketing hr"`
 		Message    string `form:"message" validate:"required"`
 		Submission controller.FormSubmission
 	}
