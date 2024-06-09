@@ -45,8 +45,8 @@
   * [Email verification](#email-verification)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
-  * [Controller / Dependencies](#controller--dependencies)
-  * [Patterns](#patterns)
+  * [Controller](#controller)
+  * [Handlers](#handlers)
   * [Errors](#errors)
   * [Testing](#testing)
     * [HTTP server](#http-server)
@@ -306,7 +306,7 @@ This executes a database query to return the _password token_ entity with a give
 
 ## Sessions
 
-Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured as middleware in the router located at `pkg/routes/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
+Sessions are provided and handled via [Gorilla sessions](https://github.com/gorilla/sessions) and configured as middleware in the router located at `pkg/handlers/router.go`. Session data is currently stored in cookies but there are many [options](https://github.com/gorilla/sessions#store-implementations) available if you wish to use something else.
 
 Here's a simple example of loading data from a session and saving new values:
 
@@ -384,7 +384,7 @@ To generate a new verification token, the `AuthClient` has a method `GenerateEma
 
 ## Routes
 
-The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `pkg/routes/router.go`. Since the _Echo_ instance is a _Service_ on the `Container` which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
+The router functionality is provided by [Echo](https://echo.labstack.com/guide/routing/) and constructed within via the `BuildRouter()` function inside `pkg/handlers/router.go`. Since the _Echo_ instance is a _Service_ on the `Container` which is passed in to `BuildRouter()`, middleware and routes can be added directly to it.
 
 ### Custom middleware
 
@@ -392,56 +392,83 @@ By default, a middleware stack is included in the router that makes sense for mo
 
 A `middleware` package is included which you can easily add to along with the custom middleware provided.
 
-### Controller / Dependencies
+### Controller
 
-The `Controller`, which is described in a section below, serves two purposes for routes:
-
-1) It provides base functionality which can be embedded in each route, most importantly `Page` rendering (described in the `Controller` section below)
-2) It stores a pointer to the `Container`, making all _Services_ available within your route
+The `Controller`, which is described in a section below, provides base functionality which can be embedded in each handler, most importantly `Page` rendering.
 
 While using the `Controller` is not required for your routes, it will certainly make development easier.
 
-See the following section for the proposed pattern.
+### Handlers
 
-### Patterns
+A `Handler` is a simple type that handles one or more of your routes and allows you to group related routes together (ie, authentication). All provided handlers are located in `pkg/handlers`. _Handlers_ also handle self-registering their routes with the router.
 
-These patterns are not required, but were designed to make development as easy as possible.
+#### Example
 
-To declare a new route that will have methods to handle a GET and POST request, for example, start with a new _struct_ type, that embeds the `Controller`:
+The provided patterns are not required, but were designed to make development as easy as possible.
+
+For this example, we'll create a new handler which includes a GET and POST route and uses the ORM. Start by creating a file at `pkg/handlers/example.go`.
+
+1) Define the handler type:
 
 ```go
-type home struct {
+type Example struct {
+    orm *ent.Client
     controller.Controller
 }
-
-func (c *home) Get(ctx echo.Context) error {}
-
-func (c *home) Post(ctx echo.Context) error {}
 ```
 
-Then create the route and add to the router:
+2) Register the handler so the router automatically includes it
 
 ```go
-home := home{Controller: controller.NewController(c)}
-g.GET("/", home.Get).Name = "home"
-g.POST("/", home.Post).Name = "home.post"
+func init() {
+    Register(new(Example))
+}
 ```
 
-Your route will now have all methods available on the `Controller` as well as access to the `Container`. It's not required to name the route methods to match the HTTP method.
+3) Initialize the handler (and inject any required dependencies from the _Container_)
+
+```go
+func (e *Example) Init(c *services.Container) error {
+    e.Controller = controller.NewController(c)
+    e.orm = c.ORM
+    return nil
+}
+```
+
+4) Declare the routes
 
 **It is highly recommended** that you provide a `Name` for your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
+
+```go
+func (e *Example) Routes(g *echo.Group) {
+    g.GET("/example", e.Page).Name = "example"
+    g.POST("/example", c.PageSubmit).Name = "example.submit"
+}
+```
+
+5) Implement your routes
+
+```go
+func (e *Example) Page(ctx echo.Context) error {
+    // add your code here
+}
+
+func (e *Example) PageSubmit(ctx echo.Context) error {
+    // add your code here
+}
+```
 
 ### Errors
 
 Routes can return errors to indicate that something wrong happened. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code. You can use `return echo.NewHTTPError(http.StatusInternalServerError)`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
 
-The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `pkg/routes/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
 
 ### Testing
 
 Since most of your web application logic will live in your routes, being able to easily test them is important. The following aims to help facilitate that.
 
-The test setup and helpers reside in `pkg/routes/router_test.go`.
+The test setup and helpers reside in `pkg/handlers/router_test.go`.
 
 Only a brief example of route tests were provided in order to highlight what is available. Adding full tests did not seem logical since these routes will most likely be changed or removed in your project.
 
@@ -451,7 +478,7 @@ When the route tests initialize, a new `Container` is created which provides ful
 
 #### Request / Response helpers
 
-With the test HTTP server setup, test helpers for making HTTP requests and evaluating responses are made available to reduce the amount of code you need to write. See `httpRequest` and `httpResponse` within `pkg/routes/router_test.go`.
+With the test HTTP server setup, test helpers for making HTTP requests and evaluating responses are made available to reduce the amount of code you need to write. See `httpRequest` and `httpResponse` within `pkg/handlers/router_test.go`.
 
 Here is an example how to easily make a request and evaluate the response:
 
@@ -1126,7 +1153,7 @@ Finally, the service is started with `async.Server.Run(mux)`.
 
 ## Static files
 
-Static files are currently configured in the router (`pkg/routes/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
+Static files are currently configured in the router (`pkg/handler/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
 
 ### Cache control headers
 
