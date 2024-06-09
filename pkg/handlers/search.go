@@ -1,17 +1,19 @@
-package routes
+package handlers
 
 import (
 	"fmt"
 	"math/rand"
 
-	"github.com/mikestefanello/pagoda/pkg/controller"
-	"github.com/mikestefanello/pagoda/templates"
-
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/templates"
 )
 
+const routeNameSearch = "search"
+
 type (
-	search struct {
+	Search struct {
 		controller.Controller
 	}
 
@@ -21,7 +23,20 @@ type (
 	}
 )
 
-func (c *search) Get(ctx echo.Context) error {
+func init() {
+	Register(new(Search))
+}
+
+func (c *Search) Init(ct *services.Container) error {
+	c.Controller = controller.NewController(ct)
+	return nil
+}
+
+func (c *Search) Routes(g *echo.Group) {
+	g.GET("/search", c.Page).Name = routeNameSearch
+}
+
+func (c *Search) Page(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = templates.LayoutMain
 	page.Name = templates.PageSearch

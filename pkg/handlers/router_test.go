@@ -1,4 +1,4 @@
-package routes
+package handlers
 
 import (
 	"net/http"
@@ -30,7 +30,9 @@ func TestMain(m *testing.M) {
 	c = services.NewContainer()
 
 	// Start a test HTTP server
-	BuildRouter(c)
+	if err := BuildRouter(c); err != nil {
+		panic(err)
+	}
 	srv = httptest.NewServer(c.Web)
 
 	// Run tests
