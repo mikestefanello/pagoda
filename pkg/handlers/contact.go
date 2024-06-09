@@ -1,17 +1,23 @@
-package routes
+package handlers
 
 import (
 	"fmt"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
+)
 
-	"github.com/labstack/echo/v4"
+const (
+	routeNameContact       = "contact"
+	routeNameContactSubmit = "contact.submit"
 )
 
 type (
-	contact struct {
+	Contact struct {
+		mail *services.MailClient
 		controller.Controller
 	}
 
@@ -23,7 +29,22 @@ type (
 	}
 )
 
-func (c *contact) Get(ctx echo.Context) error {
+func init() {
+	Register(new(Contact))
+}
+
+func (c *Contact) Init(ct *services.Container) error {
+	c.Controller = controller.NewController(ct)
+	c.mail = ct.Mail
+	return nil
+}
+
+func (c *Contact) Routes(g *echo.Group) {
+	g.GET("/contact", c.Page).Name = routeNameContact
+	g.POST("/contact", c.Submit).Name = routeNameContactSubmit
+}
+
+func (c *Contact) Page(ctx echo.Context) error {
 	page := controller.NewPage(ctx)
 	page.Layout = templates.LayoutMain
 	page.Name = templates.PageContact
@@ -37,7 +58,7 @@ func (c *contact) Get(ctx echo.Context) error {
 	return c.RenderPage(ctx, page)
 }
 
-func (c *contact) Post(ctx echo.Context) error {
+func (c *Contact) Submit(ctx echo.Context) error {
 	var form contactForm
 	ctx.Set(context.FormKey, &form)
 
@@ -51,7 +72,7 @@ func (c *contact) Post(ctx echo.Context) error {
 	}
 
 	if !form.Submission.HasErrors() {
-		err := c.Container.Mail.
+		err := c.mail.
 			Compose().
 			To(form.Email).
 			Subject("Contact form submitted").
@@ -63,5 +84,5 @@ func (c *contact) Post(ctx echo.Context) error {
 		}
 	}
 
-	return c.Get(ctx)
+	return c.Page(ctx)
 }

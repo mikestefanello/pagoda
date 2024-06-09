@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/mikestefanello/pagoda/pkg/routes"
+	"github.com/mikestefanello/pagoda/pkg/handlers"
 	"github.com/mikestefanello/pagoda/pkg/services"
 )
 
@@ -23,7 +23,9 @@ func main() {
 	}()
 
 	// Build the router
-	routes.BuildRouter(c)
+	if err := handlers.BuildRouter(c); err != nil {
+		c.Web.Logger.Fatalf("failed to build the router: %v", err)
+	}
 
 	// Start the server
 	go func() {
