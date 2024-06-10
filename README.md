@@ -676,21 +676,21 @@ if err := form.Set(ctx, &input); err != nil {
 
 Process the submission which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
 ```go
-if err := form.Submission.Process(ctx, form); err != nil {
+if err := input.Submission.Process(ctx, input); err != nil {
     // Something went wrong...
 }
 ```
 
 Check if the form submission has any validation errors:
 ```go
-if !form.Submission.HasErrors() {
+if !input.Submission.HasErrors() {
     // All good, now execute something!
 }
 ```
 
 In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
 ```go
-if form.Submission.HasErrors() {
+if input.Submission.HasErrors() {
     return c.GetCallback(ctx)
 }
 ```
