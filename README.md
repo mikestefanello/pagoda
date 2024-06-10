@@ -661,11 +661,11 @@ This will either initialize a new form to be rendered, or load one previously st
 
 #### Submission processing
 
-Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `Submission` struct located in `pkg/form/form.go`.
+Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `Submission` struct located in `pkg/form/submission.go`.
 
 Using the example form above, these are the steps you would take within the _POST_ callback for your route:
 
-Start by setting the form in the request contxt. This stores a pointer to the form so that your _GET_ callback can access the form values (shown previously). It also will parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
+Start by setting the form in the request context. This stores a pointer to the form so that your _GET_ callback can access the form values (shown previously). It also will parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
 ```go
 var input ContactForm
 
