@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -25,7 +25,7 @@ type (
 		Email      string `form:"email" validate:"required,email"`
 		Department string `form:"department" validate:"required,oneof=sales marketing hr"`
 		Message    string `form:"message" validate:"required"`
-		Submission controller.FormSubmission
+		Submission form.Submission
 	}
 )
 
@@ -49,34 +49,29 @@ func (c *Contact) Page(ctx echo.Context) error {
 	page.Layout = templates.LayoutMain
 	page.Name = templates.PageContact
 	page.Title = "Contact us"
-	page.Form = contactForm{}
-
-	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*contactForm)
-	}
+	page.Form = form.Get[contactForm](ctx)
 
 	return c.RenderPage(ctx, page)
 }
 
 func (c *Contact) Submit(ctx echo.Context) error {
-	var form contactForm
-	ctx.Set(context.FormKey, &form)
+	var input contactForm
 
-	// Parse the form values
-	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(err, "unable to bind form")
+	// Store in context and parse the form values
+	if err := form.Set(ctx, &input); err != nil {
+		return err
 	}
 
-	if err := form.Submission.Process(ctx, form); err != nil {
+	if err := input.Submission.Process(ctx, input); err != nil {
 		return c.Fail(err, "unable to process form submission")
 	}
 
-	if !form.Submission.HasErrors() {
+	if !input.Submission.HasErrors() {
 		err := c.mail.
 			Compose().
-			To(form.Email).
+			To(input.Email).
 			Subject("Contact form submitted").
-			Body(fmt.Sprintf("The message is: %s", form.Message)).
+			Body(fmt.Sprintf("The message is: %s", input.Message)).
 			Send(ctx)
 
 		if err != nil {

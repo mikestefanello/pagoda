@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/ent/user"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/services"
@@ -38,13 +39,13 @@ type (
 
 	forgotPasswordForm struct {
 		Email      string `form:"email" validate:"required,email"`
-		Submission controller.FormSubmission
+		Submission form.Submission
 	}
 
 	loginForm struct {
 		Email      string `form:"email" validate:"required,email"`
 		Password   string `form:"password" validate:"required"`
-		Submission controller.FormSubmission
+		Submission form.Submission
 	}
 
 	registerForm struct {
@@ -52,13 +53,13 @@ type (
 		Email           string `form:"email" validate:"required,email"`
 		Password        string `form:"password" validate:"required"`
 		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		Submission      controller.FormSubmission
+		Submission      form.Submission
 	}
 
 	resetPasswordForm struct {
 		Password        string `form:"password" validate:"required"`
 		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		Submission      controller.FormSubmission
+		Submission      form.Submission
 	}
 )
 
@@ -99,42 +100,37 @@ func (c *Auth) ForgotPasswordPage(ctx echo.Context) error {
 	page.Layout = templates.LayoutAuth
 	page.Name = templates.PageForgotPassword
 	page.Title = "Forgot password"
-	page.Form = forgotPasswordForm{}
-
-	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*forgotPasswordForm)
-	}
+	page.Form = form.Get[forgotPasswordForm](ctx)
 
 	return c.RenderPage(ctx, page)
 }
 
 func (c *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
-	var form forgotPasswordForm
-	ctx.Set(context.FormKey, &form)
+	var input forgotPasswordForm
 
 	succeed := func() error {
-		ctx.Set(context.FormKey, nil)
+		form.Clear(ctx)
 		msg.Success(ctx, "An email containing a link to reset your password will be sent to this address if it exists in our system.")
 		return c.ForgotPasswordPage(ctx)
 	}
 
-	// Parse the form values
-	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(err, "unable to parse forgot password form")
+	// Set the form in context and parse the form values
+	if err := form.Set(ctx, &input); err != nil {
+		return err
 	}
 
-	if err := form.Submission.Process(ctx, form); err != nil {
+	if err := input.Submission.Process(ctx, input); err != nil {
 		return c.Fail(err, "unable to process form submission")
 	}
 
-	if form.Submission.HasErrors() {
+	if input.Submission.HasErrors() {
 		return c.ForgotPasswordPage(ctx)
 	}
 
 	// Attempt to load the user
 	u, err := c.orm.User.
 		Query().
-		Where(user.Email(strings.ToLower(form.Email))).
+		Where(user.Email(strings.ToLower(input.Email))).
 		Only(ctx.Request().Context())
 
 	switch err.(type) {
@@ -174,43 +170,38 @@ func (c *Auth) LoginPage(ctx echo.Context) error {
 	page.Layout = templates.LayoutAuth
 	page.Name = templates.PageLogin
 	page.Title = "Log in"
-	page.Form = loginForm{}
-
-	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*loginForm)
-	}
+	page.Form = form.Get[loginForm](ctx)
 
 	return c.RenderPage(ctx, page)
 }
 
 func (c *Auth) LoginSubmit(ctx echo.Context) error {
-	var form loginForm
-	ctx.Set(context.FormKey, &form)
+	var input loginForm
 
 	authFailed := func() error {
-		form.Submission.SetFieldError("Email", "")
-		form.Submission.SetFieldError("Password", "")
+		input.Submission.SetFieldError("Email", "")
+		input.Submission.SetFieldError("Password", "")
 		msg.Danger(ctx, "Invalid credentials. Please try again.")
 		return c.LoginPage(ctx)
 	}
 
-	// Parse the form values
-	if err := ctx.Bind(&form); err != nil {
-		return c.Fail(err, "unable to parse login form")
+	// Set in context and parse the form values
+	if err := form.Set(ctx, &input); err != nil {
+		return err
 	}
 
-	if err := form.Submission.Process(ctx, form); err != nil {
+	if err := input.Submission.Process(ctx, input); err != nil {
 		return c.Fail(err, "unable to process form submission")
 	}
 
-	if form.Submission.HasErrors() {
+	if input.Submission.HasErrors() {
 		return c.LoginPage(ctx)
 	}
 
 	// Attempt to load the user
 	u, err := c.orm.User.
 		Query().
-		Where(user.Email(strings.ToLower(form.Email))).
+		Where(user.Email(strings.ToLower(input.Email))).
 		Only(ctx.Request().Context())
 
 	switch err.(type) {
@@ -222,7 +213,7 @@ func (c *Auth) LoginSubmit(ctx echo.Context) error {
 	}
 
 	// Check if the password is correct
-	err = c.auth.CheckPassword(form.Password, u.Password)
+	err = c.auth.CheckPassword(input.Password, u.Password)
 	if err != nil {
 		return authFailed()
 	}
@@ -251,34 +242,29 @@ func (c *Auth) RegisterPage(ctx echo.Context) error {
 	page.Layout = templates.LayoutAuth
 	page.Name = templates.PageRegister
 	page.Title = "Register"
-	page.Form = registerForm{}
-
-	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*registerForm)
-	}
+	page.Form = form.Get[registerForm](ctx)
 
 	return c.RenderPage(ctx, page)
 }
 
 func (c *Auth) RegisterSubmit(ctx echo.Context) error {
-	var form registerForm
-	ctx.Set(context.FormKey, &form)
+	var input registerForm
 
-	// Parse the form values
-	if err := ctx.Bind(&form); err != nil {
+	// Set in context and parse the form values
+	if err := form.Set(ctx, &input); err != nil {
 		return c.Fail(err, "unable to parse register form")
 	}
 
-	if err := form.Submission.Process(ctx, form); err != nil {
+	if err := input.Submission.Process(ctx, input); err != nil {
 		return c.Fail(err, "unable to process form submission")
 	}
 
-	if form.Submission.HasErrors() {
+	if input.Submission.HasErrors() {
 		return c.RegisterPage(ctx)
 	}
 
 	// Hash the password
-	pwHash, err := c.auth.HashPassword(form.Password)
+	pwHash, err := c.auth.HashPassword(input.Password)
 	if err != nil {
 		return c.Fail(err, "unable to hash password")
 	}
@@ -286,8 +272,8 @@ func (c *Auth) RegisterSubmit(ctx echo.Context) error {
 	// Attempt creating the user
 	u, err := c.orm.User.
 		Create().
-		SetName(form.Name).
-		SetEmail(form.Email).
+		SetName(input.Name).
+		SetEmail(input.Email).
 		SetPassword(pwHash).
 		Save(ctx.Request().Context())
 
@@ -347,34 +333,29 @@ func (c *Auth) ResetPasswordPage(ctx echo.Context) error {
 	page.Layout = templates.LayoutAuth
 	page.Name = templates.PageResetPassword
 	page.Title = "Reset password"
-	page.Form = resetPasswordForm{}
-
-	if form := ctx.Get(context.FormKey); form != nil {
-		page.Form = form.(*resetPasswordForm)
-	}
+	page.Form = form.Get[resetPasswordForm](ctx)
 
 	return c.RenderPage(ctx, page)
 }
 
 func (c *Auth) ResetPasswordSubmit(ctx echo.Context) error {
-	var form resetPasswordForm
-	ctx.Set(context.FormKey, &form)
+	var input resetPasswordForm
 
-	// Parse the form values
-	if err := ctx.Bind(&form); err != nil {
+	// Set in context and parse the form values
+	if err := form.Set(ctx, &input); err != nil {
 		return c.Fail(err, "unable to parse password reset form")
 	}
 
-	if err := form.Submission.Process(ctx, form); err != nil {
+	if err := input.Submission.Process(ctx, input); err != nil {
 		return c.Fail(err, "unable to process form submission")
 	}
 
-	if form.Submission.HasErrors() {
+	if input.Submission.HasErrors() {
 		return c.ResetPasswordPage(ctx)
 	}
 
 	// Hash the new password
-	hash, err := c.auth.HashPassword(form.Password)
+	hash, err := c.auth.HashPassword(input.Password)
 	if err != nil {
 		return c.Fail(err, "unable to hash password")
 	}

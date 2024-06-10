@@ -1,8 +1,10 @@
-package controller
+package form
 
 import (
 	"testing"
 
+	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
@@ -13,16 +15,18 @@ func TestFormSubmission(t *testing.T) {
 	type formTest struct {
 		Name       string `validate:"required"`
 		Email      string `validate:"required,email"`
-		Submission FormSubmission
+		Submission Submission
 	}
 
-	ctx, _ := tests.NewContext(c.Web, "/")
+	e := echo.New()
+	e.Validator = services.NewValidator()
+	ctx, _ := tests.NewContext(e, "/")
 	form := formTest{
 		Name:  "",
 		Email: "a@a.com",
 	}
 	err := form.Submission.Process(ctx, form)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.True(t, form.Submission.HasErrors())
 	assert.True(t, form.Submission.FieldHasErrors("Name"))

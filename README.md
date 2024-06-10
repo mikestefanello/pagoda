@@ -646,7 +646,7 @@ An example of this pattern is:
 type ContactForm struct {
     Email      string `form:"email" validate:"required,email"`
     Message    string `form:"message" validate:"required"`
-    Submission controller.FormSubmission
+    Submission form.Submission
 }
 ```
 
@@ -654,27 +654,23 @@ Then in your page:
 
 ```go
 page := controller.NewPage(ctx)
-page.Form = ContactForm{}
+page.Form = form.Get[ContactForm](ctx)
 ```
 
-How the _form_ gets populated with values so that your template can render them is covered in the next section.
+This will either initialize a new form to be rendered, or load one previously stored in the context (ie, if it was already submitted). How the _form_ gets populated with values so that your template can render them is covered in the next section.
 
 #### Submission processing
 
-Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `FormSubmission` struct located in `pkg/controller/form.go`.
+Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `Submission` struct located in `pkg/form/form.go`.
 
 Using the example form above, these are the steps you would take within the _POST_ callback for your route:
 
-Start by storing a pointer to the form in the context so that your _GET_ callback can access the form values, which will be showed at the end:
+Start by setting the form in the request contxt. This stores a pointer to the form so that your _GET_ callback can access the form values (shown previously). It also will parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
 ```go
-var form ContactForm
-ctx.Set(context.FormKey, &form)
-```
+var input ContactForm
 
-Parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
-```go
-if err := ctx.Bind(&form); err != nil {
-    // Something went wrong...
+if err := form.Set(ctx, &input); err != nil {
+    return err
 }
 ```
 
@@ -695,17 +691,7 @@ if !form.Submission.HasErrors() {
 In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
 ```go
 if form.Submission.HasErrors() {
-    return c.Get(ctx)
-}
-```
-
-Then, in your _GET_ handler, extract the form from the context so it can be passed to the templates:
-```go
-page := controller.NewPage(ctx)
-page.Form = ContactForm{}
-
-if form := ctx.Get(context.FormKey); form != nil {
-    page.Form = form.(*ContactForm)
+    return c.GetCallback(ctx)
 }
 ```
 
@@ -716,9 +702,9 @@ And finally, your template:
 
 #### Inline validation
 
-The `FormSubmission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that your templates can use to provide classes and extract the error messages.
+The `Submission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that your templates can use to provide classes and extract the error messages.
 
-While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `FormSubmission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
+While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `Submission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
 
 To provide the inline validation in your template, there are two things that need to be done.
 
