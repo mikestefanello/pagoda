@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"sync"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/pkg/funcmap"
 	"github.com/mikestefanello/pagoda/templates"
@@ -53,10 +54,10 @@ type (
 )
 
 // NewTemplateRenderer creates a new TemplateRenderer
-func NewTemplateRenderer(cfg *config.Config) *TemplateRenderer {
+func NewTemplateRenderer(cfg *config.Config, web *echo.Echo) *TemplateRenderer {
 	return &TemplateRenderer{
 		templateCache: sync.Map{},
-		funcMap:       funcmap.GetFuncMap(),
+		funcMap:       funcmap.GetFuncMap(web),
 		config:        cfg,
 	}
 }

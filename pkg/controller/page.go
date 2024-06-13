@@ -7,6 +7,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/templates"
@@ -34,9 +35,6 @@ type Page struct {
 	// Context stores the request context
 	Context echo.Context
 
-	// ToURL is a function to convert a route name and optional route parameters to a URL
-	ToURL func(name string, params ...any) string
-
 	// Path stores the path of the current request
 	Path string
 
@@ -50,8 +48,8 @@ type Page struct {
 	// Form stores a struct that represents a form on the page.
 	// This should be a struct with fields for each form field, using both "form" and "validate" tags
 	// It should also contain a Submission field of type FormSubmission if you wish to have validation
-	// messagesa and markup presented to the user
-	Form any
+	// messages and markup presented to the user
+	Form form.Form
 
 	// Layout stores the name of the layout base template file which will be used when the page is rendered.
 	// This should match a template file located within the layouts directory inside the templates directory.
@@ -67,7 +65,7 @@ type Page struct {
 	// IsHome stores whether the requested page is the home page or not
 	IsHome bool
 
-	// IsAuth stores whether or not the user is authenticated
+	// IsAuth stores whether the user is authenticated
 	IsAuth bool
 
 	// AuthUser stores the authenticated user
@@ -125,7 +123,6 @@ type Page struct {
 func NewPage(ctx echo.Context) Page {
 	p := Page{
 		Context:    ctx,
-		ToURL:      ctx.Echo().Reverse,
 		Path:       ctx.Request().URL.Path,
 		URL:        ctx.Request().URL.String(),
 		StatusCode: http.StatusOK,

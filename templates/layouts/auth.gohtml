@@ -19,9 +19,9 @@
                                 {{template "content" .}}
 
                                 <div class="content is-small has-text-centered" hx-boost="true">
-                                    <a href="{{call .ToURL "login"}}">Login</a> &#9676;
-                                    <a href="{{call .ToURL "register"}}">Create an account</a> &#9676;
-                                    <a href="{{call .ToURL "forgot_password"}}">Forgot password?</a>
+                                    <a href="{{url "login"}}">Login</a> &#9676;
+                                    <a href="{{url "register"}}">Create an account</a> &#9676;
+                                    <a href="{{url "forgot_password"}}">Forgot password?</a>
                                 </div>
                             </div>
                         </div>

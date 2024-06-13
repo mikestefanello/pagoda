@@ -1,77 +1,86 @@
 package form
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/go-playground/validator/v10"
+	"github.com/mikestefanello/pagoda/pkg/context"
 
 	"github.com/labstack/echo/v4"
 )
 
-// Submission represents the state of the submission of a form, not including the form itself
+// Submission represents the state of the submission of a form, not including the form itself.
+// This satisfies the Form interface.
 type Submission struct {
-	// IsSubmitted indicates if the form has been submitted
-	IsSubmitted bool
+	// isSubmitted indicates if the form has been submitted
+	isSubmitted bool
 
-	// Errors stores a slice of error message strings keyed by form struct field name
-	Errors map[string][]string
+	// errors stores a slice of error message strings keyed by form struct field name
+	errors map[string][]string
 }
 
-// Process processes a submission for a form
-func (f *Submission) Process(ctx echo.Context, form any) error {
-	f.Errors = make(map[string][]string)
-	f.IsSubmitted = true
+func (f *Submission) Submit(ctx echo.Context, form any) error {
+	f.isSubmitted = true
+
+	// Set in context so the form can later be retrieved
+	ctx.Set(context.FormKey, form)
+
+	// Bind the values from the incoming request to the form struct
+	if err := ctx.Bind(form); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("unable to bind form: %v", err))
+	}
 
 	// Validate the form
 	if err := ctx.Validate(form); err != nil {
 		f.setErrorMessages(err)
+		return err
 	}
 
 	return nil
 }
 
-// HasErrors indicates if the submission has any validation errors
-func (f Submission) HasErrors() bool {
-	if f.Errors == nil {
-		return false
-	}
-	return len(f.Errors) > 0
+func (f *Submission) IsSubmitted() bool {
+	return f.isSubmitted
 }
 
-// FieldHasErrors indicates if a given field on the form has any validation errors
-func (f Submission) FieldHasErrors(fieldName string) bool {
+func (f *Submission) IsValid() bool {
+	if f.errors == nil {
+		return true
+	}
+	return len(f.errors) == 0
+}
+
+func (f *Submission) IsDone() bool {
+	return f.IsSubmitted() && f.IsValid()
+}
+
+func (f *Submission) FieldHasErrors(fieldName string) bool {
 	return len(f.GetFieldErrors(fieldName)) > 0
 }
 
-// SetFieldError sets an error message for a given field name
 func (f *Submission) SetFieldError(fieldName string, message string) {
-	if f.Errors == nil {
-		f.Errors = make(map[string][]string)
+	if f.errors == nil {
+		f.errors = make(map[string][]string)
 	}
-	f.Errors[fieldName] = append(f.Errors[fieldName], message)
+	f.errors[fieldName] = append(f.errors[fieldName], message)
 }
 
-// GetFieldErrors gets the errors for a given field name
-func (f Submission) GetFieldErrors(fieldName string) []string {
-	if f.Errors == nil {
+func (f *Submission) GetFieldErrors(fieldName string) []string {
+	if f.errors == nil {
 		return []string{}
 	}
-	return f.Errors[fieldName]
+	return f.errors[fieldName]
 }
 
-// GetFieldStatusClass returns an HTML class based on the status of the field
-func (f Submission) GetFieldStatusClass(fieldName string) string {
-	if f.IsSubmitted {
+func (f *Submission) GetFieldStatusClass(fieldName string) string {
+	if f.isSubmitted {
 		if f.FieldHasErrors(fieldName) {
 			return "is-danger"
 		}
 		return "is-success"
 	}
 	return ""
-}
-
-// IsDone indicates if the submission is considered done which is when it has been submitted
-// and there are no errors.
-func (f Submission) IsDone() bool {
-	return f.IsSubmitted && !f.HasErrors()
 }
 
 // setErrorMessages sets errors messages on the submission for all fields that failed validation

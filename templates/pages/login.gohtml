@@ -1,5 +1,5 @@
 {{define "content"}}
-    <form method="post" hx-boost="true" action="{{call .ToURL "login.post"}}">
+    <form method="post" hx-boost="true" action="{{url "login.post"}}">
         {{template "messages" .}}
         <div class="field">
             <label for="email" class="label">Email address</label>
@@ -20,7 +20,7 @@
                 <button class="button is-primary">Log in</button>
             </p>
             <p class="control">
-                <a href="{{call .ToURL "home"}}" class="button is-light">Cancel</a>
+                <a href="{{url "home"}}" class="button is-light">Cancel</a>
             </p>
         </div>
         {{template "csrf" .}}

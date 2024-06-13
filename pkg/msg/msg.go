@@ -49,7 +49,7 @@ func Danger(ctx echo.Context, message string) {
 }
 
 // Set adds a new flash message of a given type into the session storage
-// Errors will logged and not returned
+// errors will logged and not returned
 func Set(ctx echo.Context, typ Type, message string) {
 	if sess, err := getSession(ctx); err == nil {
 		sess.AddFlash(message, string(typ))
@@ -58,7 +58,7 @@ func Set(ctx echo.Context, typ Type, message string) {
 }
 
 // Get gets flash messages of a given type from the session storage
-// Errors will logged and not returned
+// errors will logged and not returned
 func Get(ctx echo.Context, typ Type) []string {
 	var msgs []string
 

@@ -17,7 +17,6 @@ func TestNewPage(t *testing.T) {
 	ctx, _ := tests.NewContext(c.Web, "/")
 	p := NewPage(ctx)
 	assert.Same(t, ctx, p.Context)
-	assert.NotNil(t, p.ToURL)
 	assert.Equal(t, "/", p.Path)
 	assert.Equal(t, "/", p.URL)
 	assert.Equal(t, http.StatusOK, p.StatusCode)

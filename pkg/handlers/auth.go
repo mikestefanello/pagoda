@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/user"
@@ -38,14 +39,14 @@ type (
 	}
 
 	forgotPasswordForm struct {
-		Email      string `form:"email" validate:"required,email"`
-		Submission form.Submission
+		Email string `form:"email" validate:"required,email"`
+		form.Submission
 	}
 
 	loginForm struct {
-		Email      string `form:"email" validate:"required,email"`
-		Password   string `form:"password" validate:"required"`
-		Submission form.Submission
+		Email    string `form:"email" validate:"required,email"`
+		Password string `form:"password" validate:"required"`
+		form.Submission
 	}
 
 	registerForm struct {
@@ -53,13 +54,13 @@ type (
 		Email           string `form:"email" validate:"required,email"`
 		Password        string `form:"password" validate:"required"`
 		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		Submission      form.Submission
+		form.Submission
 	}
 
 	resetPasswordForm struct {
 		Password        string `form:"password" validate:"required"`
 		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		Submission      form.Submission
+		form.Submission
 	}
 )
 
@@ -114,17 +115,14 @@ func (c *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return c.ForgotPasswordPage(ctx)
 	}
 
-	// Set the form in context and parse the form values
-	if err := form.Set(ctx, &input); err != nil {
-		return err
-	}
+	err := form.Submit(ctx, &input)
 
-	if err := input.Submission.Process(ctx, input); err != nil {
-		return c.Fail(err, "unable to process form submission")
-	}
-
-	if input.Submission.HasErrors() {
+	switch err.(type) {
+	case nil:
+	case validator.ValidationErrors:
 		return c.ForgotPasswordPage(ctx)
+	default:
+		return err
 	}
 
 	// Attempt to load the user
@@ -179,23 +177,20 @@ func (c *Auth) LoginSubmit(ctx echo.Context) error {
 	var input loginForm
 
 	authFailed := func() error {
-		input.Submission.SetFieldError("Email", "")
-		input.Submission.SetFieldError("Password", "")
+		input.SetFieldError("Email", "")
+		input.SetFieldError("Password", "")
 		msg.Danger(ctx, "Invalid credentials. Please try again.")
 		return c.LoginPage(ctx)
 	}
 
-	// Set in context and parse the form values
-	if err := form.Set(ctx, &input); err != nil {
-		return err
-	}
+	err := form.Submit(ctx, &input)
 
-	if err := input.Submission.Process(ctx, input); err != nil {
-		return c.Fail(err, "unable to process form submission")
-	}
-
-	if input.Submission.HasErrors() {
+	switch err.(type) {
+	case nil:
+	case validator.ValidationErrors:
 		return c.LoginPage(ctx)
+	default:
+		return err
 	}
 
 	// Attempt to load the user
@@ -250,17 +245,14 @@ func (c *Auth) RegisterPage(ctx echo.Context) error {
 func (c *Auth) RegisterSubmit(ctx echo.Context) error {
 	var input registerForm
 
-	// Set in context and parse the form values
-	if err := form.Set(ctx, &input); err != nil {
-		return c.Fail(err, "unable to parse register form")
-	}
+	err := form.Submit(ctx, &input)
 
-	if err := input.Submission.Process(ctx, input); err != nil {
-		return c.Fail(err, "unable to process form submission")
-	}
-
-	if input.Submission.HasErrors() {
-		return c.RegisterPage(ctx)
+	switch err.(type) {
+	case nil:
+	case validator.ValidationErrors:
+		return c.RegisterSubmit(ctx)
+	default:
+		return err
 	}
 
 	// Hash the password
@@ -341,17 +333,14 @@ func (c *Auth) ResetPasswordPage(ctx echo.Context) error {
 func (c *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 	var input resetPasswordForm
 
-	// Set in context and parse the form values
-	if err := form.Set(ctx, &input); err != nil {
-		return c.Fail(err, "unable to parse password reset form")
-	}
+	err := form.Submit(ctx, &input)
 
-	if err := input.Submission.Process(ctx, input); err != nil {
-		return c.Fail(err, "unable to process form submission")
-	}
-
-	if input.Submission.HasErrors() {
+	switch err.(type) {
+	case nil:
+	case validator.ValidationErrors:
 		return c.ResetPasswordPage(ctx)
+	default:
+		return err
 	}
 
 	// Hash the new password
