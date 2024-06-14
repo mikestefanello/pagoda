@@ -57,7 +57,7 @@ type (
 func NewTemplateRenderer(cfg *config.Config, web *echo.Echo) *TemplateRenderer {
 	return &TemplateRenderer{
 		templateCache: sync.Map{},
-		funcMap:       funcmap.GetFuncMap(web),
+		funcMap:       funcmap.NewFuncMap(web),
 		config:        cfg,
 	}
 }

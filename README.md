@@ -529,7 +529,6 @@ func (c *home) Get(ctx echo.Context) error {
 Using the `echo.Context`, the `Page` will be initialized with the following fields populated:
 
 - `Context`: The passed in _context_
-- `ToURL`: A function the templates can use to generate a URL with a given route name and parameters
 - `Path`: The requested URL path
 - `URL`: The requested URL
 - `StatusCode`: Defaults to 200
@@ -638,7 +637,7 @@ The `Data` field on the `Page` is of type `any` and is what allows your route to
 
 ### Forms
 
-The `Form` field on the `Page` is similar to the `Data` field in that it's an `any` type but it's meant to store a struct that represents a form being rendered on the page.
+The `Form` field on the `Page` is similar to the `Data` field, but it's meant to store a struct that represents a form being rendered on the page.
 
 An example of this pattern is:
 
@@ -646,9 +645,11 @@ An example of this pattern is:
 type ContactForm struct {
     Email      string `form:"email" validate:"required,email"`
     Message    string `form:"message" validate:"required"`
-    Submission form.Submission
+    form.Submission
 }
 ```
+
+Embedding `form.Submission` satisfies the `form.Form` interface and makes dealing with submissions and validation extremely easy.
 
 Then in your page:
 
@@ -663,41 +664,39 @@ This will either initialize a new form to be rendered, or load one previously st
 
 Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `Submission` struct located in `pkg/form/submission.go`.
 
-Using the example form above, these are the steps you would take within the _POST_ callback for your route:
+Using the example form above, this is all you would have to do within the _POST_ callback for your route:
 
-Start by setting the form in the request context. This stores a pointer to the form so that your _GET_ callback can access the form values (shown previously). It also will parse the input in the POST data to map to the struct so it becomes populated. This uses the `form` struct tags to map form values to the struct fields.
+Start by submitting the form along with the request context. This will:
+1. Store a pointer to the form so that your _GET_ callback can access the form values (shown previously). That allows the form to easily be re-rendered with any validation errors it may have as well as the values that were provided.
+2. Parse the input in the _POST_ data to map to the struct so the fields becomes populated. This uses the `form` struct tags to map form input values to the struct fields.
+3. Validate the values in the struct fields according to the rules provided in the optional `validate` struct tags.
+
 ```go
 var input ContactForm
 
-if err := form.Set(ctx, &input); err != nil {
+err := form.Submit(ctx, &input)
+```
+
+Check the error returned, and act accordingly. For example:
+```go
+switch err.(type) {
+case nil:
+    // All good!
+case validator.ValidationErrors:
+    // The form input was not valid, so re-render the form
+    return c.Page(ctx)
+default:
+    // Request failed, show the error page
     return err
-}
-```
-
-Process the submission which uses [validator](https://github.com/go-playground/validator) to check for validation errors:
-```go
-if err := input.Submission.Process(ctx, input); err != nil {
-    // Something went wrong...
-}
-```
-
-Check if the form submission has any validation errors:
-```go
-if !input.Submission.HasErrors() {
-    // All good, now execute something!
-}
-```
-
-In the event of a validation error, you most likely want to re-render the form with the values provided and any error messages. Since you stored a pointer to the _form_ in the context in the first step, you can first have the _POST_ handler call the _GET_:
-```go
-if input.Submission.HasErrors() {
-    return c.GetCallback(ctx)
 }
 ```
 
 And finally, your template:
 ```html
-<input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
+<form id="contact" method="post" hx-post="{{url "contact.post"}}">
+    <input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
+    <input id="message" name="message" type="text" class="input" value="{{.Form.Message}}">
+</form
 ```
 
 #### Inline validation
@@ -710,12 +709,12 @@ To provide the inline validation in your template, there are two things that nee
 
 First, include a status class on the element so it will highlight green or red based on the validation:
 ```html
-<input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
+<input id="email" name="email" type="email" class="input {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
 ```
 
 Second, render the error messages, if there are any for a given field:
 ```go
-{{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
+{{template "field-errors" (.Form.GetFieldErrors "Email")}}
 ```
 
 ### Headers
@@ -768,7 +767,7 @@ e.GET("/user/profile/:user", profile.Get).Name = "user_profile"
 
 And you want to generate a URL in the template, you can:
 ```go
-{{call .ToURL "user_profile" 1}
+{{url "user_profile" 1}
 ```
 
 Which will generate: `/user/profile/1`
@@ -776,7 +775,7 @@ Which will generate: `/user/profile/1`
 There is also a helper function provided in the [funcmap](#funcmap) to generate links which has the benefit of adding an _active_ class if the link URL matches the current path. This is especially useful for navigation menus.
 
 ```go
-{{link (call .ToURL "user_profile" .AuthUser.ID) "Profile" .Path "extra-class"}}
+{{link (url "user_profile" .AuthUser.ID) "Profile" .Path "extra-class"}}
 ```
 
 Will generate:
@@ -923,7 +922,7 @@ To make things easier and less repetitive, parameters given to the _template ren
 
 The `funcmap` package provides a _function map_ (`template.FuncMap`) which will be included for all templates rendered with the [template renderer](#template-renderer). Aside from a few custom functions, [sprig](https://github.com/Masterminds/sprig) is included which provides over 100 commonly used template functions. The full list is available [here](http://masterminds.github.io/sprig/).
 
-To include additional custom functions, add to the slice in `GetFuncMap()` and define the function in the package. It will then become automatically available in all templates.
+To include additional custom functions, add to the map in `NewFuncMap()` and define the function in the package. It will then become automatically available in all templates.
 
 ## Cache
 
