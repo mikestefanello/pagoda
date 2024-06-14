@@ -9,7 +9,7 @@
         <nav class="navbar is-dark">
             <div class="container">
                 <div class="navbar-brand" hx-boost="true">
-                    <a href="{{call .ToURL "home"}}" class="navbar-item">{{.AppName}}</a>
+                    <a href="{{url "home"}}" class="navbar-item">{{.AppName}}</a>
                 </div>
                 <div id="navbarMenu" class="navbar-menu">
                     <div class="navbar-end">
@@ -25,19 +25,19 @@
                     <aside class="menu" hx-boost="true">
                         <p class="menu-label">General</p>
                         <ul class="menu-list">
-                            <li>{{link (call .ToURL "home") "Dashboard" .Path}}</li>
-                            <li>{{link (call .ToURL "about") "About" .Path}}</li>
-                            <li>{{link (call .ToURL "contact") "Contact" .Path}}</li>
+                            <li>{{link (url "home") "Dashboard" .Path}}</li>
+                            <li>{{link (url "about") "About" .Path}}</li>
+                            <li>{{link (url "contact") "Contact" .Path}}</li>
                         </ul>
 
                         <p class="menu-label">Account</p>
                         <ul class="menu-list">
                             {{- if .IsAuth}}
-                                <li>{{link (call .ToURL "logout") "Logout" .Path}}</li>
+                                <li>{{link (url "logout") "Logout" .Path}}</li>
                             {{- else}}
-                                <li>{{link (call .ToURL "login") "Login" .Path}}</li>
-                                <li>{{link (call .ToURL "register") "Register" .Path}}</li>
-                                <li>{{link (call .ToURL "forgot_password") "Forgot password" .Path}}</li>
+                                <li>{{link (url "login") "Login" .Path}}</li>
+                                <li>{{link (url "register") "Register" .Path}}</li>
+                                <li>{{link (url "forgot_password") "Forgot password" .Path}}</li>
                             {{- end}}
                         </ul>
                     </aside>
@@ -70,7 +70,7 @@
                     <h2 class="subtitle">Search</h2>
                     <p class="control">
                         <input
-                            hx-get="{{call .ToURL "search"}}"
+                            hx-get="{{url "search"}}"
                             hx-trigger="keyup changed delay:500ms"
                             hx-target="#results"
                             name="query"

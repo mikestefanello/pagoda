@@ -1,18 +1,34 @@
 package form
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestContextFuncs(t *testing.T) {
+type mockForm struct {
+	called bool
+	Submission
+}
+
+func (m *mockForm) Submit(_ echo.Context, _ any) error {
+	m.called = true
+	return nil
+}
+
+func TestSubmit(t *testing.T) {
+	m := mockForm{}
+	ctx, _ := tests.NewContext(echo.New(), "/")
+	err := Submit(ctx, &m)
+	require.NoError(t, err)
+	assert.True(t, m.called)
+}
+
+func TestGetClear(t *testing.T) {
 	e := echo.New()
 
 	type example struct {
@@ -26,29 +42,17 @@ func TestContextFuncs(t *testing.T) {
 		assert.NotNil(t, form)
 	})
 
-	t.Run("set bad request", func(t *testing.T) {
-		// Set with a bad request
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("abc=abc"))
-		ctx := e.NewContext(req, httptest.NewRecorder())
-		var form example
-		err := Set(ctx, &form)
-		assert.Error(t, err)
-	})
-
-	t.Run("set", func(t *testing.T) {
-		// Set and parse the values
-		req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("name=abc"))
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		ctx := e.NewContext(req, httptest.NewRecorder())
-		var form example
-		err := Set(ctx, &form)
-		require.NoError(t, err)
-		assert.Equal(t, "abc", form.Name)
+	t.Run("get non-empty context", func(t *testing.T) {
+		form := example{
+			Name: "test",
+		}
+		ctx, _ := tests.NewContext(e, "/")
+		ctx.Set(context.FormKey, &form)
 
 		// Get again and expect the values were stored
 		got := Get[example](ctx)
 		require.NotNil(t, got)
-		assert.Equal(t, "abc", form.Name)
+		assert.Equal(t, "test", form.Name)
 
 		// Clear
 		Clear(ctx)

@@ -1,31 +1,31 @@
 {{define "content"}}
-    <form method="post" hx-boost="true" action="{{call .ToURL "register.post"}}">
+    <form method="post" hx-boost="true" action="{{url "register.post"}}">
         <div class="field">
             <label for="name" class="label">Name</label>
             <div class="control">
-                <input type="text" id="name" name="name" class="input {{.Form.Submission.GetFieldStatusClass "Name"}}" value="{{.Form.Name}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Name")}}
+                <input type="text" id="name" name="name" class="input {{.Form.GetFieldStatusClass "Name"}}" value="{{.Form.Name}}">
+                {{template "field-errors" (.Form.GetFieldErrors "Name")}}
             </div>
         </div>
         <div class="field">
             <label for="email" class="label">Email address</label>
             <div class="control">
-                <input type="email" id="email" name="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
+                <input type="email" id="email" name="email" class="input {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
+                {{template "field-errors" (.Form.GetFieldErrors "Email")}}
             </div>
         </div>
         <div class="field">
             <label for="password" class="label">Password</label>
             <div class="control">
-                <input type="password" id="password" name="password" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "Password"}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Password")}}
+                <input type="password" id="password" name="password" placeholder="*******" class="input {{.Form.GetFieldStatusClass "Password"}}">
+                {{template "field-errors" (.Form.GetFieldErrors "Password")}}
             </div>
         </div>
         <div class="field">
             <label for="password-confirm" class="label">Confirm password</label>
             <div class="control">
-                <input type="password" id="password-confirm" name="password-confirm" placeholder="*******" class="input {{.Form.Submission.GetFieldStatusClass "ConfirmPassword"}}">
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "ConfirmPassword")}}
+                <input type="password" id="password-confirm" name="password-confirm" placeholder="*******" class="input {{.Form.GetFieldStatusClass "ConfirmPassword"}}">
+                {{template "field-errors" (.Form.GetFieldErrors "ConfirmPassword")}}
             </div>
         </div>
         <div class="field is-grouped">
@@ -33,7 +33,7 @@
                 <button class="button is-primary">Register</button>
             </p>
             <p class="control">
-                <a href="{{call .ToURL "home"}}" class="button is-light">Cancel</a>
+                <a href="{{url "home"}}" class="button is-light">Cancel</a>
             </p>
         </div>
         {{template "csrf" .}}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/form"
@@ -25,7 +26,7 @@ type (
 		Email      string `form:"email" validate:"required,email"`
 		Department string `form:"department" validate:"required,oneof=sales marketing hr"`
 		Message    string `form:"message" validate:"required"`
-		Submission form.Submission
+		form.Submission
 	}
 )
 
@@ -57,26 +58,25 @@ func (c *Contact) Page(ctx echo.Context) error {
 func (c *Contact) Submit(ctx echo.Context) error {
 	var input contactForm
 
-	// Store in context and parse the form values
-	if err := form.Set(ctx, &input); err != nil {
+	err := form.Submit(ctx, &input)
+
+	switch err.(type) {
+	case nil:
+	case validator.ValidationErrors:
+		return c.Page(ctx)
+	default:
 		return err
 	}
 
-	if err := input.Submission.Process(ctx, input); err != nil {
-		return c.Fail(err, "unable to process form submission")
-	}
+	err = c.mail.
+		Compose().
+		To(input.Email).
+		Subject("Contact form submitted").
+		Body(fmt.Sprintf("The message is: %s", input.Message)).
+		Send(ctx)
 
-	if !input.Submission.HasErrors() {
-		err := c.mail.
-			Compose().
-			To(input.Email).
-			Subject("Contact form submitted").
-			Body(fmt.Sprintf("The message is: %s", input.Message)).
-			Send(ctx)
-
-		if err != nil {
-			return c.Fail(err, "unable to send email")
-		}
+	if err != nil {
+		return c.Fail(err, "unable to send email")
 	}
 
 	return c.Page(ctx)

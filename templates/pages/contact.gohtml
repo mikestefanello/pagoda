@@ -12,7 +12,7 @@
 {{end}}
 
 {{define "form"}}
-    {{- if .Form.Submission.IsDone}}
+    {{- if .Form.IsDone}}
         <article class="message is-large is-success">
             <div class="message-header">
                 <p>Thank you!</p>
@@ -22,13 +22,13 @@
             </div>
         </article>
     {{- else}}
-        <form id="contact" method="post" hx-post="{{call .ToURL "contact.post"}}">
+        <form id="contact" method="post" hx-post="{{url "contact.post"}}">
             <div class="field">
                 <label for="email" class="label">Email address</label>
                 <div class="control">
-                    <input id="email" name="email" type="email" class="input {{.Form.Submission.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
+                    <input id="email" name="email" type="email" class="input {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
                 </div>
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Email")}}
+                {{template "field-errors" (.Form.GetFieldErrors "Email")}}
             </div>
 
             <div class="control">
@@ -45,15 +45,15 @@
                     <input type="radio" name="department" value="hr" {{if eq .Form.Department "hr"}}checked{{end}}/>
                     HR
                 </label>
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Department")}}
+                {{template "field-errors" (.Form.GetFieldErrors "Department")}}
             </div>
 
             <div class="field">
                 <label for="message" class="label">Message</label>
                 <div class="control">
-                    <textarea id="message" name="message" class="textarea {{.Form.Submission.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
+                    <textarea id="message" name="message" class="textarea {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
                 </div>
-                {{template "field-errors" (.Form.Submission.GetFieldErrors "Message")}}
+                {{template "field-errors" (.Form.GetFieldErrors "Message")}}
             </div>
 
             <div class="field is-grouped">
