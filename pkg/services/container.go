@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -12,8 +13,6 @@ import (
 	// Required by ent
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
-
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 
@@ -96,6 +95,14 @@ func (c *Container) initConfig() {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 	c.Config = &cfg
+
+	// Configure logging
+	switch cfg.App.Environment {
+	case config.EnvProduction:
+		slog.SetLogLoggerLevel(slog.LevelInfo)
+	default:
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+	}
 }
 
 // initValidator initializes the validator
@@ -106,15 +113,7 @@ func (c *Container) initValidator() {
 // initWeb initializes the web framework
 func (c *Container) initWeb() {
 	c.Web = echo.New()
-
-	// Configure logging
-	switch c.Config.App.Environment {
-	case config.EnvProduction:
-		c.Web.Logger.SetLevel(log.WARN)
-	default:
-		c.Web.Logger.SetLevel(log.DEBUG)
-	}
-
+	c.Web.HideBanner = true
 	c.Web.Validator = c.Validator
 }
 

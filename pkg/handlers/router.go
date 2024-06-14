@@ -35,9 +35,9 @@ func BuildRouter(c *services.Container) error {
 		echomw.Recover(),
 		echomw.Secure(),
 		echomw.RequestID(),
+		middleware.InitLogger(),
+		middleware.LogRequest(),
 		echomw.Gzip(),
-		echomw.Logger(),
-		middleware.LogRequestID(),
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),

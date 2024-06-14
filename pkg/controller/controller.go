@@ -7,6 +7,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
@@ -134,9 +135,9 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 
 	switch {
 	case err == nil:
-		ctx.Logger().Info("cached page")
+		log.Ctx(ctx).Debug("cached page")
 	case !context.IsCanceledError(err):
-		ctx.Logger().Errorf("failed to cache page: %v", err)
+		log.Ctx(ctx).Error("failed to cache page", "error", err)
 	}
 }
 

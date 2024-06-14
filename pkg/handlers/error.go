@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/templates"
 )
 
@@ -18,17 +19,22 @@ func (e *Error) Page(err error, ctx echo.Context) {
 		return
 	}
 
+	// Determine the error status code
 	code := http.StatusInternalServerError
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
 	}
 
+	// Log the error
+	msg := "request failed"
+	sub := log.Ctx(ctx).With("error", err)
 	if code >= 500 {
-		ctx.Logger().Error(err)
+		sub.Error(msg)
 	} else {
-		ctx.Logger().Info(err)
+		sub.Warn(msg)
 	}
 
+	// Render the error page
 	page := controller.NewPage(ctx)
 	page.Layout = templates.LayoutMain
 	page.Name = templates.PageError
@@ -37,6 +43,6 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	page.HTMX.Request.Enabled = false
 
 	if err = e.RenderPage(ctx, page); err != nil {
-		ctx.Logger().Error(err)
+		log.Ctx(ctx).Error("failed to render error page", "error", err)
 	}
 }

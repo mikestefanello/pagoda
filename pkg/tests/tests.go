@@ -41,6 +41,21 @@ func ExecuteMiddleware(ctx echo.Context, mw echo.MiddlewareFunc) error {
 	return handler(ctx)
 }
 
+// ExecuteHandler executes a handler with an optional stack of middleware
+func ExecuteHandler(ctx echo.Context, handler echo.HandlerFunc, mw ...echo.MiddlewareFunc) error {
+	return ExecuteMiddleware(ctx, func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			run := handler
+
+			for _, w := range mw {
+				run = w(run)
+			}
+
+			return run(ctx)
+		}
+	})
+}
+
 // AssertHTTPErrorCode asserts an HTTP status code on a given Echo HTTP error
 func AssertHTTPErrorCode(t *testing.T, err error, code int) {
 	httpError, ok := err.(*echo.HTTPError)

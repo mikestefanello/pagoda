@@ -17,6 +17,9 @@ const (
 
 	// PasswordTokenKey is the key value used to store a password token in context
 	PasswordTokenKey = "password_token"
+
+	// LoggerKey is the key value used to store a structured logger in context
+	LoggerKey = "logger"
 )
 
 // IsCanceledError determines if an error is due to a context cancelation
