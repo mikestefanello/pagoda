@@ -8,12 +8,12 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/log"
 )
 
-// InitLogger initializes a logger for the current request and stores it in the context.
+// SetLogger initializes a logger for the current request and stores it in the context.
 // It's recommended to have this executed after Echo's RequestID() middleware because it will add
 // the request ID to the logger so that all log messages produced from this request have the
 // request ID in it. You can modify this code to include any other fields that you want to always
 // appear.
-func InitLogger() echo.MiddlewareFunc {
+func SetLogger() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			// Include the request ID in the logger

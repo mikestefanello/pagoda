@@ -66,7 +66,7 @@ func TestLogRequestID(t *testing.T) {
 	log.Set(ctx, logger)
 
 	require.NoError(t, tests.ExecuteMiddleware(ctx, echomw.RequestID()))
-	require.NoError(t, tests.ExecuteMiddleware(ctx, InitLogger()))
+	require.NoError(t, tests.ExecuteMiddleware(ctx, SetLogger()))
 
 	log.Ctx(ctx).Info("test")
 	rID := ctx.Response().Header().Get(echo.HeaderXRequestID)
@@ -87,7 +87,7 @@ func TestLogRequest(t *testing.T) {
 		require.NoError(t, tests.ExecuteHandler(ctx, func(ctx echo.Context) error {
 			return ctx.String(statusCode, "hello")
 		},
-			InitLogger(),
+			SetLogger(),
 			LogRequest(),
 		))
 	}
