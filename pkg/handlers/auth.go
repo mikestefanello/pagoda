@@ -250,7 +250,7 @@ func (c *Auth) RegisterSubmit(ctx echo.Context) error {
 	switch err.(type) {
 	case nil:
 	case validator.ValidationErrors:
-		return c.RegisterSubmit(ctx)
+		return c.RegisterPage(ctx)
 	default:
 		return err
 	}
