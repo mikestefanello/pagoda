@@ -85,7 +85,9 @@ func (m *MailClient) send(email *mail, ctx echo.Context) error {
 
 	// Check if mail sending should be skipped
 	if m.skipSend() {
-		log.Ctx(ctx).Debug("skipping email delivery", "to", email.to)
+		log.Ctx(ctx).Debug("skipping email delivery",
+			"to", email.to,
+		)
 		return nil
 	}
 

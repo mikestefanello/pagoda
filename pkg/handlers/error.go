@@ -26,12 +26,8 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	}
 
 	// Log the error
-	msg := "request failed"
-	sub := log.Ctx(ctx).With("error", err)
 	if code >= 500 {
-		sub.Error(msg)
-	} else {
-		sub.Warn(msg)
+		log.Ctx(ctx).Error(err.Error())
 	}
 
 	// Render the error page
@@ -43,6 +39,8 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	page.HTMX.Request.Enabled = false
 
 	if err = e.RenderPage(ctx, page); err != nil {
-		log.Ctx(ctx).Error("failed to render error page", "error", err)
+		log.Ctx(ctx).Error("failed to render error page",
+			"error", err,
+		)
 	}
 }

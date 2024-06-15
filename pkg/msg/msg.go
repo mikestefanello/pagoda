@@ -80,8 +80,9 @@ func Get(ctx echo.Context, typ Type) []string {
 func getSession(ctx echo.Context) (*sessions.Session, error) {
 	sess, err := session.Get(sessionName, ctx)
 	if err != nil {
-		log.Ctx(ctx).
-			Error("cannot load flash message session", "error", err)
+		log.Ctx(ctx).Error("cannot load flash message session",
+			"error", err,
+		)
 	}
 	return sess, err
 }
@@ -89,7 +90,8 @@ func getSession(ctx echo.Context) (*sessions.Session, error) {
 // save saves the flash message session
 func save(ctx echo.Context, sess *sessions.Session) {
 	if err := sess.Save(ctx.Request(), ctx.Response()); err != nil {
-		log.Ctx(ctx).
-			Error("failed to set flash message", "error", err)
+		log.Ctx(ctx).Error("failed to set flash message",
+			"error", err,
+		)
 	}
 }
