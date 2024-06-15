@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ import (
 
 func TestServeCachedPage(t *testing.T) {
 	// Cache a page
-	cp := CachedPage{
+	cp := services.CachedPage{
 		URL:        "/cache",
 		HTML:       []byte("html"),
 		Headers:    make(map[string]string),
@@ -26,7 +27,7 @@ func TestServeCachedPage(t *testing.T) {
 
 	err := c.Cache.
 		Set().
-		Group(CachedPageGroup).
+		Group(services.CachedPageGroup).
 		Key(cp.URL).
 		Data(cp).
 		Save(context.Background())

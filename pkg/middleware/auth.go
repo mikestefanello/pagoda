@@ -7,6 +7,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
@@ -20,11 +21,10 @@ func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc 
 			u, err := authClient.GetAuthenticatedUser(c)
 			switch err.(type) {
 			case *ent.NotFoundError:
-				c.Logger().Warn("auth user not found")
+				log.Ctx(c).Warn("auth user not found")
 			case services.NotAuthenticatedError:
 			case nil:
 				c.Set(context.AuthenticatedUserKey, u)
-				c.Logger().Infof("auth user loaded in to context: %d", u.ID)
 			default:
 				return echo.NewHTTPError(
 					http.StatusInternalServerError,

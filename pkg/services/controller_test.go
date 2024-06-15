@@ -1,17 +1,15 @@
-package controller
+package services
 
 import (
 	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
-	"github.com/mikestefanello/pagoda/pkg/middleware"
-	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 	"github.com/mikestefanello/pagoda/templates"
 
@@ -21,68 +19,32 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var (
-	c *services.Container
-)
-
-func TestMain(m *testing.M) {
-	// Set the environment to test
-	config.SwitchEnvironment(config.EnvTest)
-
-	// Create a new container
-	c = services.NewContainer()
-
-	// Run tests
-	exitVal := m.Run()
-
-	// Shutdown the container
-	if err := c.Shutdown(); err != nil {
-		panic(err)
-	}
-
-	os.Exit(exitVal)
-}
-
-func TestController_Redirect(t *testing.T) {
-	c.Web.GET("/path/:first/and/:second", func(c echo.Context) error {
-		return nil
-	}).Name = "redirect-test"
-
-	ctx, _ := tests.NewContext(c.Web, "/abc")
-	ctr := NewController(c)
-	err := ctr.Redirect(ctx, "redirect-test", "one", "two")
-	require.NoError(t, err)
-	assert.Equal(t, "/path/one/and/two", ctx.Response().Header().Get(echo.HeaderLocation))
-	assert.Equal(t, http.StatusFound, ctx.Response().Status)
-}
-
 func TestController_RenderPage(t *testing.T) {
-	setup := func() (echo.Context, *httptest.ResponseRecorder, Controller, Page) {
+	setup := func() (echo.Context, *httptest.ResponseRecorder, page.Page) {
 		ctx, rec := tests.NewContext(c.Web, "/test/TestController_RenderPage")
 		tests.InitSession(ctx)
-		ctr := NewController(c)
 
-		p := NewPage(ctx)
+		p := page.New(ctx)
 		p.Name = "home"
 		p.Layout = "main"
 		p.Cache.Enabled = false
 		p.Headers["A"] = "b"
 		p.Headers["C"] = "d"
 		p.StatusCode = http.StatusCreated
-		return ctx, rec, ctr, p
+		return ctx, rec, p
 	}
 
 	t.Run("missing name", func(t *testing.T) {
 		// Rendering should fail if the Page has no name
-		ctx, _, ctr, p := setup()
+		ctx, _, p := setup()
 		p.Name = ""
-		err := ctr.RenderPage(ctx, p)
+		err := c.Controller.RenderPage(ctx, p)
 		assert.Error(t, err)
 	})
 
 	t.Run("no page cache", func(t *testing.T) {
-		ctx, _, ctr, p := setup()
-		err := ctr.RenderPage(ctx, p)
+		ctx, _, p := setup()
+		err := c.Controller.RenderPage(ctx, p)
 		require.NoError(t, err)
 
 		// Check status code and headers
@@ -113,12 +75,12 @@ func TestController_RenderPage(t *testing.T) {
 	})
 
 	t.Run("htmx rendering", func(t *testing.T) {
-		ctx, _, ctr, p := setup()
+		ctx, _, p := setup()
 		p.HTMX.Request.Enabled = true
 		p.HTMX.Response = &htmx.Response{
 			Trigger: "trigger",
 		}
-		err := ctr.RenderPage(ctx, p)
+		err := c.Controller.RenderPage(ctx, p)
 		require.NoError(t, err)
 
 		// Check HTMX header
@@ -146,23 +108,23 @@ func TestController_RenderPage(t *testing.T) {
 	})
 
 	t.Run("page cache", func(t *testing.T) {
-		ctx, rec, ctr, p := setup()
+		ctx, rec, p := setup()
 		p.Cache.Enabled = true
 		p.Cache.Tags = []string{"tag1"}
-		err := ctr.RenderPage(ctx, p)
+		err := c.Controller.RenderPage(ctx, p)
 		require.NoError(t, err)
 
 		// Fetch from the cache
 		res, err := c.Cache.
 			Get().
-			Group(middleware.CachedPageGroup).
+			Group(CachedPageGroup).
 			Key(p.URL).
-			Type(new(middleware.CachedPage)).
+			Type(new(CachedPage)).
 			Fetch(context.Background())
 		require.NoError(t, err)
 
 		// Compare the cached page
-		cp, ok := res.(*middleware.CachedPage)
+		cp, ok := res.(*CachedPage)
 		require.True(t, ok)
 		assert.Equal(t, p.URL, cp.URL)
 		assert.Equal(t, p.Headers, cp.Headers)
@@ -179,9 +141,9 @@ func TestController_RenderPage(t *testing.T) {
 		// Refetch from the cache and expect no results
 		_, err = c.Cache.
 			Get().
-			Group(middleware.CachedPageGroup).
+			Group(CachedPageGroup).
 			Key(p.URL).
-			Type(new(middleware.CachedPage)).
+			Type(new(CachedPage)).
 			Fetch(context.Background())
 		assert.Error(t, err)
 	})

@@ -1,21 +1,23 @@
-package controller
+package page
 
 import (
 	"net/http"
 	"testing"
 
+	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestNewPage(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
-	p := NewPage(ctx)
+func TestNew(t *testing.T) {
+	e := echo.New()
+	ctx, _ := tests.NewContext(e, "/")
+	p := New(ctx)
 	assert.Same(t, ctx, p.Context)
 	assert.Equal(t, "/", p.Path)
 	assert.Equal(t, "/", p.URL)
@@ -28,12 +30,13 @@ func TestNewPage(t *testing.T) {
 	assert.Empty(t, p.RequestID)
 	assert.False(t, p.Cache.Enabled)
 
-	ctx, _ = tests.NewContext(c.Web, "/abc?def=123")
-	usr, err := tests.CreateUser(c.ORM)
-	require.NoError(t, err)
+	ctx, _ = tests.NewContext(e, "/abc?def=123")
+	usr := &ent.User{
+		ID: 1,
+	}
 	ctx.Set(context.AuthenticatedUserKey, usr)
 	ctx.Set(echomw.DefaultCSRFConfig.ContextKey, "csrf")
-	p = NewPage(ctx)
+	p = New(ctx)
 	assert.Equal(t, "/abc", p.Path)
 	assert.Equal(t, "/abc?def=123", p.URL)
 	assert.False(t, p.IsHome)
@@ -43,9 +46,9 @@ func TestNewPage(t *testing.T) {
 }
 
 func TestPage_GetMessages(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	ctx, _ := tests.NewContext(echo.New(), "/")
 	tests.InitSession(ctx)
-	p := NewPage(ctx)
+	p := New(ctx)
 
 	// Set messages
 	msgTests := make(map[msg.Type][]string)

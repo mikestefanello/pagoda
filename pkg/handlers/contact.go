@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/form"
+	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -19,7 +19,7 @@ const (
 type (
 	Contact struct {
 		mail *services.MailClient
-		controller.Controller
+		*services.Controller
 	}
 
 	contactForm struct {
@@ -35,7 +35,7 @@ func init() {
 }
 
 func (c *Contact) Init(ct *services.Container) error {
-	c.Controller = controller.NewController(ct)
+	c.Controller = ct.Controller
 	c.mail = ct.Mail
 	return nil
 }
@@ -46,13 +46,13 @@ func (c *Contact) Routes(g *echo.Group) {
 }
 
 func (c *Contact) Page(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
-	page.Layout = templates.LayoutMain
-	page.Name = templates.PageContact
-	page.Title = "Contact us"
-	page.Form = form.Get[contactForm](ctx)
+	p := page.New(ctx)
+	p.Layout = templates.LayoutMain
+	p.Name = templates.PageContact
+	p.Title = "Contact us"
+	p.Form = form.Get[contactForm](ctx)
 
-	return c.RenderPage(ctx, page)
+	return c.RenderPage(ctx, p)
 }
 
 func (c *Contact) Submit(ctx echo.Context) error {
@@ -76,7 +76,7 @@ func (c *Contact) Submit(ctx echo.Context) error {
 		Send(ctx)
 
 	if err != nil {
-		return c.Fail(err, "unable to send email")
+		return fail(err, "unable to send email")
 	}
 
 	return c.Page(ctx)

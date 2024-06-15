@@ -5,7 +5,7 @@ import (
 	"html/template"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -17,7 +17,7 @@ const (
 
 type (
 	Pages struct {
-		controller.Controller
+		*services.Controller
 	}
 
 	post struct {
@@ -42,7 +42,7 @@ func init() {
 }
 
 func (c *Pages) Init(ct *services.Container) error {
-	c.Controller = controller.NewController(ct)
+	c.Controller = ct.Controller
 	return nil
 }
 
@@ -52,19 +52,19 @@ func (c *Pages) Routes(g *echo.Group) {
 }
 
 func (c *Pages) Home(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
-	page.Layout = templates.LayoutMain
-	page.Name = templates.PageHome
-	page.Metatags.Description = "Welcome to the homepage."
-	page.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
-	page.Pager = controller.NewPager(ctx, 4)
-	page.Data = c.fetchPosts(&page.Pager)
+	p := page.New(ctx)
+	p.Layout = templates.LayoutMain
+	p.Name = templates.PageHome
+	p.Metatags.Description = "Welcome to the homep."
+	p.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
+	p.Pager = page.NewPager(ctx, 4)
+	p.Data = c.fetchPosts(&p.Pager)
 
-	return c.RenderPage(ctx, page)
+	return c.RenderPage(ctx, p)
 }
 
 // fetchPosts is an mock example of fetching posts to illustrate how paging works
-func (c *Pages) fetchPosts(pager *controller.Pager) []post {
+func (c *Pages) fetchPosts(pager *page.Pager) []post {
 	pager.SetItems(20)
 	posts := make([]post, 20)
 
@@ -78,18 +78,18 @@ func (c *Pages) fetchPosts(pager *controller.Pager) []post {
 }
 
 func (c *Pages) About(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
-	page.Layout = templates.LayoutMain
-	page.Name = templates.PageAbout
-	page.Title = "About"
+	p := page.New(ctx)
+	p.Layout = templates.LayoutMain
+	p.Name = templates.PageAbout
+	p.Title = "About"
 
 	// This page will be cached!
-	page.Cache.Enabled = true
-	page.Cache.Tags = []string{"page_about", "page:list"}
+	p.Cache.Enabled = true
+	p.Cache.Tags = []string{"page_about", "page:list"}
 
 	// A simple example of how the Data field can contain anything you want to send to the templates
 	// even though you wouldn't normally send markup like this
-	page.Data = aboutData{
+	p.Data = aboutData{
 		ShowCacheWarning: true,
 		FrontendTabs: []aboutTab{
 			{
@@ -117,5 +117,5 @@ func (c *Pages) About(ctx echo.Context) error {
 		},
 	}
 
-	return c.RenderPage(ctx, page)
+	return c.RenderPage(ctx, p)
 }

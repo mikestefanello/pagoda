@@ -1,4 +1,4 @@
-package controller
+package page
 
 import (
 	"html/template"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/templates"
@@ -47,9 +46,9 @@ type Page struct {
 
 	// Form stores a struct that represents a form on the page.
 	// This should be a struct with fields for each form field, using both "form" and "validate" tags
-	// It should also contain a Submission field of type FormSubmission if you wish to have validation
+	// It should also contain form.FormSubmission if you wish to have validation
 	// messages and markup presented to the user
-	Form form.Form
+	Form any
 
 	// Layout stores the name of the layout base template file which will be used when the page is rendered.
 	// This should match a template file located within the layouts directory inside the templates directory.
@@ -123,8 +122,8 @@ type Page struct {
 	}
 }
 
-// NewPage creates and initiatizes a new Page for a given request context
-func NewPage(ctx echo.Context) Page {
+// New creates and initiatizes a new Page for a given request context
+func New(ctx echo.Context) Page {
 	p := Page{
 		Context:    ctx,
 		Path:       ctx.Request().URL.Path,

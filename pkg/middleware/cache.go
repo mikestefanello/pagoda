@@ -7,29 +7,12 @@ import (
 	"time"
 
 	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
 	libstore "github.com/eko/gocache/lib/v4/store"
 	"github.com/labstack/echo/v4"
 )
-
-// CachedPageGroup stores the cache group for cached pages
-const CachedPageGroup = "page"
-
-// CachedPage is what is used to store a rendered Page in the cache
-type CachedPage struct {
-	// URL stores the URL of the requested page
-	URL string
-
-	// HTML stores the complete HTML of the rendered Page
-	HTML []byte
-
-	// StatusCode stores the HTTP status code
-	StatusCode int
-
-	// Headers stores the HTTP headers
-	Headers map[string]string
-}
 
 // ServeCachedPage attempts to load a page from the cache by matching on the complete request URL
 // If a page is cached for the requested URL, it will be served here and the request terminated.
@@ -50,27 +33,28 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 			// Attempt to load from cache
 			res, err := ch.
 				Get().
-				Group(CachedPageGroup).
+				Group(services.CachedPageGroup).
 				Key(c.Request().URL.String()).
-				Type(new(CachedPage)).
+				Type(new(services.CachedPage)).
 				Fetch(c.Request().Context())
 
 			if err != nil {
 				switch {
-				case errors.Is(err, &libstore.NotFound{}):
-					c.Logger().Info("no cached page found")
-				case context.IsCanceledError(err):
+				case errors.Is(err, &libstore.NotFound{}),
+					context.IsCanceledError(err):
 					return nil
 				default:
-					c.Logger().Errorf("failed getting cached page: %v", err)
+					log.Ctx(c).Error("failed getting cached page",
+						"error", err,
+					)
 				}
 
 				return next(c)
 			}
 
-			page, ok := res.(*CachedPage)
+			page, ok := res.(*services.CachedPage)
 			if !ok {
-				c.Logger().Errorf("failed casting cached page")
+				log.Ctx(c).Error("failed casting cached page")
 				return next(c)
 			}
 
@@ -81,7 +65,7 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 				}
 			}
 
-			c.Logger().Info("serving cached page")
+			log.Ctx(c).Debug("serving cached page")
 
 			return c.HTMLBlob(page.StatusCode, page.HTML)
 		}

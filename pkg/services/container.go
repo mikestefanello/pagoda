@@ -50,6 +50,9 @@ type Container struct {
 	// TemplateRenderer stores a service to easily render and cache templates
 	TemplateRenderer *TemplateRenderer
 
+	// Controller a controller TODO better explanation
+	Controller *Controller
+
 	// Tasks stores the task client
 	Tasks *TaskClient
 }
@@ -65,6 +68,7 @@ func NewContainer() *Container {
 	c.initORM()
 	c.initAuth()
 	c.initTemplateRenderer()
+	c.initController()
 	c.initMail()
 	c.initTasks()
 	return c
@@ -183,6 +187,11 @@ func (c *Container) initAuth() {
 // initTemplateRenderer initializes the template renderer
 func (c *Container) initTemplateRenderer() {
 	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Web)
+}
+
+// initController initializes the controller
+func (c *Container) initController() {
+	c.Controller = NewController(c.Config, c.Cache, c.TemplateRenderer)
 }
 
 // initMail initialize the mail client
