@@ -13,8 +13,8 @@ import (
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
 	"github.com/mikestefanello/pagoda/ent/user"
 	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/mikestefanello/pagoda/pkg/session"
 
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -62,7 +62,7 @@ func NewAuthClient(cfg *config.Config, orm *ent.Client) *AuthClient {
 
 // Login logs in a user of a given ID
 func (c *AuthClient) Login(ctx echo.Context, userID int) error {
-	sess, err := session.Get(authSessionName, ctx)
+	sess, err := session.Get(ctx, authSessionName)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (c *AuthClient) Login(ctx echo.Context, userID int) error {
 
 // Logout logs the requesting user out
 func (c *AuthClient) Logout(ctx echo.Context) error {
-	sess, err := session.Get(authSessionName, ctx)
+	sess, err := session.Get(ctx, authSessionName)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (c *AuthClient) Logout(ctx echo.Context) error {
 
 // GetAuthenticatedUserID returns the authenticated user's ID, if the user is logged in
 func (c *AuthClient) GetAuthenticatedUserID(ctx echo.Context) (int, error) {
-	sess, err := session.Get(authSessionName, ctx)
+	sess, err := session.Get(ctx, authSessionName)
 	if err != nil {
 		return 0, err
 	}

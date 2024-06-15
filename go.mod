@@ -12,10 +12,10 @@ require (
 	github.com/eko/gocache/store/redis/v4 v4.2.1
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/gorilla/context v1.1.2
 	github.com/gorilla/sessions v1.2.2
 	github.com/hibiken/asynq v0.24.1
 	github.com/jackc/pgx/v4 v4.18.3
-	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
 	github.com/redis/go-redis/v9 v9.5.1
@@ -44,7 +44,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.20.1 // indirect

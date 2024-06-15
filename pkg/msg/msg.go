@@ -2,9 +2,9 @@ package msg
 
 import (
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/mikestefanello/pagoda/pkg/session"
 )
 
 // Type is a message type
@@ -78,7 +78,7 @@ func Get(ctx echo.Context, typ Type) []string {
 
 // getSession gets the flash message session
 func getSession(ctx echo.Context) (*sessions.Session, error) {
-	sess, err := session.Get(sessionName, ctx)
+	sess, err := session.Get(ctx, sessionName)
 	if err != nil {
 		log.Ctx(ctx).Error("cannot load flash message session",
 			"error", err,

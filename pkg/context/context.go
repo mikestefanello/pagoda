@@ -20,6 +20,9 @@ const (
 
 	// LoggerKey is the key value used to store a structured logger in context
 	LoggerKey = "logger"
+
+	// SessionKey is the key value used to store the session data in context
+	SessionKey = "session"
 )
 
 // IsCanceledError determines if an error is due to a context cancelation

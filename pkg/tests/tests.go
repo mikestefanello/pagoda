@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/pkg/session"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,8 +29,7 @@ func NewContext(e *echo.Echo, url string) (echo.Context, *httptest.ResponseRecor
 
 // InitSession initializes a session for a given Echo context
 func InitSession(ctx echo.Context) {
-	mw := session.Middleware(sessions.NewCookieStore([]byte("secret")))
-	_ = ExecuteMiddleware(ctx, mw)
+	session.Store(ctx, sessions.NewCookieStore([]byte("secret")))
 }
 
 // ExecuteMiddleware executes a middleware function on a given Echo context

@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
@@ -40,7 +39,7 @@ func BuildRouter(c *services.Container) error {
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),
-		session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
+		middleware.Session(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		middleware.ServeCachedPage(c.TemplateRenderer),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{

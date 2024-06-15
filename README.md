@@ -309,7 +309,7 @@ Here's a simple example of loading data from a session and saving new values:
 
 ```go
 func SomeFunction(ctx echo.Context) error {
-    sess, err := session.Get("some-session-key", ctx)
+    sess, err := session.Get(ctx, "some-session-key")
     if err != nil {
         return err
     }
@@ -1256,7 +1256,6 @@ Thank you to all of the following amazing projects for making this possible.
 - [bulma](https://github.com/jgthms/bulma)
 - [docker](https://www.docker.com/)
 - [echo](https://github.com/labstack/echo)
-- [echo-contrib](https://github.com/labstack/echo-contrib)
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
 - [gocache](https://github.com/eko/gocache)
