@@ -7,7 +7,7 @@ services:
     ports:
       - "127.0.0.1:6379:6379"
   db:
-    # PG 16 is currenly not supported https://github.com/ent/ent/issues/3750
+    # PG 16 is currently not supported https://github.com/ent/ent/issues/3750
     image: postgres:15-alpine
     container_name: pagoda_db
     ports:

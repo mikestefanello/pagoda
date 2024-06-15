@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -96,14 +95,13 @@ func TestLogRequest(t *testing.T) {
 	assert.Equal(t, "param", h.GetAttr("previous"))
 	assert.Equal(t, "21.12.12.21", h.GetAttr("ip"))
 	assert.Equal(t, "test.localhost", h.GetAttr("host"))
-	assert.Equal(t, "/abc", h.GetAttr("path"))
-	assert.Equal(t, http.MethodGet, h.GetAttr("method"))
 	assert.Equal(t, "ref.com", h.GetAttr("referer"))
 	assert.Equal(t, "200", h.GetAttr("status"))
 	assert.Equal(t, "0", h.GetAttr("bytes_in"))
 	assert.Equal(t, "5", h.GetAttr("bytes_out"))
 	assert.NotEmpty(t, h.GetAttr("latency"))
 	assert.Equal(t, "INFO", h.level)
+	assert.Equal(t, "GET /abc", h.msg)
 
 	statusCode = 500
 	exec()

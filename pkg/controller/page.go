@@ -98,8 +98,12 @@ type Page struct {
 	// This will only be populated if the request ID middleware is in effect for the given request.
 	RequestID string
 
+	// HTMX provides the ability to interact with the HTMX library
 	HTMX struct {
-		Request  htmx.Request
+		// Request contains the information provided by HTMX about the current request
+		Request htmx.Request
+
+		// Response contains values to pass back to HTMX
 		Response *htmx.Response
 	}
 

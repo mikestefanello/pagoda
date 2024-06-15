@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -45,14 +46,6 @@ func LogRequest() echo.MiddlewareFunc {
 			sub := log.Ctx(ctx).With(
 				"ip", ctx.RealIP(),
 				"host", req.Host,
-				"method", req.Method,
-				"path", func() string {
-					p := req.URL.Path
-					if p == "" {
-						p = "/"
-					}
-					return p
-				}(),
 				"referer", req.Referer(),
 				"status", res.Status,
 				"bytes_in", func() string {
@@ -66,12 +59,18 @@ func LogRequest() echo.MiddlewareFunc {
 				"latency", stop.Sub(start).String(),
 			)
 
-			// TODO is there a (better) way to log without a message?
+			msg := fmt.Sprintf("%s %s", req.Method, func() string {
+				p := req.URL.Path
+				if p == "" {
+					p = "/"
+				}
+				return p
+			}())
 
 			if res.Status >= 500 {
-				sub.Error("")
+				sub.Error(msg)
 			} else {
-				sub.Info("")
+				sub.Info(msg)
 			}
 
 			return nil

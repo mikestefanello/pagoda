@@ -137,7 +137,9 @@ func (c *Controller) cachePage(ctx echo.Context, page Page, html *bytes.Buffer) 
 	case err == nil:
 		log.Ctx(ctx).Debug("cached page")
 	case !context.IsCanceledError(err):
-		log.Ctx(ctx).Error("failed to cache page", "error", err)
+		log.Ctx(ctx).Error("failed to cache page",
+			"error", err,
+		)
 	}
 }
 

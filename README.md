@@ -1250,7 +1250,7 @@ The `SetLogger()` middleware has been added to the router which sets an initiali
 The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware which produces a log of every request made, but uses our logger rather than Echo's.
 
 ```
-2024/06/14 19:44:16 INFO  request_id=snoonQoyRSEBcQthnIzIWIeVRxmutyAV ip=::1 host=localhost:8000 method=GET path=/about referer=http://localhost:8000/ status=200 bytes_in=0 bytes_out=6695 latency=18.022502ms
+2024/06/15 09:07:11 INFO GET /contact request_id=gNblvugTKcyLnBYPMPTwMPEqDOioVLKp ip=::1 host=localhost:8000 referer="" status=200 bytes_in=0 bytes_out=5925 latency=107.527803ms
 ```
 
 ## Roadmap
