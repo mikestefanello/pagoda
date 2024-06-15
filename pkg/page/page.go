@@ -16,9 +16,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Page consists of all data that will be used to render a page response for a given controller.
-// While it's not required for a controller to render a Page on a route, this is the common data
-// object that will be passed to the templates, making it easy for all controllers to share
+// Page consists of all data that will be used to render a page response for a given route.
+// While it's not required for a handler to render a Page on a route, this is the common data
+// object that will be passed to the templates, making it easy for all handlers to share
 // functionality both on the back and frontend. The Page can be expanded to include anything else
 // your app wants to support.
 // Methods on this page also then become available in the templates, which can be more useful than
@@ -41,7 +41,7 @@ type Page struct {
 	URL string
 
 	// Data stores whatever additional data that needs to be passed to the templates.
-	// This is what the controller uses to pass the content of the page.
+	// This is what the handler uses to pass the content of the page.
 	Data any
 
 	// Form stores a struct that represents a form on the page.

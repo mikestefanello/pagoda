@@ -81,7 +81,7 @@ func TestTemplateRenderer(t *testing.T) {
 
 func TestTemplateRenderer_RenderPage(t *testing.T) {
 	setup := func() (echo.Context, *httptest.ResponseRecorder, page.Page) {
-		ctx, rec := tests.NewContext(c.Web, "/test/TestController_RenderPage")
+		ctx, rec := tests.NewContext(c.Web, "/test/TestTemplateRenderer_RenderPage")
 		tests.InitSession(ctx)
 
 		p := page.New(ctx)

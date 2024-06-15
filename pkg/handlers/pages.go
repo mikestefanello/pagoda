@@ -41,30 +41,30 @@ func init() {
 	Register(new(Pages))
 }
 
-func (c *Pages) Init(ct *services.Container) error {
-	c.TemplateRenderer = ct.TemplateRenderer
+func (h *Pages) Init(c *services.Container) error {
+	h.TemplateRenderer = c.TemplateRenderer
 	return nil
 }
 
-func (c *Pages) Routes(g *echo.Group) {
-	g.GET("/", c.Home).Name = routeNameHome
-	g.GET("/about", c.About).Name = routeNameAbout
+func (h *Pages) Routes(g *echo.Group) {
+	g.GET("/", h.Home).Name = routeNameHome
+	g.GET("/about", h.About).Name = routeNameAbout
 }
 
-func (c *Pages) Home(ctx echo.Context) error {
+func (h *Pages) Home(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageHome
 	p.Metatags.Description = "Welcome to the homepage."
 	p.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
 	p.Pager = page.NewPager(ctx, 4)
-	p.Data = c.fetchPosts(&p.Pager)
+	p.Data = h.fetchPosts(&p.Pager)
 
-	return c.RenderPage(ctx, p)
+	return h.RenderPage(ctx, p)
 }
 
 // fetchPosts is an mock example of fetching posts to illustrate how paging works
-func (c *Pages) fetchPosts(pager *page.Pager) []post {
+func (h *Pages) fetchPosts(pager *page.Pager) []post {
 	pager.SetItems(20)
 	posts := make([]post, 20)
 
@@ -77,7 +77,7 @@ func (c *Pages) fetchPosts(pager *page.Pager) []post {
 	return posts[pager.GetOffset() : pager.GetOffset()+pager.ItemsPerPage]
 }
 
-func (c *Pages) About(ctx echo.Context) error {
+func (h *Pages) About(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageAbout
@@ -117,5 +117,5 @@ func (c *Pages) About(ctx echo.Context) error {
 		},
 	}
 
-	return c.RenderPage(ctx, p)
+	return h.RenderPage(ctx, p)
 }

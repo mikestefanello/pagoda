@@ -27,16 +27,16 @@ func init() {
 	Register(new(Search))
 }
 
-func (c *Search) Init(ct *services.Container) error {
-	c.TemplateRenderer = ct.TemplateRenderer
+func (h *Search) Init(c *services.Container) error {
+	h.TemplateRenderer = c.TemplateRenderer
 	return nil
 }
 
-func (c *Search) Routes(g *echo.Group) {
-	g.GET("/search", c.Page).Name = routeNameSearch
+func (h *Search) Routes(g *echo.Group) {
+	g.GET("/search", h.Page).Name = routeNameSearch
 }
 
-func (c *Search) Page(ctx echo.Context) error {
+func (h *Search) Page(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageSearch
@@ -56,5 +56,5 @@ func (c *Search) Page(ctx echo.Context) error {
 	}
 	p.Data = results
 
-	return c.RenderPage(ctx, p)
+	return h.RenderPage(ctx, p)
 }
