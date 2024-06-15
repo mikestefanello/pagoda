@@ -17,7 +17,7 @@ const (
 
 type (
 	Pages struct {
-		*services.Controller
+		*services.TemplateRenderer
 	}
 
 	post struct {
@@ -42,7 +42,7 @@ func init() {
 }
 
 func (c *Pages) Init(ct *services.Container) error {
-	c.Controller = ct.Controller
+	c.TemplateRenderer = ct.TemplateRenderer
 	return nil
 }
 
@@ -55,7 +55,7 @@ func (c *Pages) Home(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageHome
-	p.Metatags.Description = "Welcome to the homep."
+	p.Metatags.Description = "Welcome to the homepage."
 	p.Metatags.Keywords = []string{"Go", "MVC", "Web", "Software"}
 	p.Pager = page.NewPager(ctx, 4)
 	p.Data = c.fetchPosts(&p.Pager)

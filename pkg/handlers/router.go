@@ -42,14 +42,14 @@ func BuildRouter(c *services.Container) error {
 		}),
 		session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
 		middleware.LoadAuthenticatedUser(c.Auth),
-		middleware.ServeCachedPage(c.Cache),
+		middleware.ServeCachedPage(c.TemplateRenderer),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup: "form:csrf",
 		}),
 	)
 
 	// Error handler
-	err := Error{c.Controller}
+	err := Error{c.TemplateRenderer}
 	c.Web.HTTPErrorHandler = err.Page
 
 	// Initialize and register all handlers

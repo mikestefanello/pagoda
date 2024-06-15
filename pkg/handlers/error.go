@@ -12,7 +12,7 @@ import (
 )
 
 type Error struct {
-	*services.Controller
+	*services.TemplateRenderer
 }
 
 func (e *Error) Page(err error, ctx echo.Context) {

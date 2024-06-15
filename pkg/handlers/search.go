@@ -14,7 +14,7 @@ const routeNameSearch = "search"
 
 type (
 	Search struct {
-		*services.Controller
+		*services.TemplateRenderer
 	}
 
 	searchResult struct {
@@ -28,7 +28,7 @@ func init() {
 }
 
 func (c *Search) Init(ct *services.Container) error {
-	c.Controller = ct.Controller
+	c.TemplateRenderer = ct.TemplateRenderer
 	return nil
 }
 

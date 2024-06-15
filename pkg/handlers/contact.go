@@ -19,7 +19,7 @@ const (
 type (
 	Contact struct {
 		mail *services.MailClient
-		*services.Controller
+		*services.TemplateRenderer
 	}
 
 	contactForm struct {
@@ -35,7 +35,7 @@ func init() {
 }
 
 func (c *Contact) Init(ct *services.Container) error {
-	c.Controller = ct.Controller
+	c.TemplateRenderer = ct.TemplateRenderer
 	c.mail = ct.Mail
 	return nil
 }

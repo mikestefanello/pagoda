@@ -17,26 +17,21 @@ import (
 // ServeCachedPage attempts to load a page from the cache by matching on the complete request URL
 // If a page is cached for the requested URL, it will be served here and the request terminated.
 // Any request made by an authenticated user or that is not a GET will be skipped.
-func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
+func ServeCachedPage(t *services.TemplateRenderer) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(ctx echo.Context) error {
 			// Skip non GET requests
-			if c.Request().Method != http.MethodGet {
-				return next(c)
+			if ctx.Request().Method != http.MethodGet {
+				return next(ctx)
 			}
 
 			// Skip if the user is authenticated
-			if c.Get(context.AuthenticatedUserKey) != nil {
-				return next(c)
+			if ctx.Get(context.AuthenticatedUserKey) != nil {
+				return next(ctx)
 			}
 
 			// Attempt to load from cache
-			res, err := ch.
-				Get().
-				Group(services.CachedPageGroup).
-				Key(c.Request().URL.String()).
-				Type(new(services.CachedPage)).
-				Fetch(c.Request().Context())
+			page, err := t.GetCachedPage(ctx, ctx.Request().URL.String())
 
 			if err != nil {
 				switch {
@@ -44,30 +39,24 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 				case context.IsCanceledError(err):
 					return nil
 				default:
-					log.Ctx(c).Error("failed getting cached page",
+					log.Ctx(ctx).Error("failed getting cached page",
 						"error", err,
 					)
 				}
 
-				return next(c)
-			}
-
-			page, ok := res.(*services.CachedPage)
-			if !ok {
-				log.Ctx(c).Error("failed casting cached page")
-				return next(c)
+				return next(ctx)
 			}
 
 			// Set any headers
 			if page.Headers != nil {
 				for k, v := range page.Headers {
-					c.Response().Header().Set(k, v)
+					ctx.Response().Header().Set(k, v)
 				}
 			}
 
-			log.Ctx(c).Debug("serving cached page")
+			log.Ctx(ctx).Debug("serving cached page")
 
-			return c.HTMLBlob(page.StatusCode, page.HTML)
+			return ctx.HTMLBlob(page.StatusCode, page.HTML)
 		}
 	}
 }
@@ -75,13 +64,13 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 // CacheControl sets a Cache-Control header with a given max age
 func CacheControl(maxAge time.Duration) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(ctx echo.Context) error {
 			v := "no-cache, no-store"
 			if maxAge > 0 {
 				v = fmt.Sprintf("public, max-age=%.0f", maxAge.Seconds())
 			}
-			c.Response().Header().Set("Cache-Control", v)
-			return next(c)
+			ctx.Response().Header().Set("Cache-Control", v)
+			return next(ctx)
 		}
 	}
 }
