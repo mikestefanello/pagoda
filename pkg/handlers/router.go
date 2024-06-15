@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/services"
 )
@@ -43,14 +42,14 @@ func BuildRouter(c *services.Container) error {
 		}),
 		session.Middleware(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
 		middleware.LoadAuthenticatedUser(c.Auth),
-		middleware.ServeCachedPage(c.Cache),
+		middleware.ServeCachedPage(c.TemplateRenderer),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup: "form:csrf",
 		}),
 	)
 
 	// Error handler
-	err := Error{Controller: controller.NewController(c)}
+	err := Error{c.TemplateRenderer}
 	c.Web.HTTPErrorHandler = err.Page
 
 	// Initialize and register all handlers

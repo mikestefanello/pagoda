@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
+	"github.com/mikestefanello/pagoda/pkg/funcmap"
 
 	// Required by ent
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -182,7 +183,7 @@ func (c *Container) initAuth() {
 
 // initTemplateRenderer initializes the template renderer
 func (c *Container) initTemplateRenderer() {
-	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Web)
+	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Cache, funcmap.NewFuncMap(c.Web))
 }
 
 // initMail initialize the mail client

@@ -1,33 +1,35 @@
-package controller
+package page
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewPager(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	e := echo.New()
+	ctx, _ := tests.NewContext(e, "/")
 	pgr := NewPager(ctx, 10)
 	assert.Equal(t, 10, pgr.ItemsPerPage)
 	assert.Equal(t, 1, pgr.Page)
 	assert.Equal(t, 0, pgr.Items)
 	assert.Equal(t, 0, pgr.Pages)
 
-	ctx, _ = tests.NewContext(c.Web, fmt.Sprintf("/abc?%s=%d", PageQueryKey, 2))
+	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", PageQueryKey, 2))
 	pgr = NewPager(ctx, 10)
 	assert.Equal(t, 2, pgr.Page)
 
-	ctx, _ = tests.NewContext(c.Web, fmt.Sprintf("/abc?%s=%d", PageQueryKey, -2))
+	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", PageQueryKey, -2))
 	pgr = NewPager(ctx, 10)
 	assert.Equal(t, 1, pgr.Page)
 }
 
 func TestPager_SetItems(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	ctx, _ := tests.NewContext(echo.New(), "/")
 	pgr := NewPager(ctx, 20)
 	pgr.SetItems(100)
 	assert.Equal(t, 100, pgr.Items)
@@ -35,7 +37,7 @@ func TestPager_SetItems(t *testing.T) {
 }
 
 func TestPager_IsBeginning(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	ctx, _ := tests.NewContext(echo.New(), "/")
 	pgr := NewPager(ctx, 20)
 	pgr.Pages = 10
 	assert.True(t, pgr.IsBeginning())
@@ -46,7 +48,7 @@ func TestPager_IsBeginning(t *testing.T) {
 }
 
 func TestPager_IsEnd(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	ctx, _ := tests.NewContext(echo.New(), "/")
 	pgr := NewPager(ctx, 20)
 	pgr.Pages = 10
 	assert.False(t, pgr.IsEnd())
@@ -57,7 +59,7 @@ func TestPager_IsEnd(t *testing.T) {
 }
 
 func TestPager_GetOffset(t *testing.T) {
-	ctx, _ := tests.NewContext(c.Web, "/")
+	ctx, _ := tests.NewContext(echo.New(), "/")
 	pgr := NewPager(ctx, 20)
 	assert.Equal(t, 0, pgr.GetOffset())
 	pgr.Page = 2

@@ -6,13 +6,19 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"net/http"
 	"sync"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/config"
-	"github.com/mikestefanello/pagoda/pkg/funcmap"
+	"github.com/mikestefanello/pagoda/pkg/context"
+	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/templates"
 )
+
+// cachedPageGroup stores the cache group for cached pages
+const cachedPageGroup = "page"
 
 type (
 	// TemplateRenderer provides a flexible and easy to use method of rendering simple templates or complex sets of
@@ -26,6 +32,9 @@ type (
 
 		// config stores application configuration
 		config *config.Config
+
+		// cache stores the cache client
+		cache *CacheClient
 	}
 
 	// TemplateParsed is a wrapper around parsed templates which are stored in the TemplateRenderer cache
@@ -51,14 +60,30 @@ type (
 		build    *templateBuild
 		renderer *TemplateRenderer
 	}
+
+	// CachedPage is what is used to store a rendered Page in the cache
+	CachedPage struct {
+		// URL stores the URL of the requested page
+		URL string
+
+		// HTML stores the complete HTML of the rendered Page
+		HTML []byte
+
+		// StatusCode stores the HTTP status code
+		StatusCode int
+
+		// Headers stores the HTTP headers
+		Headers map[string]string
+	}
 )
 
 // NewTemplateRenderer creates a new TemplateRenderer
-func NewTemplateRenderer(cfg *config.Config, web *echo.Echo) *TemplateRenderer {
+func NewTemplateRenderer(cfg *config.Config, cache *CacheClient, fm template.FuncMap) *TemplateRenderer {
 	return &TemplateRenderer{
 		templateCache: sync.Map{},
-		funcMap:       funcmap.NewFuncMap(web),
+		funcMap:       fm,
 		config:        cfg,
+		cache:         cache,
 	}
 }
 
@@ -68,6 +93,138 @@ func (t *TemplateRenderer) Parse() *templateBuilder {
 		renderer: t,
 		build:    &templateBuild{},
 	}
+}
+
+// RenderPage renders a Page as an HTTP response
+func (t *TemplateRenderer) RenderPage(ctx echo.Context, page page.Page) error {
+	var buf *bytes.Buffer
+	var err error
+	templateGroup := "page"
+
+	// Page name is required
+	if page.Name == "" {
+		return echo.NewHTTPError(http.StatusInternalServerError, "page render failed due to missing name")
+	}
+
+	// Use the app name in configuration if a value was not set
+	if page.AppName == "" {
+		page.AppName = t.config.App.Name
+	}
+
+	// Check if this is an HTMX non-boosted request which indicates that only partial
+	// content should be rendered
+	if page.HTMX.Request.Enabled && !page.HTMX.Request.Boosted {
+		// Switch the layout which will only render the page content
+		page.Layout = templates.LayoutHTMX
+
+		// Alter the template group so this is cached separately
+		templateGroup = "page:htmx"
+	}
+
+	// Parse and execute the templates for the Page
+	// As mentioned in the documentation for the Page struct, the templates used for the page will be:
+	// 1. The layout/base template specified in Page.Layout
+	// 2. The content template specified in Page.Name
+	// 3. All templates within the components directory
+	// Also included is the function map provided by the funcmap package
+	buf, err = t.
+		Parse().
+		Group(templateGroup).
+		Key(string(page.Name)).
+		Base(string(page.Layout)).
+		Files(
+			fmt.Sprintf("layouts/%s", page.Layout),
+			fmt.Sprintf("pages/%s", page.Name),
+		).
+		Directories("components").
+		Execute(page)
+
+	if err != nil {
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			fmt.Sprintf("failed to parse and execute templates: %s", err),
+		)
+	}
+
+	// Set the status code
+	ctx.Response().Status = page.StatusCode
+
+	// Set any headers
+	for k, v := range page.Headers {
+		ctx.Response().Header().Set(k, v)
+	}
+
+	// Apply the HTMX response, if one
+	if page.HTMX.Response != nil {
+		page.HTMX.Response.Apply(ctx)
+	}
+
+	// Cache this page, if caching was enabled
+	t.cachePage(ctx, page, buf)
+
+	return ctx.HTMLBlob(ctx.Response().Status, buf.Bytes())
+}
+
+// cachePage caches the HTML for a given Page if the Page has caching enabled
+func (t *TemplateRenderer) cachePage(ctx echo.Context, page page.Page, html *bytes.Buffer) {
+	if !page.Cache.Enabled || page.IsAuth {
+		return
+	}
+
+	// If no expiration time was provided, default to the configuration value
+	if page.Cache.Expiration == 0 {
+		page.Cache.Expiration = t.config.Cache.Expiration.Page
+	}
+
+	// Extract the headers
+	headers := make(map[string]string)
+	for k, v := range ctx.Response().Header() {
+		headers[k] = v[0]
+	}
+
+	// The request URL is used as the cache key so the middleware can serve the
+	// cached page on matching requests
+	key := ctx.Request().URL.String()
+	cp := CachedPage{
+		URL:        key,
+		HTML:       html.Bytes(),
+		Headers:    headers,
+		StatusCode: ctx.Response().Status,
+	}
+
+	err := t.cache.
+		Set().
+		Group(cachedPageGroup).
+		Key(key).
+		Tags(page.Cache.Tags...).
+		Expiration(page.Cache.Expiration).
+		Data(cp).
+		Save(ctx.Request().Context())
+
+	switch {
+	case err == nil:
+		log.Ctx(ctx).Debug("cached page")
+	case !context.IsCanceledError(err):
+		log.Ctx(ctx).Error("failed to cache page",
+			"error", err,
+		)
+	}
+}
+
+// GetCachedPage attempts to fetch a cached page for a given URL
+func (t *TemplateRenderer) GetCachedPage(ctx echo.Context, url string) (*CachedPage, error) {
+	p, err := t.cache.
+		Get().
+		Group(cachedPageGroup).
+		Key(url).
+		Type(new(CachedPage)).
+		Fetch(ctx.Request().Context())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return p.(*CachedPage), nil
 }
 
 // getCacheKey gets a cache key for a given group and ID

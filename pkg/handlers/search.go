@@ -5,7 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/controller"
+	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -14,7 +14,7 @@ const routeNameSearch = "search"
 
 type (
 	Search struct {
-		controller.Controller
+		*services.TemplateRenderer
 	}
 
 	searchResult struct {
@@ -27,19 +27,19 @@ func init() {
 	Register(new(Search))
 }
 
-func (c *Search) Init(ct *services.Container) error {
-	c.Controller = controller.NewController(ct)
+func (h *Search) Init(c *services.Container) error {
+	h.TemplateRenderer = c.TemplateRenderer
 	return nil
 }
 
-func (c *Search) Routes(g *echo.Group) {
-	g.GET("/search", c.Page).Name = routeNameSearch
+func (h *Search) Routes(g *echo.Group) {
+	g.GET("/search", h.Page).Name = routeNameSearch
 }
 
-func (c *Search) Page(ctx echo.Context) error {
-	page := controller.NewPage(ctx)
-	page.Layout = templates.LayoutMain
-	page.Name = templates.PageSearch
+func (h *Search) Page(ctx echo.Context) error {
+	p := page.New(ctx)
+	p.Layout = templates.LayoutMain
+	p.Name = templates.PageSearch
 
 	// Fake search results
 	var results []searchResult
@@ -54,7 +54,7 @@ func (c *Search) Page(ctx echo.Context) error {
 			})
 		}
 	}
-	page.Data = results
+	p.Data = results
 
-	return c.RenderPage(ctx, page)
+	return h.RenderPage(ctx, p)
 }

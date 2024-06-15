@@ -5,13 +5,14 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
-	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
 
 type Error struct {
-	controller.Controller
+	*services.TemplateRenderer
 }
 
 func (e *Error) Page(err error, ctx echo.Context) {
@@ -26,19 +27,23 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	}
 
 	// Log the error
-	if code >= 500 {
-		log.Ctx(ctx).Error(err.Error())
+	logger := log.Ctx(ctx)
+	switch {
+	case code >= 500:
+		logger.Error(err.Error())
+	case code >= 400:
+		logger.Warn(err.Error())
 	}
 
 	// Render the error page
-	page := controller.NewPage(ctx)
-	page.Layout = templates.LayoutMain
-	page.Name = templates.PageError
-	page.Title = http.StatusText(code)
-	page.StatusCode = code
-	page.HTMX.Request.Enabled = false
+	p := page.New(ctx)
+	p.Layout = templates.LayoutMain
+	p.Name = templates.PageError
+	p.Title = http.StatusText(code)
+	p.StatusCode = code
+	p.HTMX.Request.Enabled = false
 
-	if err = e.RenderPage(ctx, page); err != nil {
+	if err = e.RenderPage(ctx, p); err != nil {
 		log.Ctx(ctx).Error("failed to render error page",
 			"error", err,
 		)

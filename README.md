@@ -45,15 +45,13 @@
   * [Email verification](#email-verification)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
-  * [Controller](#controller)
   * [Handlers](#handlers)
   * [Errors](#errors)
   * [Testing](#testing)
     * [HTTP server](#http-server)
     * [Request / Request helpers](#request--response-helpers)
     * [Goquery](#goquery)
-* [Controller](#controller)
-  * [Page](#page)
+* [Pages](#pages)
   * [Flash messaging](#flash-messaging)
   * [Pager](#pager)
   * [CSRF](#csrf)
@@ -200,8 +198,7 @@ A new container can be created and initialized via `services.NewContainer()`. It
 
 ### Dependency injection
 
-The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is passed to and stored within the `Controller`
- so that the controller and the route using it have full, easy access to all services.
+The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route handlers so that the handlers have full, easy access to all services.
 
 ### Test dependencies
 
@@ -392,12 +389,6 @@ By default, a middleware stack is included in the router that makes sense for mo
 
 A `middleware` package is included which you can easily add to along with the custom middleware provided.
 
-### Controller
-
-The `Controller`, which is described in a section below, provides base functionality which can be embedded in each handler, most importantly `Page` rendering.
-
-While using the `Controller` is not required for your routes, it will certainly make development easier.
-
 ### Handlers
 
 A `Handler` is a simple type that handles one or more of your routes and allows you to group related routes together (ie, authentication). All provided handlers are located in `pkg/handlers`. _Handlers_ also handle self-registering their routes with the router.
@@ -413,7 +404,7 @@ For this example, we'll create a new handler which includes a GET and POST route
 ```go
 type Example struct {
     orm *ent.Client
-    controller.Controller
+    *services.TemplateRenderer
 }
 ```
 
@@ -429,7 +420,7 @@ func init() {
 
 ```go
 func (e *Example) Init(c *services.Container) error {
-    e.Controller = controller.NewController(c)
+    e.TemplateRenderer = c.TemplateRenderer
     e.orm = c.ORM
     return nil
 }
@@ -506,13 +497,9 @@ assert.Len(t, h1.Nodes, 1)
 assert.Equal(t, "About", h1.Text())
 ```
 
-## Controller
+## Pages
 
-As previously mentioned, the `Controller` acts as a base for your routes, though it is optional. It stores the `Container` which houses all _Services_ (_dependencies_) but also a wide array of functionality aimed at allowing you to build complex responses with ease and consistency.
-
-### Page
-
-The `Page` is the major building block of your `Controller` responses. It is a _struct_ type located at `pkg/controller/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates.
+The `Page` is the major building block of your `Handler` responses. It is a _struct_ type located at `pkg/page/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates. Pages are rendered with the `TemplateRenderer`.
 
 All example routes provided construct and _render_ a `Page`. It's recommended that you review both the `Page` and the example routes as they try to illustrate all included functionality.
 
@@ -522,7 +509,7 @@ Initializing a new page is simple:
 
 ```go
 func (c *home) Get(ctx echo.Context) error {
-    page := controller.NewPage(ctx)
+    p := page.New(ctx)
 }
 ```
 
@@ -542,7 +529,7 @@ Using the `echo.Context`, the `Page` will be initialized with the following fiel
 
 ### Flash messaging
 
-While flash messaging functionality is provided outside of the `Controller` and `Page`, within the `msg` package, it's really only used within this context.
+Flash messaging functionality is provided within the `msg` package. It is used to provide one-time status messages to users.
 
 Flash messaging requires that [sessions](#sessions) and the session middleware are in place since that is where the messages are stored.
 
@@ -566,7 +553,7 @@ To make things easier, a template _component_ is already provided, located at `t
 
 ### Pager
 
-A very basic mechanism is provided to handle and facilitate paging located in `pkg/controller/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
+A very basic mechanism is provided to handle and facilitate paging located in `pkg/page/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
 
 During initialization, the _items per page_ amount will be set to the default, controlled via constant, which has a value of 20. It can be overridden by changing `Pager.ItemsPerPage` but should be done before other values are set in order to not provide incorrect calculations.
 
@@ -611,7 +598,7 @@ The [template renderer](#template-renderer) also provides caching and local hot-
 
 ### Cached responses
 
-A `Page` can have cached enabled just by setting `Page.Cache.Enabled` to `true`. The `Controller` will automatically handle caching the HTML output, headers and status code. Cached pages are stored using a key that matches the full request URL and [middleware](#cache-middleware) is used to serve it on matching requests.
+A `Page` can have cached enabled just by setting `Page.Cache.Enabled` to `true`. The `TemplateRenderer` will automatically handle caching the HTML output, headers and status code. Cached pages are stored using a key that matches the full request URL and [middleware](#cache-middleware) is used to serve it on matching requests.
 
 By default, the cache expiration time will be set according to the configuration value located at `Config.Cache.Expiration.Page` but it can be set per-page at `Page.Cache.Expiration`.
 
@@ -654,8 +641,8 @@ Embedding `form.Submission` satisfies the `form.Form` interface and makes dealin
 Then in your page:
 
 ```go
-page := controller.NewPage(ctx)
-page.Form = form.Get[ContactForm](ctx)
+p := page.New(ctx)
+p.Form = form.Get[ContactForm](ctx)
 ```
 
 This will either initialize a new form to be rendered, or load one previously stored in the context (ie, if it was already submitted). How the _form_ gets populated with values so that your template can render them is covered in the next section.
@@ -722,8 +709,8 @@ Second, render the error messages, if there are any for a given field:
 HTTP headers can be set either via the `Page` or the _context_:
 
 ```go
-page := controller.NewPage(ctx)
-page.Headers["HeaderName"] = "header-value"
+p := page.New(ctx)
+p.Headers["HeaderName"] = "header-value"
 ```
 
 ```go
@@ -735,8 +722,8 @@ ctx.Response().Header().Set("HeaderName", "header-value")
 The HTTP response status code can be set either via the `Page` or the _context_:
 
 ```go
-page := controller.NewPage(ctx)
-page.StatusCode = http.StatusTooManyRequests
+p := page.New(ctx)
+p.StatusCode = http.StatusTooManyRequests
 ```
 
 ```go
@@ -748,21 +735,20 @@ ctx.Response().Status = http.StatusTooManyRequests
 The `Page` provides the ability to set basic HTML metatags which can be especially useful if your web application is publicly accessible. Only fields for the _description_ and _keywords_ are provided but adding additional fields is very easy.
 
 ```go
-page := controller.NewPage(ctx)
-page.Metatags.Description = "The page description."
-page.Metatags.Keywords = []string{"Go", "Software"}
+p := page.New(ctx)
+p.Metatags.Description = "The page description."
+p.Metatags.Keywords = []string{"Go", "Software"}
 ```
 
 A _component_ template is included to render metatags in `core.gohtml` which can be used by adding `{{template "metatags" .}}` to your _layout_.
 
 ### URL and link generation
 
-Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via the `Page` field `ToURL`.
+Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via _funcmap_ function `url`.
 
 As an example, if you have route such as:
 ```go
-profile := Profile{Controller: ctr}
-e.GET("/user/profile/:user", profile.Get).Name = "user_profile"
+e.GET("/user/profile/:user", handler.Get).Name = "user_profile"
 ```
 
 And you want to generate a URL in the template, you can:
@@ -832,14 +818,14 @@ If [CSRF](#csrf) protection is enabled, the token value will automatically be pa
 
 ### Rendering the page
 
-Once your `Page` is fully built, rendering it via the embedded `Controller` in your _route_ can be done simply by calling `RenderPage()`:
+Once your `Page` is fully built, rendering it via the embedded `TemplateRenderer` in your _handler_ can be done simply by calling `RenderPage()`:
 
 ```go
 func (c *home) Get(ctx echo.Context) error {
-    page := controller.NewPage(ctx)
-    page.Layout = templates.LayoutMain
-    page.Name = templates.PageHome
-    return c.RenderPage(ctx, page)
+    p := page.New(ctx)
+    p.Layout = templates.LayoutMain
+    p.Name = templates.PageHome
+    return c.RenderPage(ctx, p)
 }
 ```
 
@@ -868,10 +854,10 @@ This will do the following:
 - Include the [funcmap](#funcmap)
 - Execute the parsed template with `data` being passed in to the templates
 
-Using the example from the [page rendering](#rendering-the-page), this is what the `Controller` will execute:
+Using the example from the [page rendering](#rendering-the-page), this is will execute:
 
 ```go
-buf, err = c.Container.TemplateRenderer.
+buf, err = c.TemplateRenderer.
     Parse().
     Group("page").
     Key(page.Name).
@@ -1100,7 +1086,7 @@ A service needs to run in order to add periodic tasks to the queue at the specif
 ```go
 go func() {
     if err := c.Tasks.StartScheduler(); err != nil {
-        c.Web.Logger.Fatalf("scheduler shutdown: %v", err)
+        log.Fatalf("scheduler shutdown: %v", err)
     }
 }()
 ```
