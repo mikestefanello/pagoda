@@ -34,28 +34,28 @@ func init() {
 	Register(new(Contact))
 }
 
-func (c *Contact) Init(ct *services.Container) error {
-	c.TemplateRenderer = ct.TemplateRenderer
-	c.mail = ct.Mail
+func (h *Contact) Init(c *services.Container) error {
+	h.TemplateRenderer = c.TemplateRenderer
+	h.mail = c.Mail
 	return nil
 }
 
-func (c *Contact) Routes(g *echo.Group) {
-	g.GET("/contact", c.Page).Name = routeNameContact
-	g.POST("/contact", c.Submit).Name = routeNameContactSubmit
+func (h *Contact) Routes(g *echo.Group) {
+	g.GET("/contact", h.Page).Name = routeNameContact
+	g.POST("/contact", h.Submit).Name = routeNameContactSubmit
 }
 
-func (c *Contact) Page(ctx echo.Context) error {
+func (h *Contact) Page(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageContact
 	p.Title = "Contact us"
 	p.Form = form.Get[contactForm](ctx)
 
-	return c.RenderPage(ctx, p)
+	return h.RenderPage(ctx, p)
 }
 
-func (c *Contact) Submit(ctx echo.Context) error {
+func (h *Contact) Submit(ctx echo.Context) error {
 	var input contactForm
 
 	err := form.Submit(ctx, &input)
@@ -63,12 +63,12 @@ func (c *Contact) Submit(ctx echo.Context) error {
 	switch err.(type) {
 	case nil:
 	case validator.ValidationErrors:
-		return c.Page(ctx)
+		return h.Page(ctx)
 	default:
 		return err
 	}
 
-	err = c.mail.
+	err = h.mail.
 		Compose().
 		To(input.Email).
 		Subject("Contact form submitted").
@@ -79,5 +79,5 @@ func (c *Contact) Submit(ctx echo.Context) error {
 		return fail(err, "unable to send email")
 	}
 
-	return c.Page(ctx)
+	return h.Page(ctx)
 }
