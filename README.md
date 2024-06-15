@@ -1100,7 +1100,7 @@ A service needs to run in order to add periodic tasks to the queue at the specif
 ```go
 go func() {
     if err := c.Tasks.StartScheduler(); err != nil {
-        c.Web.Logger.Fatalf("scheduler shutdown: %v", err)
+        log.Fatalf("scheduler shutdown: %v", err)
     }
 }()
 ```

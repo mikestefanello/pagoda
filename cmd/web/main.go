@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,13 +19,13 @@ func main() {
 	c := services.NewContainer()
 	defer func() {
 		if err := c.Shutdown(); err != nil {
-			c.Web.Logger.Fatal(err)
+			log.Fatal(err)
 		}
 	}()
 
 	// Build the router
 	if err := handlers.BuildRouter(c); err != nil {
-		c.Web.Logger.Fatalf("failed to build the router: %v", err)
+		log.Fatalf("failed to build the router: %v", err)
 	}
 
 	// Start the server
@@ -40,7 +41,7 @@ func main() {
 		if c.Config.HTTP.TLS.Enabled {
 			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key)
 			if err != nil {
-				c.Web.Logger.Fatalf("cannot load TLS certificate: %v", err)
+				log.Fatalf("cannot load TLS certificate: %v", err)
 			}
 
 			srv.TLSConfig = &tls.Config{
@@ -49,14 +50,14 @@ func main() {
 		}
 
 		if err := c.Web.StartServer(&srv); err != http.ErrServerClosed {
-			c.Web.Logger.Fatalf("shutting down the server: %v", err)
+			log.Fatalf("shutting down the server: %v", err)
 		}
 	}()
 
 	// Start the scheduler service to queue periodic tasks
 	go func() {
 		if err := c.Tasks.StartScheduler(); err != nil {
-			c.Web.Logger.Fatalf("scheduler shutdown: %v", err)
+			log.Fatalf("scheduler shutdown: %v", err)
 		}
 	}()
 
@@ -68,6 +69,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := c.Web.Shutdown(ctx); err != nil {
-		c.Web.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 }

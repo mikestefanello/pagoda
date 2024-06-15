@@ -40,8 +40,8 @@ func ServeCachedPage(ch *services.CacheClient) echo.MiddlewareFunc {
 
 			if err != nil {
 				switch {
-				case errors.Is(err, &libstore.NotFound{}),
-					context.IsCanceledError(err):
+				case errors.Is(err, &libstore.NotFound{}):
+				case context.IsCanceledError(err):
 					return nil
 				default:
 					log.Ctx(c).Error("failed getting cached page",
