@@ -33,6 +33,7 @@ type (
 		// config stores application configuration
 		config *config.Config
 
+		// cache stores the cache client
 		cache *CacheClient
 	}
 

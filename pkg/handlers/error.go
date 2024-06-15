@@ -27,8 +27,12 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	}
 
 	// Log the error
-	if code >= 500 {
-		log.Ctx(ctx).Error(err.Error())
+	logger := log.Ctx(ctx)
+	switch {
+	case code >= 500:
+		logger.Error(err.Error())
+	case code >= 400:
+		logger.Warn(err.Error())
 	}
 
 	// Render the error page
