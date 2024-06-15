@@ -11,6 +11,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/controller"
 	"github.com/mikestefanello/pagoda/pkg/form"
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/services"
@@ -145,7 +146,9 @@ func (c *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return c.Fail(err, "error generating password reset token")
 	}
 
-	ctx.Logger().Infof("generated password reset token for user %d", u.ID)
+	log.Ctx(ctx).Info("generated password reset token",
+		"user_id", u.ID,
+	)
 
 	// Email the user
 	url := ctx.Echo().Reverse(routeNameResetPassword, u.ID, pt.ID, token)
@@ -271,7 +274,10 @@ func (c *Auth) RegisterSubmit(ctx echo.Context) error {
 
 	switch err.(type) {
 	case nil:
-		ctx.Logger().Infof("user created: %s", u.Name)
+		log.Ctx(ctx).Info("user created",
+			"user_name", u.Name,
+			"user_id", u.ID,
+		)
 	case *ent.ConstraintError:
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
 		return c.Redirect(ctx, routeNameLogin)
@@ -282,7 +288,10 @@ func (c *Auth) RegisterSubmit(ctx echo.Context) error {
 	// Log the user in
 	err = c.auth.Login(ctx, u.ID)
 	if err != nil {
-		ctx.Logger().Errorf("unable to log in: %v", err)
+		log.Ctx(ctx).Error("unable to log user in",
+			"error", err,
+			"user_id", u.ID,
+		)
 		msg.Info(ctx, "Your account has been created.")
 		return c.Redirect(ctx, routeNameLogin)
 	}
@@ -299,7 +308,10 @@ func (c *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	// Generate a token
 	token, err := c.auth.GenerateEmailVerificationToken(usr.Email)
 	if err != nil {
-		ctx.Logger().Errorf("unable to generate email verification token: %v", err)
+		log.Ctx(ctx).Error("unable to generate email verification token",
+			"user_id", usr.ID,
+			"error", err,
+		)
 		return
 	}
 
@@ -313,7 +325,10 @@ func (c *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Send(ctx)
 
 	if err != nil {
-		ctx.Logger().Errorf("unable to send email verification link: %v", err)
+		log.Ctx(ctx).Error("unable to send email verification link",
+			"user_id", usr.ID,
+			"error", err,
+		)
 		return
 	}
 

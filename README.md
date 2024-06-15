@@ -1209,23 +1209,49 @@ To use _Let's Encrypt_ follow [this guide](https://echo.labstack.com/cookbook/au
 
 ## Logging
 
-Logging is provided by [Echo](https://echo.labstack.com/guide/customization/#logging) and is accessible within the _Echo_ instance, which is located in the `Web` field of the `Container`, or within any of the _context_ parameters, for example:
+By default, the [Echo logger](https://echo.labstack.com/guide/customization/#logging) is not used for the following reasons:
 
+1) It does not support structured logging, which makes it difficult to deal with variables, especially if you intend to store a logger in context with pre-populated attributes.
+2) The upcoming v5 release of Echo will not contain a logger.
+3) It should be easy to use whatever logger you prefer (even if that is Echo's logger).
+
+The provided implementation uses the relatively new [log/slog](https://go.dev/blog/slog) library which was added to Go in version 1.21 but swapping that out for whichever you prefer is very easy.
+
+### Context
+
+The simple `pkg/log` package provides the ability to set and get a logger from the Echo context. This is especially useful when you use the provided logger middleware (see below). If you intend to use a different logger, modify these methods to receive and return the logger of your choice. 
+
+### Usage
+
+Adding a logger to the context:
 ```go
-func (c *home) Get(ctx echo.Context) error {
-    ctx.Logger().Info("something happened")
+logger := slog.New(logHandler).With("id", requestId)
+log.Set(ctx, logger)
+```
 
-    if err := someOperation(); err != nil {
-        ctx.Logger().Errorf("the operation failed: %v", err)
-    }
+Access and use the logger:
+```go
+func (h *handler) Page(ctx echo.Context) error {
+    log.Ctx(ctx).Info("send a message to the log",
+      "value_one", valueOne,
+      "value_two", valueTwo,
+    )
 }
 ```
 
-The logger can be swapped out for another, as long as it implements Echo's logging [interface](https://github.com/labstack/echo/blob/master/log.go). There are projects that provide this bridge for popular logging packages such as [zerolog](https://github.com/rs/zerolog).
+### Log level
 
-### Request ID
+When the _Container_ configuration is initialized (`initConfig()`), the `slog` default log level is set based on the environment. `INFO` is used for production and `DEBUG` for everything else.
 
-By default, Echo's [request ID middleware](https://echo.labstack.com/middleware/request-id/) is enabled on the router but it only adds a request ID to the log entry for the HTTP request itself. Log entries that are created during the course of that request do not contain the request ID. `LogRequestID()` is custom middleware included which adds that request ID to all logs created throughout the request.
+### Middleware
+
+The `SetLogger()` middleware has been added to the router which sets an initialized logger on the request context. It's recommended that this remains after Echo's `RequestID()` middleware because it will add the request ID to the logger which means that all logs produced for that given request will contain the same ID, so they can be linked together. If you want to include more attributes on all request logs, set those fields here.
+
+The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware which produces a log of every request made, but uses our logger rather than Echo's.
+
+```
+2024/06/14 19:44:16 INFO  request_id=snoonQoyRSEBcQthnIzIWIeVRxmutyAV ip=::1 host=localhost:8000 method=GET path=/about referer=http://localhost:8000/ status=200 bytes_in=0 bytes_out=6695 latency=18.022502ms
+```
 
 ## Roadmap
 
