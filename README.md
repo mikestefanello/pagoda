@@ -455,6 +455,20 @@ Routes can return errors to indicate that something wrong happened. Ideally, the
 
 The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
 
+### Redirects
+
+The `pkg/redirect` package makes it easy to perform redirects, especially if you provide names for your routes. The `Redirect` type provides the ability to chain redirect options and also supports automatically handling HTMX redirects for boosted requests.
+
+For example, if your route name is `user_profile` with a URL pattern of `/user/profile/:id`, you can perform a redirect by doing:
+
+```go
+return redirect.New(ctx).
+    Route("user_profile").
+    Params(userID).
+    Query(queryParams).
+    Go()
+```
+
 ### Testing
 
 Since most of your web application logic will live in your routes, being able to easily test them is important. The following aims to help facilitate that.

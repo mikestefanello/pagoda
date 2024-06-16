@@ -14,6 +14,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/redirect"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -223,7 +224,10 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 	}
 
 	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
-	return redirect(ctx, routeNameHome)
+
+	return redirect.New(ctx).
+		Route(routeNameHome).
+		Go()
 }
 
 func (h *Auth) Logout(ctx echo.Context) error {
@@ -232,7 +236,9 @@ func (h *Auth) Logout(ctx echo.Context) error {
 	} else {
 		msg.Danger(ctx, "An error occurred. Please try again.")
 	}
-	return redirect(ctx, routeNameHome)
+	return redirect.New(ctx).
+		Route(routeNameHome).
+		Go()
 }
 
 func (h *Auth) RegisterPage(ctx echo.Context) error {
@@ -280,7 +286,9 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		)
 	case *ent.ConstraintError:
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
-		return redirect(ctx, routeNameLogin)
+		return redirect.New(ctx).
+			Route(routeNameLogin).
+			Go()
 	default:
 		return fail(err, "unable to create user")
 	}
@@ -293,7 +301,9 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 			"user_id", u.ID,
 		)
 		msg.Info(ctx, "Your account has been created.")
-		return redirect(ctx, routeNameLogin)
+		return redirect.New(ctx).
+			Route(routeNameLogin).
+			Go()
 	}
 
 	msg.Success(ctx, "Your account has been created. You are now logged in.")
@@ -301,7 +311,9 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	// Send the verification email
 	h.sendVerificationEmail(ctx, u)
 
-	return redirect(ctx, routeNameHome)
+	return redirect.New(ctx).
+		Route(routeNameHome).
+		Go()
 }
 
 func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
@@ -384,7 +396,9 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 	}
 
 	msg.Success(ctx, "Your password has been updated.")
-	return redirect(ctx, routeNameLogin)
+	return redirect.New(ctx).
+		Route(routeNameLogin).
+		Go()
 }
 
 func (h *Auth) VerifyEmail(ctx echo.Context) error {
@@ -395,7 +409,9 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 	email, err := h.auth.ValidateEmailVerificationToken(token)
 	if err != nil {
 		msg.Warning(ctx, "The link is either invalid or has expired.")
-		return redirect(ctx, routeNameHome)
+		return redirect.New(ctx).
+			Route(routeNameHome).
+			Go()
 	}
 
 	// Check if it matches the authenticated user
@@ -432,5 +448,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 	}
 
 	msg.Success(ctx, "Your email has been successfully verified.")
-	return redirect(ctx, routeNameHome)
+	return redirect.New(ctx).
+		Route(routeNameHome).
+		Go()
 }
