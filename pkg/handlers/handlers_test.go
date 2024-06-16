@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -27,7 +28,7 @@ func TestRedirect(t *testing.T) {
 		return nil
 	}).Name = "redirect-test"
 
-	t.Run("normal", func(t *testing.T) {
+	t.Run("no query", func(t *testing.T) {
 		ctx, _ := tests.NewContext(c.Web, "/abc")
 		err := redirect(ctx, "redirect-test", "one", "two")
 		require.NoError(t, err)
@@ -35,12 +36,35 @@ func TestRedirect(t *testing.T) {
 		assert.Equal(t, http.StatusFound, ctx.Response().Status)
 	})
 
-	t.Run("htmx boosted", func(t *testing.T) {
+	t.Run("no query htmx", func(t *testing.T) {
 		ctx, _ := tests.NewContext(c.Web, "/abc")
 		ctx.Request().Header.Set(htmx.HeaderBoosted, "true")
 		err := redirect(ctx, "redirect-test", "one", "two")
 		require.NoError(t, err)
 		assert.Equal(t, "/path/one/and/two", ctx.Response().Header().Get(htmx.HeaderRedirect))
+	})
+
+	t.Run("query", func(t *testing.T) {
+		ctx, _ := tests.NewContext(c.Web, "/abc")
+		q := url.Values{}
+		q.Add("a", "1")
+		q.Add("b", "2")
+		err := redirectWithQuery(ctx, q, "redirect-test", "one", "two")
+		require.NoError(t, err)
+		assert.Equal(t, "/path/one/and/two?a=1&b=2", ctx.Response().Header().Get(echo.HeaderLocation))
+		assert.Equal(t, http.StatusFound, ctx.Response().Status)
+	})
+
+	t.Run("query htmx", func(t *testing.T) {
+		ctx, _ := tests.NewContext(c.Web, "/abc")
+		ctx.Request().Header.Set(htmx.HeaderBoosted, "true")
+		q := url.Values{}
+		q.Add("a", "1")
+		q.Add("b", "2")
+		err := redirectWithQuery(ctx, q, "redirect-test", "one", "two")
+		require.NoError(t, err)
+		assert.Equal(t, "/path/one/and/two?a=1&b=2", ctx.Response().Header().Get(htmx.HeaderRedirect))
+		assert.Equal(t, http.StatusFound, ctx.Response().Status)
 	})
 }
 
