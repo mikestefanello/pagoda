@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/tasks"
 	"github.com/mikestefanello/pagoda/templates"
 )
 
@@ -18,7 +20,8 @@ const (
 
 type (
 	Contact struct {
-		mail *services.MailClient
+		mail  *services.MailClient
+		tasks *services.TaskClient
 		*services.TemplateRenderer
 	}
 
@@ -37,6 +40,7 @@ func init() {
 func (h *Contact) Init(c *services.Container) error {
 	h.TemplateRenderer = c.TemplateRenderer
 	h.mail = c.Mail
+	h.tasks = c.Tasks
 	return nil
 }
 
@@ -65,6 +69,16 @@ func (h *Contact) Submit(ctx echo.Context) error {
 	case validator.ValidationErrors:
 		return h.Page(ctx)
 	default:
+		return err
+	}
+
+	err = h.tasks.New(tasks.TypeExample).
+		Payload(tasks.ExampleTask{
+			Message: input.Message,
+		}).
+		Wait(30 * time.Second).
+		Save()
+	if err != nil {
 		return err
 	}
 

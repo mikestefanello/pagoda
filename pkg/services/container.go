@@ -5,14 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"os"
+	"strings"
 
-	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/schema"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/pagoda/pkg/funcmap"
 
-	// Required by ent
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
@@ -76,15 +75,13 @@ func (c *Container) Shutdown() error {
 	if err := c.Tasks.Close(); err != nil {
 		return err
 	}
-	if err := c.Cache.Close(); err != nil {
-		return err
-	}
 	if err := c.ORM.Close(); err != nil {
 		return err
 	}
 	if err := c.Database.Close(); err != nil {
 		return err
 	}
+	c.Cache.Close()
 
 	return nil
 }
@@ -127,52 +124,50 @@ func (c *Container) initCache() {
 }
 
 // initDatabase initializes the database
-// If the environment is set to test, the test database will be used and will be dropped, recreated and migrated
 func (c *Container) initDatabase() {
 	var err error
+	var connection string
 
-	getAddr := func(dbName string) string {
-		return fmt.Sprintf("postgresql://%s:%s@%s:%d/%s",
-			c.Config.Database.User,
-			c.Config.Database.Password,
-			c.Config.Database.Hostname,
-			c.Config.Database.Port,
-			dbName,
-		)
+	switch c.Config.App.Environment {
+	case config.EnvTest:
+		// TODO: Drop/recreate the DB, if this isn't in memory?
+		connection = c.Config.Database.TestConnection
+	default:
+		connection = c.Config.Database.Connection
 	}
 
-	c.Database, err = sql.Open("pgx", getAddr(c.Config.Database.Database))
+	c.Database, err = openDB(c.Config.Database.Driver, connection)
 	if err != nil {
-		panic(fmt.Sprintf("failed to connect to database: %v", err))
+		panic(err)
+	}
+}
+
+func openDB(driver, connection string) (*sql.DB, error) {
+	// Helper to automatically create the directories that the specific sqlite file
+	// should reside in
+	if driver == "sqlite3" {
+		d := strings.Split(connection, "/")
+
+		if len(d) > 1 {
+			path := strings.Join(d[:len(d)-1], "/")
+
+			if err := os.MkdirAll(path, 0755); err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	// Check if this is a test environment
-	if c.Config.App.Environment == config.EnvTest {
-		// Drop the test database, ignoring errors in case it doesn't yet exist
-		_, _ = c.Database.Exec("DROP DATABASE " + c.Config.Database.TestDatabase)
-
-		// Create the test database
-		if _, err = c.Database.Exec("CREATE DATABASE " + c.Config.Database.TestDatabase); err != nil {
-			panic(fmt.Sprintf("failed to create test database: %v", err))
-		}
-
-		// Connect to the test database
-		if err = c.Database.Close(); err != nil {
-			panic(fmt.Sprintf("failed to close database connection: %v", err))
-		}
-		c.Database, err = sql.Open("pgx", getAddr(c.Config.Database.TestDatabase))
-		if err != nil {
-			panic(fmt.Sprintf("failed to connect to database: %v", err))
-		}
-	}
+	return sql.Open(driver, connection)
 }
 
 // initORM initializes the ORM
 func (c *Container) initORM() {
-	drv := entsql.OpenDB(dialect.Postgres, c.Database)
+	drv := entsql.OpenDB(c.Config.Database.Driver, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
-	if err := c.ORM.Schema.Create(context.Background(), schema.WithAtlas(true)); err != nil {
-		panic(fmt.Sprintf("failed to create database schema: %v", err))
+
+	// Run the auto migration tool.
+	if err := c.ORM.Schema.Create(context.Background()); err != nil {
+		panic(err)
 	}
 }
 
@@ -197,5 +192,9 @@ func (c *Container) initMail() {
 
 // initTasks initializes the task client
 func (c *Container) initTasks() {
-	c.Tasks = NewTaskClient(c.Config)
+	var err error
+	c.Tasks, err = NewTaskClient(c.Config)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create task client: %v", err))
+	}
 }

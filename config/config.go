@@ -102,12 +102,9 @@ type (
 
 	// DatabaseConfig stores the database configuration
 	DatabaseConfig struct {
-		Hostname     string
-		Port         uint16
-		User         string
-		Password     string
-		Database     string
-		TestDatabase string
+		Driver         string
+		Connection     string
+		TestConnection string
 	}
 
 	// MailConfig stores the mail configuration

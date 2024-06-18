@@ -2,11 +2,9 @@ package services
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
-	libstore "github.com/eko/gocache/lib/v4/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +30,6 @@ func TestCacheClient(t *testing.T) {
 		Get().
 		Group(group).
 		Key(key).
-		Type(new(cacheTest)).
 		Fetch(context.Background())
 	require.NoError(t, err)
 	cast, ok := fromCache.(*cacheTest)
@@ -43,17 +40,15 @@ func TestCacheClient(t *testing.T) {
 	_, err = c.Cache.
 		Get().
 		Key(key).
-		Type(new(cacheTest)).
 		Fetch(context.Background())
 	assert.Error(t, err)
 
 	// Flush the data
-	err = c.Cache.
+	c.Cache.
 		Flush().
 		Group(group).
 		Key(key).
 		Execute(context.Background())
-	require.NoError(t, err)
 
 	// The data should be gone
 	assertFlushed := func() {
@@ -62,9 +57,8 @@ func TestCacheClient(t *testing.T) {
 			Get().
 			Group(group).
 			Key(key).
-			Type(new(cacheTest)).
 			Fetch(context.Background())
-		assert.True(t, errors.Is(err, &libstore.NotFound{}))
+		assert.Equal(t, ErrCacheMiss, err)
 	}
 	assertFlushed()
 
@@ -79,11 +73,10 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// Flush the tag
-	err = c.Cache.
+	c.Cache.
 		Flush().
 		Tags("tag1").
 		Execute(context.Background())
-	require.NoError(t, err)
 
 	// The data should be gone
 	assertFlushed()

@@ -185,7 +185,7 @@ func (t *TemplateRenderer) cachePage(ctx echo.Context, page page.Page, html *byt
 	// The request URL is used as the cache key so the middleware can serve the
 	// cached page on matching requests
 	key := ctx.Request().URL.String()
-	cp := CachedPage{
+	cp := &CachedPage{
 		URL:        key,
 		HTML:       html.Bytes(),
 		Headers:    headers,
@@ -217,7 +217,6 @@ func (t *TemplateRenderer) GetCachedPage(ctx echo.Context, url string) (*CachedP
 		Get().
 		Group(cachedPageGroup).
 		Key(url).
-		Type(new(CachedPage)).
 		Fetch(ctx.Request().Context())
 
 	if err != nil {

@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,6 +14,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/handlers"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/tasks"
 )
 
 func main() {
@@ -54,12 +57,17 @@ func main() {
 		}
 	}()
 
-	// Start the scheduler service to queue periodic tasks
-	go func() {
-		if err := c.Tasks.StartScheduler(); err != nil {
-			log.Fatalf("scheduler shutdown: %v", err)
+	c.Tasks.Register(tasks.TypeExample, func(ctx context.Context, m []byte) error {
+		var t tasks.ExampleTask
+		if err := json.Unmarshal(m, &t); err != nil {
+			return err
 		}
-	}()
+		slog.Info("Example task received", "message", t.Message)
+		return nil
+	})
+
+	// Start the scheduler service to queue periodic tasks
+	c.Tasks.StartRunner(context.Background()) // use main context
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)

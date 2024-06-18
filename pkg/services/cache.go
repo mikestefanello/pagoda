@@ -6,22 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eko/gocache/lib/v4/cache"
-	"github.com/eko/gocache/lib/v4/marshaler"
-	libstore "github.com/eko/gocache/lib/v4/store"
-	redisstore "github.com/eko/gocache/store/redis/v4"
+	"github.com/maypok86/otter"
 	"github.com/mikestefanello/pagoda/config"
-	"github.com/redis/go-redis/v9"
 )
 
 type (
 	// CacheClient is the client that allows you to interact with the cache
 	CacheClient struct {
-		// Client stores the client to the underlying cache service
-		Client *redis.Client
-
 		// cache stores the cache interface
-		cache *cache.Cache[any]
+		cache *otter.CacheWithVariableTTL[string, any]
 	}
 
 	// cacheSet handles chaining a set operation
@@ -36,10 +29,9 @@ type (
 
 	// cacheGet handles chaining a get operation
 	cacheGet struct {
-		client   *CacheClient
-		key      string
-		group    string
-		dataType any
+		client *CacheClient
+		key    string
+		group  string
 	}
 
 	// cacheFlush handles chaining a flush operation
@@ -53,38 +45,23 @@ type (
 
 // NewCacheClient creates a new cache client
 func NewCacheClient(cfg *config.Config) (*CacheClient, error) {
-	// Determine the database based on the environment
-	db := cfg.Cache.Database
-	if cfg.App.Environment == config.EnvTest {
-		db = cfg.Cache.TestDatabase
+	cache, err := otter.MustBuilder[string, any](10000).
+		WithVariableTTL().
+		DeletionListener(func(key string, value any, cause otter.DeletionCause) {
+			// todo
+		}).
+		Build()
+
+	if err != nil {
+		return nil, err
 	}
 
-	// Connect to the cache
-	c := &CacheClient{}
-	c.Client = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", cfg.Cache.Hostname, cfg.Cache.Port),
-		Password: cfg.Cache.Password,
-		DB:       db,
-	})
-	if _, err := c.Client.Ping(context.Background()).Result(); err != nil {
-		return c, err
-	}
-
-	// Flush the database if this is the test environment
-	if cfg.App.Environment == config.EnvTest {
-		if err := c.Client.FlushDB(context.Background()).Err(); err != nil {
-			return c, err
-		}
-	}
-
-	cacheStore := redisstore.NewRedis(c.Client)
-	c.cache = cache.New[any](cacheStore)
-	return c, nil
+	return &CacheClient{cache: &cache}, nil
 }
 
 // Close closes the connection to the cache
-func (c *CacheClient) Close() error {
-	return c.Client.Close()
+func (c *CacheClient) Close() {
+	c.cache.Close()
 }
 
 // Set creates a cache set operation
@@ -152,14 +129,18 @@ func (c *cacheSet) Save(ctx context.Context) error {
 		return errors.New("no cache key specified")
 	}
 
-	opts := []libstore.Option{
-		libstore.WithExpiration(c.expiration),
-		libstore.WithTags(c.tags),
+	if c.data == nil {
+		return errors.New("no cache data specified")
 	}
 
-	return marshaler.
-		New(c.client.cache).
-		Set(ctx, c.client.cacheKey(c.group, c.key), c.data, opts...)
+	c.client.cache.Set(
+		c.client.cacheKey(c.group, c.key),
+		c.data,
+		c.expiration,
+	)
+
+	// TODO tags
+	return nil
 }
 
 // Key sets the cache key
@@ -174,24 +155,22 @@ func (c *cacheGet) Group(group string) *cacheGet {
 	return c
 }
 
-// Type sets the expected Go type of the data being retrieved from the cache
-func (c *cacheGet) Type(expectedType any) *cacheGet {
-	c.dataType = expectedType
-	return c
-}
-
 // Fetch fetches the data from the cache
 func (c *cacheGet) Fetch(ctx context.Context) (any, error) {
 	if c.key == "" {
 		return nil, errors.New("no cache key specified")
 	}
 
-	return marshaler.New(c.client.cache).Get(
-		ctx,
-		c.client.cacheKey(c.group, c.key),
-		c.dataType,
-	)
+	v, exists := c.client.cache.Get(c.client.cacheKey(c.group, c.key))
+
+	if !exists {
+		return nil, ErrCacheMiss
+	}
+
+	return v, nil
 }
+
+var ErrCacheMiss = errors.New("cache miss")
 
 // Key sets the cache key
 func (c *cacheFlush) Key(key string) *cacheFlush {
@@ -212,16 +191,8 @@ func (c *cacheFlush) Tags(tags ...string) *cacheFlush {
 }
 
 // Execute flushes the data from the cache
-func (c *cacheFlush) Execute(ctx context.Context) error {
-	if len(c.tags) > 0 {
-		if err := c.client.cache.Invalidate(ctx, libstore.WithInvalidateTags(c.tags)); err != nil {
-			return err
-		}
-	}
+func (c *cacheFlush) Execute(ctx context.Context) {
+	// TODO tags
 
-	if c.key != "" {
-		return c.client.cache.Delete(ctx, c.client.cacheKey(c.group, c.key))
-	}
-
-	return nil
+	c.client.cache.Delete(c.client.cacheKey(c.group, c.key))
 }
