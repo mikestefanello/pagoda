@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -51,7 +52,7 @@ func main() {
 			}
 		}
 
-		if err := c.Web.StartServer(&srv); err != http.ErrServerClosed {
+		if err := c.Web.StartServer(&srv); errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("shutting down the server: %v", err)
 		}
 	}()

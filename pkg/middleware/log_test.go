@@ -77,7 +77,7 @@ func TestLogRequest(t *testing.T) {
 	h := new(mockLogHandler)
 
 	exec := func() {
-		ctx, _ := tests.NewContext(c.Web, "http://test.localhost/abc")
+		ctx, _ := tests.NewContext(c.Web, "http://test.localhost/abc?d=1")
 		logger := slog.New(h).With("previous", "param")
 		log.Set(ctx, logger)
 		ctx.Request().Header.Set("Referer", "ref.com")
@@ -101,7 +101,7 @@ func TestLogRequest(t *testing.T) {
 	assert.Equal(t, "5", h.GetAttr("bytes_out"))
 	assert.NotEmpty(t, h.GetAttr("latency"))
 	assert.Equal(t, "INFO", h.level)
-	assert.Equal(t, "GET /abc", h.msg)
+	assert.Equal(t, "GET /abc?d=1", h.msg)
 
 	statusCode = 500
 	exec()
