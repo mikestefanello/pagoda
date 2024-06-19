@@ -106,6 +106,7 @@ type (
 
 	// TasksConfig stores the tasks configuration
 	TasksConfig struct {
+		// TODO remove separate DB?
 		Driver         string
 		Connection     string
 		TestConnection string

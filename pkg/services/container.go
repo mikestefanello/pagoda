@@ -177,7 +177,9 @@ func (c *Container) initMail() {
 // initTasks initializes the task client
 func (c *Container) initTasks() {
 	var err error
-	c.Tasks, err = NewTaskClient(c.Config)
+	// You could use a separate database for tasks, if you'd like. but using one
+	// makes transaction support easier
+	c.Tasks, err = NewTaskClient(c.Config.Tasks, c.Database)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
 	}
