@@ -89,12 +89,8 @@ type (
 
 	// CacheConfig stores the cache configuration
 	CacheConfig struct {
-		Hostname     string
-		Port         uint16
-		Password     string
-		Database     int
-		TestDatabase int
-		Expiration   struct {
+		Capacity   int
+		Expiration struct {
 			StaticFile time.Duration
 			Page       time.Duration
 		}

@@ -117,10 +117,12 @@ func (c *Container) initWeb() {
 
 // initCache initializes the cache
 func (c *Container) initCache() {
-	var err error
-	if c.Cache, err = NewCacheClient(c.Config); err != nil {
+	store, err := newInMemoryCache(c.Config.Cache.Capacity)
+	if err != nil {
 		panic(err)
 	}
+
+	c.Cache = NewCacheClient(store)
 }
 
 // initDatabase initializes the database
@@ -140,24 +142,6 @@ func (c *Container) initDatabase() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func openDB(driver, connection string) (*sql.DB, error) {
-	// Helper to automatically create the directories that the specific sqlite file
-	// should reside in
-	if driver == "sqlite3" {
-		d := strings.Split(connection, "/")
-
-		if len(d) > 1 {
-			path := strings.Join(d[:len(d)-1], "/")
-
-			if err := os.MkdirAll(path, 0755); err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return sql.Open(driver, connection)
 }
 
 // initORM initializes the ORM
@@ -197,4 +181,23 @@ func (c *Container) initTasks() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
 	}
+}
+
+// openDB opens a database connection
+func openDB(driver, connection string) (*sql.DB, error) {
+	// Helper to automatically create the directories that the specified sqlite file
+	// should reside in, if one
+	if driver == "sqlite3" {
+		d := strings.Split(connection, "/")
+
+		if len(d) > 1 {
+			path := strings.Join(d[:len(d)-1], "/")
+
+			if err := os.MkdirAll(path, 0755); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return sql.Open(driver, connection)
 }

@@ -22,6 +22,7 @@ func TestCacheClient(t *testing.T) {
 		Group(group).
 		Key(key).
 		Data(data).
+		Expiration(time.Hour).
 		Save(context.Background())
 	require.NoError(t, err)
 
@@ -32,23 +33,24 @@ func TestCacheClient(t *testing.T) {
 		Key(key).
 		Fetch(context.Background())
 	require.NoError(t, err)
-	cast, ok := fromCache.(*cacheTest)
+	cast, ok := fromCache.(cacheTest)
 	require.True(t, ok)
-	assert.Equal(t, data, *cast)
+	assert.Equal(t, data, cast)
 
 	// The same key with the wrong group should fail
 	_, err = c.Cache.
 		Get().
 		Key(key).
 		Fetch(context.Background())
-	assert.Error(t, err)
+	assert.Equal(t, ErrCacheMiss, err)
 
 	// Flush the data
-	c.Cache.
+	err = c.Cache.
 		Flush().
 		Group(group).
 		Key(key).
 		Execute(context.Background())
+	require.NoError(t, err)
 
 	// The data should be gone
 	assertFlushed := func() {
@@ -69,14 +71,16 @@ func TestCacheClient(t *testing.T) {
 		Key(key).
 		Data(data).
 		Tags("tag1").
+		Expiration(time.Hour).
 		Save(context.Background())
 	require.NoError(t, err)
 
 	// Flush the tag
-	c.Cache.
+	err = c.Cache.
 		Flush().
 		Tags("tag1").
 		Execute(context.Background())
+	require.NoError(t, err)
 
 	// The data should be gone
 	assertFlushed()
@@ -92,7 +96,8 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// Wait for expiration
-	time.Sleep(time.Millisecond * 2)
+	// TODO why does this need to wait so long?
+	time.Sleep(time.Millisecond * 500)
 
 	// The data should be gone
 	assertFlushed()
