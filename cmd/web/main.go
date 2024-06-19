@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -57,15 +56,10 @@ func main() {
 		}
 	}()
 
-	q := services.NewQueue[tasks.ExampleTask](
-		func(ctx context.Context, task tasks.ExampleTask) error {
-			slog.Info("Example task received", "message", task.Message)
-			return nil
-		},
-	)
-	c.Tasks.Register(q)
+	// Register all task queues
+	tasks.Register(c)
 
-	// Start the scheduler service to queue periodic tasks
+	// Start the task runner to executed queued tasks
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Tasks.StartRunner(ctx)
 

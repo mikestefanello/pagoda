@@ -72,9 +72,9 @@ func NewContainer() *Container {
 
 // Shutdown shuts the Container down and disconnects all connections
 func (c *Container) Shutdown() error {
-	if err := c.Tasks.Close(); err != nil {
-		return err
-	}
+	//if err := c.Tasks.Close(); err != nil {
+	//	return err
+	//}
 	if err := c.ORM.Close(); err != nil {
 		return err
 	}
