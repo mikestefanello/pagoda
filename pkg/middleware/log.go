@@ -59,13 +59,7 @@ func LogRequest() echo.MiddlewareFunc {
 				"latency", stop.Sub(start).String(),
 			)
 
-			msg := fmt.Sprintf("%s %s", req.Method, func() string {
-				p := req.URL.Path
-				if p == "" {
-					p = "/"
-				}
-				return p
-			}())
+			msg := fmt.Sprintf("%s %s", req.Method, req.URL.RequestURI())
 
 			if res.Status >= 500 {
 				sub.Error(msg)
