@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -57,24 +56,25 @@ func main() {
 		}
 	}()
 
-	c.Tasks.Register(tasks.TypeExample, func(ctx context.Context, m []byte) error {
-		var t tasks.ExampleTask
-		if err := json.Unmarshal(m, &t); err != nil {
-			return err
-		}
-		slog.Info("Example task received", "message", t.Message)
-		return nil
-	})
+	q := services.NewQueue[tasks.ExampleTask](
+		func(ctx context.Context, task tasks.ExampleTask) error {
+			slog.Info("Example task received", "message", task.Message)
+			return nil
+		},
+	)
+	c.Tasks.Register(q)
 
 	// Start the scheduler service to queue periodic tasks
-	c.Tasks.StartRunner(context.Background()) // use main context
+	ctx, cancel := context.WithCancel(context.Background())
+	c.Tasks.StartRunner(ctx)
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	signal.Notify(quit, os.Kill)
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	cancel()
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := c.Web.Shutdown(ctx); err != nil {
 		log.Fatal(err)

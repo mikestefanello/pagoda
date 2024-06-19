@@ -72,10 +72,9 @@ func (h *Contact) Submit(ctx echo.Context) error {
 		return err
 	}
 
-	err = h.tasks.New(tasks.TypeExample).
-		Payload(tasks.ExampleTask{
-			Message: input.Message,
-		}).
+	err = h.tasks.New(tasks.ExampleTask{
+		Message: input.Message,
+	}).
 		Wait(30 * time.Second).
 		Save()
 	if err != nil {

@@ -57,6 +57,7 @@ type (
 		App      AppConfig
 		Cache    CacheConfig
 		Database DatabaseConfig
+		Tasks    TasksConfig
 		Mail     MailConfig
 	}
 
@@ -101,6 +102,16 @@ type (
 		Driver         string
 		Connection     string
 		TestConnection string
+	}
+
+	// TasksConfig stores the tasks configuration
+	TasksConfig struct {
+		Driver         string
+		Connection     string
+		TestConnection string
+		PollInterval   time.Duration
+		MaxRetries     int
+		Goroutines     int
 	}
 
 	// MailConfig stores the mail configuration

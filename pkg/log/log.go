@@ -18,5 +18,10 @@ func Ctx(ctx echo.Context) *slog.Logger {
 		return l
 	}
 
+	return Default()
+}
+
+// Default returns the default logger
+func Default() *slog.Logger {
 	return slog.Default()
 }
