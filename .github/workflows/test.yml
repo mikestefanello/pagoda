@@ -27,10 +27,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Start containers
-      run: |
-        docker-compose up -d
-        sleep 3
-
     - name: Test
-      run: go test -p 1 ./...
+      run: go test ./...

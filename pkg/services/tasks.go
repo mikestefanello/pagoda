@@ -98,6 +98,7 @@ func NewTaskClient(cfg config.TasksConfig, db *sql.DB) (*TaskClient, error) {
 // StartRunner starts the scheduler service which adds scheduled tasks to the queue.
 // This must be running in order to execute queued tasked.
 // To stop the runner, cancel the context.
+// This is a blocking call.
 func (t *TaskClient) StartRunner(ctx context.Context) {
 	t.runner.Start(ctx)
 }

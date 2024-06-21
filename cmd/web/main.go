@@ -61,7 +61,7 @@ func main() {
 
 	// Start the task runner to execute queued tasks
 	ctx, cancel := context.WithCancel(context.Background())
-	c.Tasks.StartRunner(ctx)
+	go c.Tasks.StartRunner(ctx)
 
 	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
