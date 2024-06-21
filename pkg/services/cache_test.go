@@ -13,6 +13,7 @@ func TestCacheClient(t *testing.T) {
 	type cacheTest struct {
 		Value string
 	}
+
 	// Cache some data
 	data := cacheTest{Value: "abcdef"}
 	group := "testgroup"
@@ -22,7 +23,7 @@ func TestCacheClient(t *testing.T) {
 		Group(group).
 		Key(key).
 		Data(data).
-		Expiration(time.Hour).
+		Expiration(500 * time.Millisecond).
 		Save(context.Background())
 	require.NoError(t, err)
 
@@ -53,7 +54,7 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// The data should be gone
-	assertFlushed := func() {
+	assertFlushed := func(key string) {
 		// The data should be gone
 		_, err = c.Cache.
 			Get().
@@ -62,20 +63,33 @@ func TestCacheClient(t *testing.T) {
 			Fetch(context.Background())
 		assert.Equal(t, ErrCacheMiss, err)
 	}
-	assertFlushed()
+	assertFlushed(key)
 
 	// Set with tags
+	key = "testkey2"
 	err = c.Cache.
 		Set().
 		Group(group).
 		Key(key).
 		Data(data).
-		Tags("tag1").
+		Tags("tag1", "tag2").
 		Expiration(time.Hour).
 		Save(context.Background())
 	require.NoError(t, err)
 
-	// Flush the tag
+	// Check the tag index
+	index := c.Cache.store.(*inMemoryCacheStore).tagIndex
+	gk := c.Cache.cacheKey(group, key)
+	_, exists := index.tags["tag1"][gk]
+	assert.True(t, exists)
+	_, exists = index.tags["tag2"][gk]
+	assert.True(t, exists)
+	_, exists = index.keys[gk]["tag1"]
+	assert.True(t, exists)
+	_, exists = index.keys[gk]["tag2"]
+	assert.True(t, exists)
+
+	// Flush one of tags
 	err = c.Cache.
 		Flush().
 		Tags("tag1").
@@ -83,22 +97,9 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// The data should be gone
-	assertFlushed()
+	assertFlushed(key)
 
-	// Set with expiration
-	err = c.Cache.
-		Set().
-		Group(group).
-		Key(key).
-		Data(data).
-		Expiration(time.Millisecond).
-		Save(context.Background())
-	require.NoError(t, err)
-
-	// Wait for expiration
-	// TODO why does this need to wait so long?
-	time.Sleep(time.Millisecond * 500)
-
-	// The data should be gone
-	assertFlushed()
+	// The index should be empty
+	assert.Empty(t, index.tags)
+	assert.Empty(t, index.keys)
 }

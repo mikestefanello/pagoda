@@ -59,7 +59,7 @@ func main() {
 	// Register all task queues
 	tasks.Register(c)
 
-	// Start the task runner to executed queued tasks
+	// Start the task runner to execute queued tasks
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Tasks.StartRunner(ctx)
 

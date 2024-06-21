@@ -72,10 +72,11 @@ func (h *Contact) Submit(ctx echo.Context) error {
 		return err
 	}
 
+	// TODO create a new page for this
 	err = h.tasks.New(tasks.ExampleTask{
 		Message: input.Message,
 	}).
-		Wait(30 * time.Second).
+		Wait(10 * time.Second).
 		Save()
 	if err != nil {
 		return err

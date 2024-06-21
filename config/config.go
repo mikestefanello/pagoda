@@ -106,13 +106,9 @@ type (
 
 	// TasksConfig stores the tasks configuration
 	TasksConfig struct {
-		// TODO remove separate DB?
-		Driver         string
-		Connection     string
-		TestConnection string
-		PollInterval   time.Duration
-		MaxRetries     int
-		Goroutines     int
+		PollInterval time.Duration
+		MaxRetries   int
+		Goroutines   int
 	}
 
 	// MailConfig stores the mail configuration

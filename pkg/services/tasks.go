@@ -1,10 +1,12 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
-	"encoding/json"
+	"encoding/gob"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/maragudk/goqite"
@@ -18,8 +20,9 @@ type (
 	// Under the hood we create only a single queue using goqite for all tasks because we do not want more than one
 	// runner to process the tasks. The TaskClient wrapper provides abstractions for separate, type-safe queues.
 	TaskClient struct {
-		queue  *goqite.Queue
-		runner *jobs.Runner
+		queue   *goqite.Queue
+		runner  *jobs.Runner
+		buffers sync.Pool
 	}
 
 	// Task is a job that can be added to a queue and later passed to and executed by a QueueSubscriber.
@@ -75,6 +78,11 @@ func NewTaskClient(cfg config.TasksConfig, db *sql.DB) (*TaskClient, error) {
 			Name:       "tasks",
 			MaxReceive: cfg.MaxRetries,
 		}),
+		buffers: sync.Pool{
+			New: func() interface{} {
+				return bytes.NewBuffer(nil)
+			},
+		},
 	}
 
 	t.runner = jobs.NewRunner(jobs.NewRunnerOpts{
@@ -86,12 +94,6 @@ func NewTaskClient(cfg config.TasksConfig, db *sql.DB) (*TaskClient, error) {
 
 	return t, nil
 }
-
-//// Close closes the connection to the task service
-//func (t *TaskClient) Close() error {
-//	// TODO close the runner
-//	return t.db.Close()
-//}
 
 // StartRunner starts the scheduler service which adds scheduled tasks to the queue.
 // This must be running in order to execute queued tasked.
@@ -131,28 +133,46 @@ func (t *TaskSaveOp) Tx(tx *sql.Tx) *TaskSaveOp {
 	return t
 }
 
-// Save saves the task so it can be queued for execution
+// Save saves the task, so it can be queued for execution
 func (t *TaskSaveOp) Save() error {
-	// Build the payload
-	// TODO use gob?
-	payload, err := json.Marshal(t.task)
-	if err != nil {
+	type message struct {
+		Name    string
+		Message []byte
+	}
+
+	// Encode the task
+	taskBuf := t.client.buffers.Get().(*bytes.Buffer)
+	if err := gob.NewEncoder(taskBuf).Encode(t.task); err != nil {
 		return err
 	}
 
-	//msg := goqite.Message{
-	//	Body: payload,
-	//}
-	//
-	//if t.wait != nil {
-	//	msg.Delay = *t.wait
-	//}
-	// TODO support delay
-	//return t.client.queue.Send(context.Background(), msg)
+	// Wrap and encode the message
+	// This is needed as a workaround because goqite doesn't support delays using the jobs package,
+	// so we format the message the way it expects but use the queue to supply the delay
+	msgBuf := t.client.buffers.Get().(*bytes.Buffer)
+	wrapper := message{Name: t.task.Name(), Message: taskBuf.Bytes()}
+	if err := gob.NewEncoder(msgBuf).Encode(wrapper); err != nil {
+		return err
+	}
+
+	msg := goqite.Message{
+		Body: msgBuf.Bytes(),
+	}
+
+	if t.wait != nil {
+		msg.Delay = *t.wait
+	}
+
+	// Put the buffers back in the pool for re-use
+	taskBuf.Reset()
+	msgBuf.Reset()
+	t.client.buffers.Put(taskBuf)
+	t.client.buffers.Put(msgBuf)
+
 	if t.tx == nil {
-		return jobs.Create(context.Background(), t.client.queue, t.task.Name(), payload)
+		return t.client.queue.Send(context.Background(), msg)
 	} else {
-		return jobs.CreateTx(context.Background(), t.tx, t.client.queue, t.task.Name(), payload)
+		return t.client.queue.SendTx(context.Background(), t.tx, msg)
 	}
 }
 
@@ -174,7 +194,7 @@ func (q *queue[T]) Name() string {
 
 func (q *queue[T]) Receive(ctx context.Context, payload []byte) error {
 	var obj T
-	err := json.Unmarshal(payload, &obj)
+	err := gob.NewDecoder(bytes.NewReader(payload)).Decode(&obj)
 	if err != nil {
 		return err
 	}

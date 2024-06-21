@@ -71,8 +71,9 @@ type (
 	// locking, and we need to keep track of this index in order to keep everything in sync.
 	// If using something like Redis for caching, you can leverage sets to store the index.
 	// Cache tags can be useful and convenient, so you should decide if your app benefits enough from this.
-	// As it stands there, there is no limiting how much memory this will consume and it will track all keys
-	// and tags added and removed from the cache.
+	// As it stands here, there is no limiting how much memory this will consume and it will track all keys
+	// and tags added and removed from the cache. You could store these in the cache itself but allowing these to
+	// be evicted poses challenges.
 	tagIndex struct {
 		sync.Mutex
 		tags map[string]map[string]struct{} // tag->keys
@@ -314,16 +315,17 @@ func (i *tagIndex) purgeTags(tags ...string) []string {
 	keys := make([]string, 0)
 
 	for _, tag := range tags {
-		tagKeys := i.tags[tag]
-		delete(i.tags, tag)
+		if tagKeys, exists := i.tags[tag]; exists {
+			delete(i.tags, tag)
 
-		for key := range tagKeys {
-			delete(i.keys[key], tag)
-			if len(i.keys[key]) == 0 {
-				delete(i.keys, key)
+			for key := range tagKeys {
+				delete(i.keys[key], tag)
+				if len(i.keys[key]) == 0 {
+					delete(i.keys, key)
+				}
+
+				keys = append(keys, key)
 			}
-
-			keys = append(keys, key)
 		}
 	}
 
@@ -335,13 +337,14 @@ func (i *tagIndex) purgeKeys(keys ...string) {
 	defer i.Unlock()
 
 	for _, key := range keys {
-		keyTags := i.keys[key]
-		delete(i.keys, key)
+		if keyTags, exists := i.keys[key]; exists {
+			delete(i.keys, key)
 
-		for tag := range keyTags {
-			delete(i.tags[tag], key)
-			if len(i.tags[tag]) == 0 {
-				delete(i.tags, tag)
+			for tag := range keyTags {
+				delete(i.tags[tag], key)
+				if len(i.tags[tag]) == 0 {
+					delete(i.tags, tag)
+				}
 			}
 		}
 	}
