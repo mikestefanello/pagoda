@@ -57,6 +57,7 @@ type (
 		App      AppConfig
 		Cache    CacheConfig
 		Database DatabaseConfig
+		Tasks    TasksConfig
 		Mail     MailConfig
 	}
 
@@ -89,12 +90,8 @@ type (
 
 	// CacheConfig stores the cache configuration
 	CacheConfig struct {
-		Hostname     string
-		Port         uint16
-		Password     string
-		Database     int
-		TestDatabase int
-		Expiration   struct {
+		Capacity   int
+		Expiration struct {
 			StaticFile time.Duration
 			Page       time.Duration
 		}
@@ -102,12 +99,16 @@ type (
 
 	// DatabaseConfig stores the database configuration
 	DatabaseConfig struct {
-		Hostname     string
-		Port         uint16
-		User         string
-		Password     string
-		Database     string
-		TestDatabase string
+		Driver         string
+		Connection     string
+		TestConnection string
+	}
+
+	// TasksConfig stores the tasks configuration
+	TasksConfig struct {
+		PollInterval time.Duration
+		MaxRetries   int
+		Goroutines   int
 	}
 
 	// MailConfig stores the mail configuration

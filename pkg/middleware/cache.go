@@ -10,7 +10,6 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
-	libstore "github.com/eko/gocache/lib/v4/store"
 	"github.com/labstack/echo/v4"
 )
 
@@ -35,7 +34,7 @@ func ServeCachedPage(t *services.TemplateRenderer) echo.MiddlewareFunc {
 
 			if err != nil {
 				switch {
-				case errors.Is(err, &libstore.NotFound{}):
+				case errors.Is(err, services.ErrCacheMiss):
 				case context.IsCanceledError(err):
 					return nil
 				default:

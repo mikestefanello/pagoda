@@ -1,0 +1,43 @@
+{{define "content"}}
+    {{- if not (eq .HTMX.Request.Target "task")}}
+        <article class="message is-link">
+            <div class="message-body">
+                <p>Submitting this form will create an <i>ExampleTask</i> in the task queue. After the specified delay, the message will be logged by the queue processor.</p>
+                <p>See pkg/tasks and the README for more information.</p>
+            </div>
+        </article>
+    {{- end}}
+
+    {{template "form" .}}
+{{end}}
+
+{{define "form"}}
+    <form id="task" method="post" hx-post="{{url "task.submit"}}">
+        {{template "messages" .}}
+        <div class="field">
+            <label for="delay" class="label">Delay (in seconds)</label>
+            <div class="control">
+                <input type="number" id="delay" name="delay" class="input {{.Form.GetFieldStatusClass "Delay"}}" value="{{.Form.Delay}}"/>
+            </div>
+            <p class="help">How long to wait until the task is executed</p>
+            {{template "field-errors" (.Form.GetFieldErrors "Delay")}}
+        </div>
+
+        <div class="field">
+            <label for="message" class="label">Message</label>
+            <div class="control">
+                <textarea id="message" name="message" class="textarea {{.Form.GetFieldStatusClass "Message"}}">{{.Form.Message}}</textarea>
+            </div>
+            <p class="help">The message the task will output to the log</p>
+            {{template "field-errors" (.Form.GetFieldErrors "Message")}}
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-link">Add task to queue</button>
+            </div>
+        </div>
+
+        {{template "csrf" .}}
+    </form>
+{{end}}

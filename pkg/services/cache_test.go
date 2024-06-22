@@ -2,11 +2,9 @@ package services
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
-	libstore "github.com/eko/gocache/lib/v4/store"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,6 +13,7 @@ func TestCacheClient(t *testing.T) {
 	type cacheTest struct {
 		Value string
 	}
+
 	// Cache some data
 	data := cacheTest{Value: "abcdef"}
 	group := "testgroup"
@@ -24,6 +23,7 @@ func TestCacheClient(t *testing.T) {
 		Group(group).
 		Key(key).
 		Data(data).
+		Expiration(500 * time.Millisecond).
 		Save(context.Background())
 	require.NoError(t, err)
 
@@ -32,20 +32,18 @@ func TestCacheClient(t *testing.T) {
 		Get().
 		Group(group).
 		Key(key).
-		Type(new(cacheTest)).
 		Fetch(context.Background())
 	require.NoError(t, err)
-	cast, ok := fromCache.(*cacheTest)
+	cast, ok := fromCache.(cacheTest)
 	require.True(t, ok)
-	assert.Equal(t, data, *cast)
+	assert.Equal(t, data, cast)
 
 	// The same key with the wrong group should fail
 	_, err = c.Cache.
 		Get().
 		Key(key).
-		Type(new(cacheTest)).
 		Fetch(context.Background())
-	assert.Error(t, err)
+	assert.Equal(t, ErrCacheMiss, err)
 
 	// Flush the data
 	err = c.Cache.
@@ -56,29 +54,42 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// The data should be gone
-	assertFlushed := func() {
+	assertFlushed := func(key string) {
 		// The data should be gone
 		_, err = c.Cache.
 			Get().
 			Group(group).
 			Key(key).
-			Type(new(cacheTest)).
 			Fetch(context.Background())
-		assert.True(t, errors.Is(err, &libstore.NotFound{}))
+		assert.Equal(t, ErrCacheMiss, err)
 	}
-	assertFlushed()
+	assertFlushed(key)
 
 	// Set with tags
+	key = "testkey2"
 	err = c.Cache.
 		Set().
 		Group(group).
 		Key(key).
 		Data(data).
-		Tags("tag1").
+		Tags("tag1", "tag2").
+		Expiration(time.Hour).
 		Save(context.Background())
 	require.NoError(t, err)
 
-	// Flush the tag
+	// Check the tag index
+	index := c.Cache.store.(*inMemoryCacheStore).tagIndex
+	gk := c.Cache.cacheKey(group, key)
+	_, exists := index.tags["tag1"][gk]
+	assert.True(t, exists)
+	_, exists = index.tags["tag2"][gk]
+	assert.True(t, exists)
+	_, exists = index.keys[gk]["tag1"]
+	assert.True(t, exists)
+	_, exists = index.keys[gk]["tag2"]
+	assert.True(t, exists)
+
+	// Flush one of tags
 	err = c.Cache.
 		Flush().
 		Tags("tag1").
@@ -86,21 +97,9 @@ func TestCacheClient(t *testing.T) {
 	require.NoError(t, err)
 
 	// The data should be gone
-	assertFlushed()
+	assertFlushed(key)
 
-	// Set with expiration
-	err = c.Cache.
-		Set().
-		Group(group).
-		Key(key).
-		Data(data).
-		Expiration(time.Millisecond).
-		Save(context.Background())
-	require.NoError(t, err)
-
-	// Wait for expiration
-	time.Sleep(time.Millisecond * 2)
-
-	// The data should be gone
-	assertFlushed()
+	// The index should be empty
+	assert.Empty(t, index.tags)
+	assert.Empty(t, index.keys)
 }

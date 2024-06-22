@@ -21,22 +21,20 @@ app:
   emailVerificationTokenExpiration: "12h"
 
 cache:
-  hostname: "localhost"
-  port: 6379
-  password: ""
-  database: 0
-  testDatabase: 1
+  capacity: 100000
   expiration:
     staticFile: "4380h"
     page: "24h"
 
 database:
-  hostname: "localhost"
-  port: 5432
-  user: "admin"
-  password: "admin"
-  database: "app"
-  testDatabase: "app_test"
+  driver: "sqlite3"
+  connection: "dbs/main.db?_journal=WAL&_timeout=5000&_fk=true"
+  testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
+
+tasks:
+  pollInterval: "1s"
+  maxRetries: 10
+  goroutines: 1
 
 mail:
   hostname: "localhost"

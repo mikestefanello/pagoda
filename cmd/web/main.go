@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/handlers"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/tasks"
 )
 
 func main() {
@@ -49,24 +51,25 @@ func main() {
 			}
 		}
 
-		if err := c.Web.StartServer(&srv); err != http.ErrServerClosed {
+		if err := c.Web.StartServer(&srv); errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("shutting down the server: %v", err)
 		}
 	}()
 
-	// Start the scheduler service to queue periodic tasks
-	go func() {
-		if err := c.Tasks.StartScheduler(); err != nil {
-			log.Fatalf("scheduler shutdown: %v", err)
-		}
-	}()
+	// Register all task queues
+	tasks.Register(c)
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Start the task runner to execute queued tasks
+	ctx, cancel := context.WithCancel(context.Background())
+	go c.Tasks.StartRunner(ctx)
+
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	signal.Notify(quit, os.Kill)
 	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	cancel()
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := c.Web.Shutdown(ctx); err != nil {
 		log.Fatal(err)
