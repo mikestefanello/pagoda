@@ -22,6 +22,7 @@ const (
 
 const (
 	PageAbout          Page = "about"
+	PageCache          Page = "cache"
 	PageContact        Page = "contact"
 	PageError          Page = "error"
 	PageForgotPassword Page = "forgot-password"
@@ -30,6 +31,7 @@ const (
 	PageRegister       Page = "register"
 	PageResetPassword  Page = "reset-password"
 	PageSearch         Page = "search"
+	PageTask           Page = "task"
 )
 
 //go:embed *

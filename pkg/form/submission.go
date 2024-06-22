@@ -103,6 +103,8 @@ func (f *Submission) setErrorMessages(err error) {
 			message = "Enter a valid email address."
 		case "eqfield":
 			message = "Does not match."
+		case "gte":
+			message = fmt.Sprintf("Must be greater than or equal to %v.", ve.Param())
 		default:
 			message = "Invalid value."
 		}
