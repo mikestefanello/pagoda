@@ -22,7 +22,7 @@ run:
 # Run all tests
 .PHONY: test
 test:
-	go test ./...
+	go test -count=1 -p 1 ./...
 
 # Check for direct dependency updates
 .PHONY: check-updates

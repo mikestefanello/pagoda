@@ -70,11 +70,9 @@ func NewContainer() *Container {
 	return c
 }
 
-// Shutdown shuts the Container down and disconnects all connections
+// Shutdown shuts the Container down and disconnects all connections.
+// If the task runner was started, cancel the context to shut it down prior to calling this.
 func (c *Container) Shutdown() error {
-	//if err := c.Tasks.Close(); err != nil {
-	//	return err
-	//}
 	if err := c.ORM.Close(); err != nil {
 		return err
 	}

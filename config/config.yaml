@@ -32,12 +32,9 @@ database:
   testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
 
 tasks:
-  driver: "sqlite3"
-  connection: "dbs/jobs.db?_journal=WAL&_timeout=5000&_fk=true"
-  testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
   pollInterval: "1s"
   maxRetries: 10
-  goRoutines: 1
+  goroutines: 1
 
 mail:
   hostname: "localhost"

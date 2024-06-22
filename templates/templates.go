@@ -43,7 +43,7 @@ func Get() embed.FS {
 }
 
 // GetOS returns a file system containing all templates which will load the files directly from the operating system.
-// This should only be used for local development in order to faciliate live reloading.
+// This should only be used for local development in order to facilitate live reloading.
 func GetOS() fs.FS {
 	// Gets the complete templates directory path
 	// This is needed in case this is called from a package outside of main, such as within tests

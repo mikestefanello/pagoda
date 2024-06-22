@@ -50,11 +50,12 @@ func (h *Cache) Page(ctx echo.Context) error {
 	p.Form = form.Get[cacheForm](ctx)
 
 	// Fetch the value from the cache
-	value, err := h.cache.Get().
+	value, err := h.cache.
+		Get().
 		Key("page_cache_example").
 		Fetch(ctx.Request().Context())
 
-	// Store the value in the page so it can be rendered, if found
+	// Store the value in the page, so it can be rendered, if found
 	switch {
 	case err == nil:
 		p.Data = value.(string)
@@ -74,10 +75,11 @@ func (h *Cache) Submit(ctx echo.Context) error {
 	}
 
 	// Set the cache
-	err := h.cache.Set().
+	err := h.cache.
+		Set().
 		Key("page_cache_example").
 		Data(input.Value).
-		Expiration(10 * time.Minute).
+		Expiration(30 * time.Minute).
 		Save(ctx.Request().Context())
 
 	if err != nil {

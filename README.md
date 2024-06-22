@@ -21,7 +21,6 @@
   * [Dependencies](#dependencies)
   * [Start the application](#start-the-application)
   * [Running tests](#running-tests)
-  * [Clients](#clients)
 * [Service container](#service-container)
   * [Dependency injection](#dependency-injection)
   * [Test dependencies](#test-dependencies)
@@ -82,9 +81,8 @@
   * [Flush tags](#flush-tags)
 * [Tasks](#tasks)
   * [Queues](#queues)
-  * [Scheduled tasks](#scheduled-tasks)
-  * [Worker](#worker)
-  * [Monitoring](#monitoring)
+  * [Runner](#runner)
+* [Cron](#cron)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
   * [Cache-buster](#cache-buster)
@@ -123,8 +121,9 @@ Go server-side rendered HTML combined with the projects below enable you to crea
 
 #### Storage
 
-- [PostgreSQL](https://www.postgresql.org/): The world's most advanced open source relational database.
-- [Redis](https://redis.io/): In-memory data structure store, used as a database, cache, and message broker.
+- [SQLite](https://sqlite.org/): A small, fast, self-contained, high-reliability, full-featured, SQL database engine and the most used database engine in the world.
+
+Originally, Postgres and Redis were chosen as defaults but since the aim of this project is rapid, simple development, it was changed to SQLite which now provides the primary data storage as well as persistent, background [task queues](#tasks). For [caching](#cache), a simple in-memory solution is provided. If you need to use something like Postgres or Redis, swapping those in can be done quickly and easily. For reference, [this branch](https://github.com/mikestefanello/pagoda/tree/postgres-redis) contains the code that included those (but is no longer maintained).
 
 ### Screenshots
 
@@ -152,32 +151,23 @@ Ensure the following are installed on your system:
 
 ### Start the application
 
-After checking out the repository, from within the root, start the Docker containers for the database and cache by executing `make up`:
+After checking out the repository, from within the root, simply run `make run`:
 
 ```
 git clone git@github.com:mikestefanello/pagoda.git
 cd pagoda
-make up
+make run
 ```
 
 Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
 
-Once that completes, you can start the application by executing `make run`. By default, you should be able to access the application in your browser at `localhost:8000`.
+By default, you should be able to access the application in your browser at `localhost:8000`. This can be changed via the [configuration](#configuration).
 
-If you ever want to quickly drop the Docker containers and restart them in order to wipe all data, execute `make reset`.
+By default, your data will be stored within the `dbs` directory. If you ever want to quickly delete all data just remove this directory.
 
 ### Running tests
 
-To run all tests in the application, execute `make test`. This ensures that the tests from each package are not run in parallel. This is required since many packages contain tests that connect to the test database which is dropped and recreated automatically for each package.
-
-### Clients
-
-The following _make_ commands are available to make it easy to connect to the database and cache.
-
-- `make db`: Connects to the primary database
-- `make db-test`: Connects to the test database
-- `make cache`: Connects to the primary cache
-- `make cache-test`: Connects to the test cache
+To run all tests in the application, execute `make test`. This ensures that the tests from each package are not run in parallel. This is required since many packages contain tests that connect to the test database which is stored in memory and reset automatically for each package.
 
 ## Service container
 
@@ -198,7 +188,7 @@ A new container can be created and initialized via `services.NewContainer()`. It
 
 ### Dependency injection
 
-The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route handlers so that the handlers have full, easy access to all services.
+The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route [handlers](#handlers) so that the handlers have full, easy access to all services.
 
 ### Test dependencies
 
@@ -217,11 +207,11 @@ Leveraging the functionality of [viper](https://github.com/spf13/viper) to manag
 In `config/config.go`, the prefix is set as `pagoda` via `viper.SetEnvPrefix("pagoda")`. Nested fields require an underscore between levels. For example:
 
 ```yaml
-cache:
+http:
   port: 1234
 ```
 
-can be overridden by setting an environment variable with the name `PAGODA_CACHE_PORT`.
+can be overridden by setting an environment variable with the name `PAGODA_HTTP_PORT`.
 
 ### Environments
 
@@ -239,7 +229,7 @@ func TestMain(m *testing.M) {
 
     // Run tests
     exitVal := m.Run()
-
+CACHE
     // Shutdown the container
     if err := c.Shutdown(); err != nil {
         panic(err)
@@ -251,7 +241,7 @@ func TestMain(m *testing.M) {
 
 ## Database
 
-The database currently used is [PostgreSQL](https://www.postgresql.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [pgx](https://github.com/jackc/pgx/tree/v4) and included in the `Container`.
+The database currently used is [SQLite](https://sqlite.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [go-sqlite3](https://github.com/mattn/go-sqlite3) and included in the `Container`.
 
 Database configuration can be found and managed within the `config` package.
 
@@ -261,9 +251,11 @@ Database configuration can be found and managed within the `config` package.
 
 ### Separate test database
 
-Since many tests can require a database, this application supports a separate database specifically for tests. Within the `config`, the test database name can be specified at `Config.Database.TestDatabase`.
+Since many tests can require a database, this application supports a separate database specifically for tests. Within the `config`, the test database name can be specified at `Config.Database.TestConnection`, which is the database connection string that will be used. By default, this will be an in-memory SQLite database.
 
-When a `Container` is created, if the [environment](#environments) is set to `config.EnvTest`, the database client will connect to the test database instead, drop the database, recreate it, and run migrations so your tests start with a clean, ready-to-go database. Another benefit is that after the tests execute in a given package, you can connect to the test database to audit the data which can be useful for debugging.
+When a `Container` is created, if the [environment](#environments) is set to `config.EnvTest`, the database client will connect to the test database instead and run migrations so your tests start with a clean, ready-to-go database.
+
+When this project was using Postgres, it would automatically drop and recreate the test database. Since the current default is in-memory, that is no longer needed. If you decide to use a test database not in-memory, you can alter the `Container` initialization code to do this for you.
 
 ## ORM
 
@@ -926,13 +918,11 @@ To include additional custom functions, add to the map in `NewFuncMap()` and def
 
 ## Cache
 
-As previously mentioned, [Redis](https://redis.io/) was chosen as the cache but it can be easily swapped out for something else. [go-redis](https://github.com/go-redis/redis) is used as the underlying client but the `Container` contains a custom client wrapper (`CacheClient`) that makes typical cache operations extremely simple. This wrapper does expose the [go-redis]() client however, at `CacheClient.Client`, in case you have a need for it.
+As previously mentioned, the default cache implementation is a simple in-memory store, backed by [otter](https://github.com/maypok86/otter), a lockless cache that uses [S3-FIFO](https://s3fifo.com/) eviction. The `Container` houses a `CacheClient` which is a useful, wrapper to interact with the cache (see examples below). Within the `CacheClient` is the underlying store interface `CacheStore`. If you wish to use a different store, such as Redis, and want to keep using the `CacheClient`, simply implement the `CacheStore` interface with a Redis library and adjust the `Container` initialization to use that.
 
-The cache functionality within the `CacheClient` is powered by [gocache](https://github.com/eko/gocache) which was chosen because it makes interfacing with the cache service much easier, and it provides a consistent interface if you were to use a cache backend other than Redis.
+The built-in usage of the cache is currently only for optional [page caching](#cached-responses) and a simple example route located at `/cache` where you can set and view the value of a given cache entry.
 
-The built-in usage of the cache is currently only for optional [page caching](#cached-responses) but it can be used for practically anything. See examples below:
-
-Similar to how there is a separate [test database](#separate-test-database) to avoid writing to your primary database when running tests, the cache supports a separate database as well for tests. Within the `config`, the test database number can be specified at `Config.Cache.TestDatabase`. By default, the primary database is `0` and the test database is `1`.
+Since the current cache is in-memory, there's no need to adjust the `Container` during tests. When this project used Redis, the configuration had a separate database that would be used strictly for tests to avoid writing to your primary database. If you need that functionality, it is easy to add back in.
 
 ### Set data
 
@@ -986,11 +976,8 @@ data, err := c.Cache.
     Get().
     Group("my-group").
     Key("my-key").
-    Type(myType).
     Fetch(ctx)
 ```
-
-The `Type` method tells the cache what type of data you stored so it can be cast afterwards with: `result, ok := data.(myType)`
 
 ### Flush data
 
@@ -1013,29 +1000,62 @@ err := c.Cache.
     Execute(ctx)
 ```
 
+### Tagging
+
+As shown in the previous examples, cache tags were provided because they can be convenient. However, maintaining them comes at a cost and it may not be a good fit for your application depending on your needs. When including tags, the `CacheClient` must lock in order to keep the tag index in sync. And since the tag index cannot support eviction, since that could result in a flush call not actually flushing the tag's keys, the maps that provide the index do not have a size limit. See the code for more details.
+
 ## Tasks
 
-Tasks are operations to be executed in the background, either in a queue, at a specfic time, after a given amount of time, or according to a periodic interval (like _cron_). Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, and so on.
+Tasks are queued operations to be executed in the background, either immediately, at a specfic time, or after a given amount of time has passed. Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, etc.
 
-Since we're already using [Redis](https://redis.io) as a _cache_, it's available to act as a message broker as well and handle the processing of queued tasks. [Asynq](https://github.com/hibiken/asynq) is the library chosen to interface with Redis and handle queueing tasks and processing them asynchronously with workers.
+Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Goqite](https://github.com/maragudk/goqite) is the library chosen to interface with [SQLite] and handle queueing tasks and processing them asynchronously.
 
-To make things even easier, a custom client (`TaskClient`) is provided as a _Service_ on the `Container` which exposes a simple interface with [asynq](https://github.com/hibiken/asynq).
-
-For more detailed information about [asynq](https://github.com/hibiken/asynq) and it's usage, review the [wiki](https://github.com/hibiken/asynq/wiki).
+To make things even easier, a custom client (`TaskClient`) is provided as a _Service_ on the `Container` which exposes a simple interface with [goqite](https://github.com/maragudk/goqite) that supports type-safe tasks and queues.
 
 ### Queues
 
-All tasks must be placed in to queues in order to be executed by the [worker](#worker). You are not required to specify a queue when creating a task, as it will be placed in the default queue if one is not provided. [Asynq](https://github.com/hibiken/asynq) supports multiple queues which allows for functionality such as [prioritization](https://github.com/hibiken/asynq/wiki/Queue-Priority).
+A full example of a queue implementation can be found in `pkg/tasks` with an interactive form to create a task and add to the queue at `/task` (see `pkg/handlers/task.go`).
 
-Creating a queued task is easy and at the minimum only requires the name of the task:
+A queue starts by declaring a `Task` _type_, which is the object that gets placed in to a queue and eventually passed to a queue subscriber (a callback function to process the task). A `Task` must implement the `Name()` method which returns a unique name for the task. For example:
 
 ```go
-err := c.Tasks.
-    New("my_task").
-    Save()
+type MyTask struct {
+    Text string
+	Num int
+}
+
+func (t MyTask) Name() string {
+	return "my_task"
+}
 ```
 
-This will add a task to the _default_ queue with a task _type_ of `my_task`. The type is used to route the task to the correct [worker](#worker).
+Then, create the queue for `MyTask` tasks:
+
+```go
+q := services.NewQueue[MyTask](func(ctx context.Context, task MyTask) error {
+    // This is where you process the task
+    fmt.Println("Processed %s task!", task.Text)
+    return nil
+})
+```
+
+And finally, register the queue with the `TaskClient`:
+
+```go
+c.Tasks.Register(q)
+```
+
+See `pkg/tasks/register.go` for a simple way to register all of your queues and to easily pass the `Container` to them so the queue subscriber callbacks have access to all of your app's dependencies.
+
+Now you can easily add a task to the queue using the `TaskClient`:
+
+```go
+task := MyTask{Text: "Hello world!", Num: 10}
+
+err := c.Tasks.
+    New(task).
+    Save()
+```
 
 #### Options
 
@@ -1043,98 +1063,26 @@ Tasks can be created and queued with various chained options:
 
 ```go
 err := c.Tasks.
-    New("my_task").
-    Payload(taskData).
-    Queue("critical").
-    MaxRetries(5).
-    Timeout(30 * time.Second).
-    Wait(5 * time.Second).
-    Retain(2 * time.Hour).
+    New(task).
+    Wait(30 * time.Second). // Wait 30 seconds before passing the task to the subscriber
+    At(time.Date(...)). // Wait until a given date before passing the task to the subscriber 
+    Tx(tx). // Include the queueing of this task in a database transaction
     Save()
 ```
 
-In this example, this task will be:
-- Assigned a task type of `my_task`
-- The task worker will be sent `taskData` as the payload
-- Put in to the `critical` queue
-- Be retried up to 5 times in the event of a failure
-- Timeout after 30 seconds of execution
-- Wait 5 seconds before execution starts
-- Retain the task data in Redis for 2 hours after execution completes
+### Runner
 
-### Scheduled tasks
-
-Tasks can be scheduled to execute at a single point in the future or at a periodic interval. These tasks can also use the options highlighted in the previous section.
-
-**To execute a task once at a specific time:**
+The _task runner_ is what manages periodically polling the database for available queued tasks to process and passing them to the queue's subscriber callback. This must be started in order for this to happen. In `cmd/web/main.go`, the _task runner_ is started by using the `TaskClient`:
 
 ```go
-err := c.Tasks.
-    New("my_task").
-    At(time.Date(2022, time.November, 10, 23, 0, 0, 0, time.UTC)).
-    Save()
+go c.Tasks.StartRunner(ctx)
 ```
 
-**To execute a periodic task using a cron schedule:**
+The app [configuration](#configuration) contains values to configure the runner including how often to poll the database for tasks, the maximum amount of retries for a given task, and the amount of tasks that can be processed concurrently.
 
-```go
-err := c.Tasks.
-    New("my_task").
-    Periodic("*/10 * * * *")
-    Save()
-```
+## Cron
 
-**To execute a periodic task using a simple syntax:**
-
-```go
-err := c.Tasks.
-    New("my_task").
-    Periodic("@every 10m")
-    Save()
-```
-
-#### Scheduler
-
-A service needs to run in order to add periodic tasks to the queue at the specified intervals. When the application is started, this _scheduler_ service will also be started. In `cmd/web/main.go`, this is done with the following code:
-
-```go
-go func() {
-    if err := c.Tasks.StartScheduler(); err != nil {
-        log.Fatalf("scheduler shutdown: %v", err)
-    }
-}()
-```
-
-In the event of an application restart, periodic tasks must be re-registered with the _scheduler_ in order to continue being queued for execution.
-
-### Worker
-
-The worker is a service that executes the queued tasks using task processors. Included is a basic implementation of a separate worker service that will listen for and execute tasks being added to the queues. If you prefer to move the worker so it runs alongside the web server, you can do that, though it's recommended to keep these processes separate for performance and scalability reasons.
-
-The underlying functionality of the worker service is provided by [asynq](https://github.com/hibiken/asynq), so it's highly recommended that you review the documentation for that project first.
-
-#### Starting the worker
-
-A make target was added to allow you to start the worker service easily. From the root of the repository, execute `make worker`.
-
-#### Understanding the service
-
-The worker service is located in [cmd/worker/main.go](/cmd/worker/main.go) and starts with the creation of a new `*asynq.Server` provided by `asynq.NewServer()`. There are various configuration options available, so be sure to review them all.
-
-Prior to starting the service, we need to route tasks according to their _type_ to their handlers which will process the tasks. This is done by using `async.ServeMux` much like you would use an HTTP router:
-
-```go
-mux := asynq.NewServeMux()
-mux.Handle(tasks.TypeExample, new(tasks.ExampleProcessor))
-```
-
-In this example, all tasks of _type_ `tasks.TypeExample` will be routed to `ExampleProcessor` which is a struct that implements `ProcessTask()`. See the included [basic example](/pkg/tasks/example.go).
-
-Finally, the service is started with `async.Server.Run(mux)`.
-
-### Monitoring
-
-[Asynq](https://github.com/hibiken/asynq) comes with two options to monitor your queues: 1) [Command-line tool](https://github.com/hibiken/asynq#command-line-tool) and 2) [Web UI](https://github.com/hibiken/asynqmon)
+By default, no cron solution is provided because it's very easy to add yourself if you need this. You can either use a [ticker](https://pkg.go.dev/time#Ticker) or a [library](https://github.com/robfig/cron).
 
 ## Static files
 
@@ -1266,22 +1214,19 @@ Future work includes but is not limited to:
 Thank you to all of the following amazing projects for making this possible.
 
 - [alpinejs](https://github.com/alpinejs/alpine)
-- [asynq](https://github.com/hibiken/asynq)
 - [bulma](https://github.com/jgthms/bulma)
-- [docker](https://www.docker.com/)
 - [echo](https://github.com/labstack/echo)
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
-- [gocache](https://github.com/eko/gocache)
+- [go-sqlite3](https://github.com/mattn/go-sqlite3)
+- [goqite](https://github.com/maragudk/goqite)
 - [goquery](https://github.com/PuerkitoBio/goquery)
-- [go-redis](https://github.com/go-redis/redis)
 - [htmx](https://github.com/bigskysoftware/htmx)
 - [jwt](https://github.com/golang-jwt/jwt)
-- [pgx](https://github.com/jackc/pgx)
-- [postgresql](https://www.postgresql.org/)
-- [redis](https://redis.io/)
-- [sprig](https://github.com/Masterminds/sprig)
+- [otter](https://github.com/maypok86/otter)
 - [sessions](https://github.com/gorilla/sessions)
+- [sprig](https://github.com/Masterminds/sprig)
+- [sqlite](https://sqlite.org/)
 - [testify](https://github.com/stretchr/testify)
 - [validator](https://github.com/go-playground/validator)
 - [viper](https://github.com/spf13/viper)
