@@ -225,7 +225,7 @@ func TestMain(m *testing.M) {
 
     // Run tests
     exitVal := m.Run()
-CACHE
+
     // Shutdown the container
     if err := c.Shutdown(); err != nil {
         panic(err)
@@ -237,7 +237,7 @@ CACHE
 
 ## Database
 
-The database currently used is [SQLite](https://sqlite.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database-driver and client is provided by [go-sqlite3](https://github.com/mattn/go-sqlite3) and included in the `Container`.
+The database currently used is [SQLite](https://sqlite.org/) but you are free to use whatever you prefer. If you plan to continue using [Ent](https://entgo.io/), the incredible ORM, you can check their supported databases [here](https://entgo.io/docs/dialects). The database driver is provided by [go-sqlite3](https://github.com/mattn/go-sqlite3). A reference to the database is included in the `Container` if direct access is required.
 
 Database configuration can be found and managed within the `config` package.
 
@@ -247,7 +247,7 @@ Database configuration can be found and managed within the `config` package.
 
 ### Separate test database
 
-Since many tests can require a database, this application supports a separate database specifically for tests. Within the `config`, the test database name can be specified at `Config.Database.TestConnection`, which is the database connection string that will be used. By default, this will be an in-memory SQLite database.
+Since many tests can require a database, this application supports a separate database specifically for tests. Within the `config`, the test database can be specified at `Config.Database.TestConnection`, which is the database connection string that will be used. By default, this will be an in-memory SQLite database.
 
 When a `Container` is created, if the [environment](#environments) is set to `config.EnvTest`, the database client will connect to the test database instead and run migrations so your tests start with a clean, ready-to-go database.
 
