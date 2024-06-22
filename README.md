@@ -143,11 +143,7 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 
 ### Dependencies
 
-Ensure the following are installed on your system:
-
- - [Go](https://go.dev/)
- - [Docker](https://www.docker.com/)
- - [Docker Compose](https://docs.docker.com/compose/install/)
+Ensure that [Go](https://go.dev/) is installed on your system.
 
 ### Start the application
 
@@ -933,6 +929,7 @@ err := c.Cache.
     Set().
     Key("my-key").
     Data(myData).
+    Expiration(time.Hour * 2).
     Save(ctx)
 ```
 
@@ -943,6 +940,7 @@ err := c.Cache.
     Set().
     Group("my-group").
     Key("my-key").
+    Expiration(time.Hour * 2).
     Data(myData).
     Save(ctx)
 ```
@@ -954,16 +952,6 @@ err := c.Cache.
     Set().
     Key("my-key").
     Tags("tag1", "tag2").
-    Data(myData).
-    Save(ctx)
-```
-
-**Include an expiration:**
-
-```go
-err := c.Cache.
-    Set().
-    Key("my-key").
     Expiration(time.Hour * 2).
     Data(myData).
     Save(ctx)
@@ -1008,7 +996,7 @@ As shown in the previous examples, cache tags were provided because they can be 
 
 Tasks are queued operations to be executed in the background, either immediately, at a specfic time, or after a given amount of time has passed. Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, etc.
 
-Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Goqite](https://github.com/maragudk/goqite) is the library chosen to interface with [SQLite] and handle queueing tasks and processing them asynchronously.
+Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Goqite](https://github.com/maragudk/goqite) is the library chosen to interface with [SQLite](https://sqlite.org/) and handle queueing tasks and processing them asynchronously.
 
 To make things even easier, a custom client (`TaskClient`) is provided as a _Service_ on the `Container` which exposes a simple interface with [goqite](https://github.com/maragudk/goqite) that supports type-safe tasks and queues.
 
