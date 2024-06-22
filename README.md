@@ -1009,11 +1009,11 @@ A queue starts by declaring a `Task` _type_, which is the object that gets place
 ```go
 type MyTask struct {
     Text string
-	Num int
+    Num int
 }
 
 func (t MyTask) Name() string {
-	return "my_task"
+    return "my_task"
 }
 ```
 
