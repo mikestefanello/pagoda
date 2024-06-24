@@ -6,6 +6,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/mikestefanello/pagoda.svg)](https://pkg.go.dev/github.com/mikestefanello/pagoda)
 [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
+[![Slack Widget](https://img.shields.io/badge/join-us%20on%20slack-gray.svg?longCache=true&logo=slack&colorB=red)](https://gophers.slack.com/messages/pagoda)
 
 <p align="center"><img alt="Logo" src="https://user-images.githubusercontent.com/552328/147838644-0efac538-a97e-4a46-86a0-41e3abdf9f20.png" height="200px"/></p>
 
@@ -404,7 +405,7 @@ func init() {
 }
 ```
 
-3) Initialize the handler (and inject any required dependencies from the _Container_)
+3) Initialize the handler (and inject any required dependencies from the _Container_). This will be called automatically.
 
 ```go
 func (e *Example) Init(c *services.Container) error {
@@ -441,7 +442,7 @@ func (e *Example) PageSubmit(ctx echo.Context) error {
 
 Routes can return errors to indicate that something wrong happened. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code. You can use `return echo.NewHTTPError(http.StatusInternalServerError)`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
 
-The [error handler](https://echo.labstack.com/guide/error-handling/) is set to a provided route `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.go`. The status code is passed to the template so you can easily alter the markup depending on the error type.
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to the provided `Handler` in `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.gohtml`. The status code is passed to the template so you can easily alter the markup depending on the error type.
 
 ### Redirects
 
@@ -1088,7 +1089,7 @@ While it's ideal to use cache control headers on your static files so browsers c
 
 For example, to render a file located in `static/picture.png`, you would use:
 ```html
-<img src="{{File "picture.png"}}"/>
+<img src="{{file "picture.png"}}"/>
 ```
 
 Which would result in:
