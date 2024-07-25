@@ -106,9 +106,9 @@ type (
 
 	// TasksConfig stores the tasks configuration
 	TasksConfig struct {
-		PollInterval time.Duration
-		MaxRetries   int
-		Goroutines   int
+		Goroutines      int
+		ReleaseAfter    time.Duration
+		CleanupInterval time.Duration
 	}
 
 	// MailConfig stores the mail configuration

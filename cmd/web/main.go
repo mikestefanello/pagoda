@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/mikestefanello/pagoda/pkg/handlers"
@@ -60,18 +61,32 @@ func main() {
 	tasks.Register(c)
 
 	// Start the task runner to execute queued tasks
-	ctx, cancel := context.WithCancel(context.Background())
-	go c.Tasks.StartRunner(ctx)
+	c.Tasks.Start(context.Background())
 
 	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	signal.Notify(quit, os.Kill)
 	<-quit
-	cancel()
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+
+	// Shutdown both the task runner and web server
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := c.Web.Shutdown(ctx); err != nil {
-		log.Fatal(err)
-	}
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		c.Tasks.Stop(ctx)
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := c.Web.Shutdown(ctx); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	wg.Wait()
 }

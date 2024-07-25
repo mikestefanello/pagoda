@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/mikestefanello/backlite"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"time"
 
@@ -21,7 +22,7 @@ const (
 
 type (
 	Task struct {
-		tasks *services.TaskClient
+		tasks *backlite.Client
 		*services.TemplateRenderer
 	}
 
@@ -71,9 +72,10 @@ func (h *Task) Submit(ctx echo.Context) error {
 	}
 
 	// Insert the task
-	err = h.tasks.New(tasks.ExampleTask{
-		Message: input.Message,
-	}).
+	err = h.tasks.
+		Add(tasks.ExampleTask{
+			Message: input.Message,
+		}).
 		Wait(time.Duration(input.Delay) * time.Second).
 		Save()
 

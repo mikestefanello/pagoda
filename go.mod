@@ -1,8 +1,6 @@
 module github.com/mikestefanello/pagoda
 
-go 1.22
-
-toolchain go1.22.1
+go 1.22.4
 
 require (
 	entgo.io/ent v0.13.1
@@ -14,9 +12,9 @@ require (
 	github.com/gorilla/sessions v1.2.2
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/labstack/gommon v0.4.2
-	github.com/maragudk/goqite v0.2.3
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/maypok86/otter v1.2.1
+	github.com/mikestefanello/backlite v0.1.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.22.0

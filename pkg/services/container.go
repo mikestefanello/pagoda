@@ -4,17 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/mikestefanello/backlite"
 	"log/slog"
 	"os"
 	"strings"
 
 	entsql "entgo.io/ent/dialect/sql"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/mikestefanello/pagoda/pkg/funcmap"
-
 	"github.com/labstack/echo/v4"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/pkg/funcmap"
+	"github.com/mikestefanello/pagoda/pkg/log"
 
 	// Require by ent
 	_ "github.com/mikestefanello/pagoda/ent/runtime"
@@ -51,7 +52,7 @@ type Container struct {
 	TemplateRenderer *TemplateRenderer
 
 	// Tasks stores the task client
-	Tasks *TaskClient
+	Tasks *backlite.Client
 }
 
 // NewContainer creates and initializes a new Container
@@ -177,9 +178,20 @@ func (c *Container) initTasks() {
 	var err error
 	// You could use a separate database for tasks, if you'd like. but using one
 	// makes transaction support easier
-	c.Tasks, err = NewTaskClient(c.Config.Tasks, c.Database)
+	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
+		DB:              c.Database,
+		Logger:          log.Default(),
+		NumWorkers:      c.Config.Tasks.Goroutines,
+		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,
+		CleanupInterval: c.Config.Tasks.CleanupInterval,
+	})
+
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
+	}
+
+	if err = c.Tasks.Install(); err != nil {
+		panic(fmt.Sprintf("failed to install task schema: %v", err))
 	}
 }
 

@@ -82,7 +82,7 @@
   * [Flush tags](#flush-tags)
 * [Tasks](#tasks)
   * [Queues](#queues)
-  * [Runner](#runner)
+  * [Dispatcher](#dispatcher)
 * [Cron](#cron)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
@@ -997,77 +997,29 @@ As shown in the previous examples, cache tags were provided because they can be 
 
 Tasks are queued operations to be executed in the background, either immediately, at a specfic time, or after a given amount of time has passed. Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, etc.
 
-Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Goqite](https://github.com/maragudk/goqite) is the library chosen to interface with [SQLite](https://sqlite.org/) and handle queueing tasks and processing them asynchronously.
+Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Backlite](https://github.com/mikestefanello/backlite) is the library chosen to interface with [SQLite](https://sqlite.org/) and handle queueing tasks and processing them asynchronously. I wrote that specifically to address the requirements I wanted to satisfy for this project.
 
-To make things even easier, a custom client (`TaskClient`) is provided as a _Service_ on the `Container` which exposes a simple interface with [goqite](https://github.com/maragudk/goqite) that supports type-safe tasks and queues.
+To make things easy, the _Backlite_ client is provided as a _Service_ on the `Container` which allows you to register queues and add tasks.
+
+Configuration for the _Backlite_ client is exposed through the app's yaml configuration. The required database schema will be automatically installed when the app starts.
 
 ### Queues
 
-A full example of a queue implementation can be found in `pkg/tasks` with an interactive form to create a task and add to the queue at `/task` (see `pkg/handlers/task.go`).
+A full example of a queue implementation can be found in `pkg/tasks` with an interactive form to create a task and add to the queue at `/task` (see `pkg/handlers/task.go`). Also refer to the [Backlite](https://github.com/mikestefanello/backlite) documentation for reference and examples.
 
-A queue starts by declaring a `Task` _type_, which is the object that gets placed in to a queue and eventually passed to a queue subscriber (a callback function to process the task). A `Task` must implement the `Name()` method which returns a unique name for the task. For example:
+See `pkg/tasks/register.go` for a simple way to register all of your queues and to easily pass the `Container` to them so the queue processor callbacks have access to all of your app's dependencies.
 
-```go
-type MyTask struct {
-    Text string
-    Num int
-}
+### Dispatcher
 
-func (t MyTask) Name() string {
-    return "my_task"
-}
-```
-
-Then, create the queue for `MyTask` tasks:
+The _task dispatcher_ is what manages the worker pool used for executing tasks in the background. It monitors incoming and scheduled tasks and handles sending them to the pool for execution by the queue's processor callback. This must be started in order for this to happen. In `cmd/web/main.go`, the _task dispatcher_ is automatically started when the app starts via:
 
 ```go
-q := services.NewQueue[MyTask](func(ctx context.Context, task MyTask) error {
-    // This is where you process the task
-    fmt.Println("Processed %s task!", task.Text)
-    return nil
-})
+c.Tasks.Start(ctx)
 ```
 
-And finally, register the queue with the `TaskClient`:
+The app [configuration](#configuration) contains values to configure the client and dispatcher including how many goroutines to use, when to release stuck tasks back into the queue, and how often to cleanup retained tasks in the database.
 
-```go
-c.Tasks.Register(q)
-```
-
-See `pkg/tasks/register.go` for a simple way to register all of your queues and to easily pass the `Container` to them so the queue subscriber callbacks have access to all of your app's dependencies.
-
-Now you can easily add a task to the queue using the `TaskClient`:
-
-```go
-task := MyTask{Text: "Hello world!", Num: 10}
-
-err := c.Tasks.
-    New(task).
-    Save()
-```
-
-#### Options
-
-Tasks can be created and queued with various chained options:
-
-```go
-err := c.Tasks.
-    New(task).
-    Wait(30 * time.Second). // Wait 30 seconds before passing the task to the subscriber
-    At(time.Date(...)). // Wait until a given date before passing the task to the subscriber 
-    Tx(tx). // Include the queueing of this task in a database transaction
-    Save()
-```
-
-### Runner
-
-The _task runner_ is what manages periodically polling the database for available queued tasks to process and passing them to the queue's subscriber callback. This must be started in order for this to happen. In `cmd/web/main.go`, the _task runner_ is started by using the `TaskClient`:
-
-```go
-go c.Tasks.StartRunner(ctx)
-```
-
-The app [configuration](#configuration) contains values to configure the runner including how often to poll the database for tasks, the maximum amount of retries for a given task, and the amount of tasks that can be processed concurrently.
+When the app is shutdown, the dispatcher is given 10 seconds to wait for any in-progress tasks to finish execution. This can be changed in `cmd/web/main.go`.
 
 ## Cron
 
@@ -1203,12 +1155,12 @@ Future work includes but is not limited to:
 Thank you to all of the following amazing projects for making this possible.
 
 - [alpinejs](https://github.com/alpinejs/alpine)
+- [backlite](https://github.com/mikestefanello/backlite)
 - [bulma](https://github.com/jgthms/bulma)
 - [echo](https://github.com/labstack/echo)
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
 - [go-sqlite3](https://github.com/mattn/go-sqlite3)
-- [goqite](https://github.com/maragudk/goqite)
 - [goquery](https://github.com/PuerkitoBio/goquery)
 - [htmx](https://github.com/bigskysoftware/htmx)
 - [jwt](https://github.com/golang-jwt/jwt)

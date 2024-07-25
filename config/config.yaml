@@ -32,9 +32,9 @@ database:
   testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
 
 tasks:
-  pollInterval: "1s"
-  maxRetries: 10
   goroutines: 1
+  releaseAfter: "15m"
+  cleanupInterval: "1h"
 
 mail:
   hostname: "localhost"
