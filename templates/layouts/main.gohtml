@@ -67,7 +67,7 @@
         <input class="input" type="search" placeholder="Search..." @click="modal = true; $nextTick(() => $refs.input.focus());"/>
         <div class="modal" :class="modal ? 'is-active' : ''" x-show="modal == true">
             <div class="modal-background"></div>
-            <div class="modal-content" @click.away="modal = false;">
+            <div class="modal-content" @click.outside="modal = false;">
                 <div class="box">
                     <h2 class="subtitle">Search</h2>
                     <p class="control">
