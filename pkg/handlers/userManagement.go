@@ -47,7 +47,7 @@ func (u *UserManagement) Init(c *services.Container) error {
 
 func (u *UserManagement) Routes(g *echo.Group) {
 	UMGroup := g.Group("/userManagement", middleware.RequireAuthentication())
-	UMGroup.GET("/userDetails", u.UserDetails).Name = routeNameUserDetails
+	UMGroup.GET("", u.UserDetails).Name = routeNameUserDetails
 	UMGroup.POST("/updateUserState", u.UpdateUserState).Name = routeNameUpdateUser
 }
 

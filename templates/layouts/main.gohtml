@@ -30,6 +30,9 @@
                             <li>{{link (url "contact") "Contact" .Path}}</li>
                             <li>{{link (url "cache") "Cache" .Path}}</li>
                             <li>{{link (url "task") "Task" .Path}}</li>
+                            {{- if .IsAdmin }}
+                            <li>{{link (url "userDetails") "User Management" .Path}}</li>
+                            {{- end }}
                         </ul>
 
                         <p class="menu-label">Account</p>
