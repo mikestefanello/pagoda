@@ -1,0 +1,56 @@
+{{define "content"}}
+    {{template "UserDetail" .}}
+{{end}}
+
+{{define "UserDetail"}}
+    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+        <thead>
+        <tr>
+            <th>UserId</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Verified</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <th>UserId</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Verified</th>
+            <th>Status</th>
+        </tr>
+        </tfoot>
+        <tbody>
+        {{- range .Data}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Name}}</td>
+                <td>{{.Email}}</td>
+                <td>{{.Role}}</td>
+                <td>{{.Verified}}</td>
+                <td>
+                    {{ if .Disabled }}
+                        <button hx-post="/userManagement/updateUserState"
+                                hx-vals='{"state":"enable","users": ["{{.Email}}"]}'
+                                hx-target="this"
+                                hx-swap="outerHTML"
+                                class="button is-warning is-rounded">Enable</button>
+
+                    {{else}}
+                        <button hx-post="/userManagement/updateUserState"
+                                hx-vals='{"state":"disable","users": ["{{.Email}}"]}'
+                                hx-target="this"
+                                hx-swap="outerHTML"
+                                class="button is-danger is-rounded">Disable</button>
+                    {{end}}
+                </td>
+            </tr>
+        {{- end}}
+        </tbody>
+    </table>
+            {{template "csrf" .}}
+{{end}}

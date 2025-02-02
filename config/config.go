@@ -86,6 +86,7 @@ type (
 			Length     int
 		}
 		EmailVerificationTokenExpiration time.Duration
+		AdminEmail                       string
 	}
 
 	// CacheConfig stores the cache configuration

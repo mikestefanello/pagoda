@@ -19,6 +19,7 @@ app:
       expiration: "60m"
       length: 64
   emailVerificationTokenExpiration: "12h"
+  adminEmail: "test@pagaoda.com"
 
 cache:
   capacity: 100000

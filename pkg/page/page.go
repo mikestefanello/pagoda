@@ -67,6 +67,9 @@ type Page struct {
 	// IsAuth stores whether the user is authenticated
 	IsAuth bool
 
+	//IsAdmin stores whether the user is an admin
+	IsAdmin bool
+
 	// AuthUser stores the authenticated user
 	AuthUser *ent.User
 
@@ -143,6 +146,7 @@ func New(ctx echo.Context) Page {
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 		p.AuthUser = u.(*ent.User)
+		p.IsAdmin = p.AuthUser.Role == "admin"
 	}
 
 	p.HTMX.Request = htmx.GetRequest(ctx)

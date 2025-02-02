@@ -1002,6 +1002,11 @@ To make things easy, the _Backlite_ client is provided as a _Service_ on the `Co
 
 Configuration for the _Backlite_ client is exposed through the app's yaml configuration. The required database schema will be automatically installed when the app starts.
 
+## User Management
+
+By default, an admin user with "test@pagoda.com" as email and "manage" as password is available to enable and disable other users. This functionality can be extended to include role assignment and role creation. However, the admin user itself cannot be disabled.
+
+The CheckUserState middleware can be used to verify a user's state (Enable or Disabled) before performing any actions.
 ### Queues
 
 A full example of a queue implementation can be found in `pkg/tasks` with an interactive form to create a task and add to the queue at `/task` (see `pkg/handlers/task.go`). Also refer to the [Backlite](https://github.com/mikestefanello/backlite) documentation for reference and examples.

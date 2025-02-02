@@ -107,3 +107,15 @@ func RequireNoAuthentication() echo.MiddlewareFunc {
 		}
 	}
 }
+
+func CheckUserStatus(client *services.AuthClient) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if err := client.CheckUserStatus(c); err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized)
+			}
+
+			return next(c)
+		}
+	}
+}

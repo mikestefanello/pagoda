@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/mikestefanello/backlite"
+	"github.com/mikestefanello/pagoda/ent/user"
+	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"os"
 	"strings"
@@ -68,6 +70,7 @@ func NewContainer() *Container {
 	c.initTemplateRenderer()
 	c.initMail()
 	c.initTasks()
+	c.initUserManagement()
 	return c
 }
 
@@ -192,6 +195,31 @@ func (c *Container) initTasks() {
 
 	if err = c.Tasks.Install(); err != nil {
 		panic(fmt.Sprintf("failed to install task schema: %v", err))
+	}
+}
+
+func (c *Container) initUserManagement() {
+	isAdminPresent, err := c.ORM.User.Query().
+		Where(user.Name("Administrator")).
+		Exist(context.Background())
+	if err != nil {
+		panic(fmt.Sprintf("failed to check Admin user: %v", err))
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte("manage"), bcrypt.DefaultCost)
+	if err != nil {
+		panic(fmt.Sprintf("failed to hash password for admin: %v", err))
+	}
+	if !isAdminPresent {
+		_, err := c.ORM.User.Create().
+			SetName("Administrator").
+			SetPassword(string(hash)).
+			SetEmail(c.Config.App.AdminEmail).
+			SetVerified(true).
+			SetRole("admin").
+			Save(context.Background())
+		if err != nil {
+			panic(fmt.Sprintf("failed to create Admin user: %v", err))
+		}
 	}
 }
 

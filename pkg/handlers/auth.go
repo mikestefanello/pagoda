@@ -200,7 +200,8 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 	// Attempt to load the user
 	u, err := h.orm.User.
 		Query().
-		Where(user.Email(strings.ToLower(input.Email))).
+		Where(user.Email(strings.ToLower(input.Email)),
+			user.Disabled(false)).
 		Only(ctx.Request().Context())
 
 	switch err.(type) {

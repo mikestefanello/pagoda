@@ -120,6 +120,15 @@ func (c *AuthClient) CheckPassword(password, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
 
+// CheckUserStatus check if a given user's Status is disabled
+func (c *AuthClient) CheckUserStatus(ctx echo.Context) error {
+	u, _ := c.GetAuthenticatedUser(ctx)
+	if u.Disabled {
+		return errors.New("user Account Disabled")
+	}
+	return nil
+}
+
 // GeneratePasswordResetToken generates a password reset token for a given user.
 // For security purposes, the token itself is not stored in the database but rather
 // a hash of the token, exactly how passwords are handled. This method returns both
