@@ -84,6 +84,34 @@ func (uu *UserUpdate) SetNillableVerified(b *bool) *UserUpdate {
 	return uu
 }
 
+// SetRole sets the "role" field.
+func (uu *UserUpdate) SetRole(s string) *UserUpdate {
+	uu.mutation.SetRole(s)
+	return uu
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRole(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetRole(*s)
+	}
+	return uu
+}
+
+// SetDisabled sets the "disabled" field.
+func (uu *UserUpdate) SetDisabled(b bool) *UserUpdate {
+	uu.mutation.SetDisabled(b)
+	return uu
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableDisabled(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetDisabled(*b)
+	}
+	return uu
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uu *UserUpdate) AddOwnerIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddOwnerIDs(ids...)
@@ -195,6 +223,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Disabled(); ok {
+		_spec.SetField(user.FieldDisabled, field.TypeBool, value)
 	}
 	if uu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,6 +347,34 @@ func (uuo *UserUpdateOne) SetVerified(b bool) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableVerified(b *bool) *UserUpdateOne {
 	if b != nil {
 		uuo.SetVerified(*b)
+	}
+	return uuo
+}
+
+// SetRole sets the "role" field.
+func (uuo *UserUpdateOne) SetRole(s string) *UserUpdateOne {
+	uuo.mutation.SetRole(s)
+	return uuo
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRole(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetRole(*s)
+	}
+	return uuo
+}
+
+// SetDisabled sets the "disabled" field.
+func (uuo *UserUpdateOne) SetDisabled(b bool) *UserUpdateOne {
+	uuo.mutation.SetDisabled(b)
+	return uuo
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableDisabled(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetDisabled(*b)
 	}
 	return uuo
 }
@@ -458,6 +520,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Disabled(); ok {
+		_spec.SetField(user.FieldDisabled, field.TypeBool, value)
 	}
 	if uuo.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{

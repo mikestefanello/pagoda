@@ -53,6 +53,34 @@ func (uc *UserCreate) SetNillableVerified(b *bool) *UserCreate {
 	return uc
 }
 
+// SetRole sets the "role" field.
+func (uc *UserCreate) SetRole(s string) *UserCreate {
+	uc.mutation.SetRole(s)
+	return uc
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (uc *UserCreate) SetNillableRole(s *string) *UserCreate {
+	if s != nil {
+		uc.SetRole(*s)
+	}
+	return uc
+}
+
+// SetDisabled sets the "disabled" field.
+func (uc *UserCreate) SetDisabled(b bool) *UserCreate {
+	uc.mutation.SetDisabled(b)
+	return uc
+}
+
+// SetNillableDisabled sets the "disabled" field if the given value is not nil.
+func (uc *UserCreate) SetNillableDisabled(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetDisabled(*b)
+	}
+	return uc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
@@ -123,6 +151,14 @@ func (uc *UserCreate) defaults() error {
 		v := user.DefaultVerified
 		uc.mutation.SetVerified(v)
 	}
+	if _, ok := uc.mutation.Role(); !ok {
+		v := user.DefaultRole
+		uc.mutation.SetRole(v)
+	}
+	if _, ok := uc.mutation.Disabled(); !ok {
+		v := user.DefaultDisabled
+		uc.mutation.SetDisabled(v)
+	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		if user.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -161,6 +197,12 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.Verified(); !ok {
 		return &ValidationError{Name: "verified", err: errors.New(`ent: missing required field "User.verified"`)}
+	}
+	if _, ok := uc.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
+	}
+	if _, ok := uc.mutation.Disabled(); !ok {
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "User.disabled"`)}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
@@ -206,6 +248,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
 		_node.Verified = value
+	}
+	if value, ok := uc.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeString, value)
+		_node.Role = value
+	}
+	if value, ok := uc.mutation.Disabled(); ok {
+		_spec.SetField(user.FieldDisabled, field.TypeBool, value)
+		_node.Disabled = value
 	}
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
