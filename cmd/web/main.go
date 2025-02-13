@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/mikestefanello/pagoda/pkg/tasks"
 	"log"
 	"net/http"
 	"os"
@@ -14,7 +15,6 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/handlers"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/tasks"
 )
 
 func main() {
@@ -30,6 +30,12 @@ func main() {
 	if err := handlers.BuildRouter(c); err != nil {
 		log.Fatalf("failed to build the router: %v", err)
 	}
+
+	// Register all task queues
+	tasks.Register(c)
+
+	// Start the task runner to execute queued tasks
+	c.Tasks.Start(context.Background())
 
 	// Start the server
 	go func() {
@@ -56,12 +62,6 @@ func main() {
 			log.Fatalf("shutting down the server: %v", err)
 		}
 	}()
-
-	// Register all task queues
-	tasks.Register(c)
-
-	// Start the task runner to execute queued tasks
-	c.Tasks.Start(context.Background())
 
 	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
