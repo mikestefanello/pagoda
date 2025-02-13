@@ -26,6 +26,12 @@ func BuildRouter(c *services.Container) error {
 		g.Use(echomw.HTTPSRedirect())
 	}
 
+	// Create a cookie store for session data
+	cookieStore := sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))
+	cookieStore.Options.HttpOnly = true
+	cookieStore.Options.Secure = true
+	cookieStore.Options.SameSite = http.SameSiteStrictMode
+
 	g.Use(
 		echomw.RemoveTrailingSlashWithConfig(echomw.TrailingSlashConfig{
 			RedirectCode: http.StatusMovedPermanently,
@@ -39,11 +45,14 @@ func BuildRouter(c *services.Container) error {
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),
-		middleware.Session(sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))),
+		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		middleware.ServeCachedPage(c.TemplateRenderer),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
-			TokenLookup: "form:csrf",
+			TokenLookup:    "form:csrf",
+			CookieHTTPOnly: true,
+			CookieSecure:   true,
+			CookieSameSite: http.SameSiteStrictMode,
 		}),
 	)
 
