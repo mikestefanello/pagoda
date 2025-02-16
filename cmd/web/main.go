@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/mikestefanello/pagoda/pkg/handlers"
-	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/tasks"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
+
+	"github.com/mikestefanello/pagoda/pkg/handlers"
+	"github.com/mikestefanello/pagoda/pkg/log"
+	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/tasks"
 )
 
 func main() {
@@ -19,14 +20,12 @@ func main() {
 	c := services.NewContainer()
 	defer func() {
 		// Gracefully shutdown all services.
-		if err := c.Shutdown(); err != nil {
-			log.Fatal(err)
-		}
+		fatal("shutdown failed", c.Shutdown())
 	}()
 
 	// Build the router.
 	if err := handlers.BuildRouter(c); err != nil {
-		log.Fatalf("failed to build the router: %v", err)
+		fatal("failed to build the router", err)
 	}
 
 	// Register all task queues.
@@ -47,9 +46,7 @@ func main() {
 
 		if c.Config.HTTP.TLS.Enabled {
 			certs, err := tls.LoadX509KeyPair(c.Config.HTTP.TLS.Certificate, c.Config.HTTP.TLS.Key)
-			if err != nil {
-				log.Fatalf("cannot load TLS certificate: %v", err)
-			}
+			fatal("cannot load TLS certificate", err)
 
 			srv.TLSConfig = &tls.Config{
 				Certificates: []tls.Certificate{certs},
@@ -57,7 +54,7 @@ func main() {
 		}
 
 		if err := c.Web.StartServer(&srv); errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("shutting down the server: %v", err)
+			fatal("shutting down the server", err)
 		}
 	}()
 
@@ -66,4 +63,12 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 	signal.Notify(quit, os.Kill)
 	<-quit
+}
+
+// fatal logs an error and terminates the application, if the error is not nil.
+func fatal(msg string, err error) {
+	if err != nil {
+		log.Default().Error(msg, "error", err)
+		os.Exit(1)
+	}
 }
