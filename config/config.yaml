@@ -4,6 +4,7 @@ http:
   readTimeout: "5s"
   writeTimeout: "10s"
   idleTimeout: "2m"
+  shutdownTimeout: "10s"
   tls:
     enabled: false
     certificate: ""
@@ -35,6 +36,7 @@ tasks:
   goroutines: 1
   releaseAfter: "15m"
   cleanupInterval: "1h"
+  shutdownTimeout: "10s"
 
 mail:
   hostname: "localhost"

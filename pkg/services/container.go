@@ -71,15 +71,31 @@ func NewContainer() *Container {
 	return c
 }
 
-// Shutdown shuts the Container down and disconnects all connections.
-// If the task runner was started, cancel the context to shut it down prior to calling this.
+// Shutdown gracefully shuts the Container down and disconnects all connections.
 func (c *Container) Shutdown() error {
+	// Shutdown the web server.
+	webCtx, webCancel := context.WithTimeout(context.Background(), c.Config.HTTP.ShutdownTimeout)
+	defer webCancel()
+	if err := c.Web.Shutdown(webCtx); err != nil {
+		return err
+	}
+
+	// Shutdown the task runner.
+	taskCtx, taskCancel := context.WithTimeout(context.Background(), c.Config.Tasks.ShutdownTimeout)
+	defer taskCancel()
+	c.Tasks.Stop(taskCtx)
+
+	// Shutdown the ORM.
 	if err := c.ORM.Close(); err != nil {
 		return err
 	}
+
+	// Shutdown the database.
 	if err := c.Database.Close(); err != nil {
 		return err
 	}
+
+	// Shutdown the cache.
 	c.Cache.Close()
 
 	return nil

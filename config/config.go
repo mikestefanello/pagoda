@@ -63,12 +63,13 @@ type (
 
 	// HTTPConfig stores HTTP configuration
 	HTTPConfig struct {
-		Hostname     string
-		Port         uint16
-		ReadTimeout  time.Duration
-		WriteTimeout time.Duration
-		IdleTimeout  time.Duration
-		TLS          struct {
+		Hostname        string
+		Port            uint16
+		ReadTimeout     time.Duration
+		WriteTimeout    time.Duration
+		IdleTimeout     time.Duration
+		ShutdownTimeout time.Duration
+		TLS             struct {
 			Enabled     bool
 			Certificate string
 			Key         string
@@ -109,6 +110,7 @@ type (
 		Goroutines      int
 		ReleaseAfter    time.Duration
 		CleanupInterval time.Duration
+		ShutdownTimeout time.Duration
 	}
 
 	// MailConfig stores the mail configuration
