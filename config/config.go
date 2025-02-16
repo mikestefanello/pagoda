@@ -57,6 +57,7 @@ type (
 		App      AppConfig
 		Cache    CacheConfig
 		Database DatabaseConfig
+		Files    FilesConfig
 		Tasks    TasksConfig
 		Mail     MailConfig
 	}
@@ -103,6 +104,11 @@ type (
 		Driver         string
 		Connection     string
 		TestConnection string
+	}
+
+	// FilesConfig stores the file system configuration
+	FilesConfig struct {
+		Directory string
 	}
 
 	// TasksConfig stores the tasks configuration

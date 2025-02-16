@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/mikestefanello/backlite"
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/mikestefanello/backlite"
+	"github.com/spf13/afero"
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/labstack/echo/v4"
@@ -39,6 +41,9 @@ type Container struct {
 	// Database stores the connection to the database
 	Database *sql.DB
 
+	// Files stores the file system.
+	Files afero.Fs
+
 	// ORM stores a client to the ORM
 	ORM *ent.Client
 
@@ -63,6 +68,7 @@ func NewContainer() *Container {
 	c.initWeb()
 	c.initCache()
 	c.initDatabase()
+	c.initFiles()
 	c.initORM()
 	c.initAuth()
 	c.initTemplateRenderer()
@@ -157,6 +163,21 @@ func (c *Container) initDatabase() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// initFiles initializes the file system.
+func (c *Container) initFiles() {
+	// Use in-memory storage for tests.
+	if c.Config.App.Environment == config.EnvTest {
+		c.Files = afero.NewMemMapFs()
+		return
+	}
+
+	fs := afero.NewOsFs()
+	if err := fs.MkdirAll(c.Config.Files.Directory, 0755); err != nil {
+		panic(err)
+	}
+	c.Files = afero.NewBasePathFs(fs, c.Config.Files.Directory)
 }
 
 // initORM initializes the ORM

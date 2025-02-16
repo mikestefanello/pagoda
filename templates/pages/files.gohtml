@@ -1,0 +1,51 @@
+{{define "content"}}
+    <article class="message is-link">
+        <div class="message-body">
+            <p>This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.</p>
+        </div>
+    </article>
+    <form id="files" method="post" action="{{url "files.submit"}}" enctype="multipart/form-data">
+        <div class="field file">
+            <label class="file-label">
+                <input class="file-input" type="file" name="file" />
+                <span class="file-cta">
+                    <span class="file-label">Choose a file… </span>
+                </span>
+            </label>
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-link">Upload</button>
+            </div>
+        </div>
+
+        {{template "csrf" .}}
+    </form>
+
+    <hr/>
+    <h3 class="title">Uploaded files</h3>
+    <article class="message is-warning">
+        <div class="message-body">
+            <p>Below are all files in the configured upload directory.</p>
+        </div>
+    </article>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Size</th>
+                <th>Modified on</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{- range .Data}}
+                <tr>
+                    <td>{{.Name}}</td>
+                    <td>{{.Size}}</td>
+                    <td>{{.Modified}}</td>
+                </tr>
+            {{- end}}
+        </tbody>
+    </table>
+{{end}}

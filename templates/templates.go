@@ -25,6 +25,7 @@ const (
 	PageCache          Page = "cache"
 	PageContact        Page = "contact"
 	PageError          Page = "error"
+	PageFiles          Page = "files"
 	PageForgotPassword Page = "forgot-password"
 	PageHome           Page = "home"
 	PageLogin          Page = "login"

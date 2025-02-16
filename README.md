@@ -83,6 +83,7 @@
   * [Queues](#queues)
   * [Dispatcher](#dispatcher)
 * [Cron](#cron)
+* [Files](#files)
 * [Static files](#static-files)
   * [Cache control headers](#cache-control-headers)
   * [Cache-buster](#cache-buster)
@@ -179,6 +180,7 @@ The container is located at `pkg/services/container.go` and is meant to house al
 - Mail
 - Template renderer
 - Tasks
+- Files
 
 A new container can be created and initialized via `services.NewContainer()`. It can be later shutdown via `Shutdown()`.
 
@@ -1024,6 +1026,12 @@ When the app is shutdown, the dispatcher is given 10 seconds to wait for any in-
 
 By default, no cron solution is provided because it's very easy to add yourself if you need this. You can either use a [ticker](https://pkg.go.dev/time#Ticker) or a [library](https://github.com/robfig/cron).
 
+## Files
+
+To handle file management functionality such as file uploads, an abstracted file system interface is provided as a _Service_ on the `Container` powered by [afero](https://github.com/spf13/afero). This allows you to easily change the file system backend (ie, local, GCS, SFTP, in-memory) without having to change any of the application code other than the initialization on the `Container`. By default, the local OS is used with a directory specified in the application configuration (which defaults to `uploads`). When running tests, an in-memory file system backend is automatically used.
+
+A simple file upload form example is provided at `/files` which also dynamically lists all files previously uploaded. No database entities or entries are created or provided for files and uploaded files are not available to be served. You will have to implement whatever functionality your application needs.
+
 ## Static files
 
 Static files are currently configured in the router (`pkg/handler/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
@@ -1145,14 +1153,15 @@ The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware 
 
 Future work includes but is not limited to:
 
-- Flexible pager templates
-- Expanded HTMX examples and integration
 - Admin section
+- OAuth
+- Flexible pager templates
 
 ## Credits
 
 Thank you to all of the following amazing projects for making this possible.
 
+- [afero](https://github.com/spf13/afero)
 - [alpinejs](https://github.com/alpinejs/alpine)
 - [backlite](https://github.com/mikestefanello/backlite)
 - [bulma](https://github.com/jgthms/bulma)

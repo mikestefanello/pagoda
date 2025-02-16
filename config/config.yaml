@@ -32,6 +32,9 @@ database:
   connection: "dbs/main.db?_journal=WAL&_timeout=5000&_fk=true"
   testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
 
+files:
+  directory: "uploads"
+
 tasks:
   goroutines: 1
   releaseAfter: "15m"
