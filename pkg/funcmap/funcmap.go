@@ -3,7 +3,6 @@ package funcmap
 import (
 	"fmt"
 	"html/template"
-	"reflect"
 	"strings"
 
 	"github.com/Masterminds/sprig"
@@ -29,24 +28,11 @@ func NewFuncMap(web *echo.Echo) template.FuncMap {
 	funcs := sprig.FuncMap()
 
 	// Include all the custom functions
-	funcs["hasField"] = fm.hasField
 	funcs["file"] = fm.file
 	funcs["link"] = fm.link
 	funcs["url"] = fm.url
 
 	return funcs
-}
-
-// hasField checks if an interface contains a given field
-func (fm *funcMap) hasField(v any, name string) bool {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
-		rv = rv.Elem()
-	}
-	if rv.Kind() != reflect.Struct {
-		return false
-	}
-	return rv.FieldByName(name).IsValid()
 }
 
 // file appends a cache buster to a given filepath so it can remain cached until the app is restarted

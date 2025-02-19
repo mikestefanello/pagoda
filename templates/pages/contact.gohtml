@@ -31,20 +31,22 @@
                 {{template "field-errors" (.Form.GetFieldErrors "Email")}}
             </div>
 
-            <div class="control">
+            <div class="control field">
                 <label class="label">Department</label>
-                <label class="radio">
-                    <input type="radio" name="department" value="sales" {{if eq .Form.Department "sales"}}checked{{end}}/>
-                    Sales
-                </label>
-                <label class="radio">
-                    <input type="radio" name="department" value="marketing" {{if eq .Form.Department "marketing"}}checked{{end}}/>
-                    Marketing
-                </label>
-                <label class="radio">
-                    <input type="radio" name="department" value="hr" {{if eq .Form.Department "hr"}}checked{{end}}/>
-                    HR
-                </label>
+                <div class="radios">
+                    <label class="radio">
+                        <input type="radio" name="department" value="sales" {{if eq .Form.Department "sales"}}checked{{end}}/>
+                        Sales
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="department" value="marketing" {{if eq .Form.Department "marketing"}}checked{{end}}/>
+                        Marketing
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="department" value="hr" {{if eq .Form.Department "hr"}}checked{{end}}/>
+                        HR
+                    </label>
+                </div>
                 {{template "field-errors" (.Form.GetFieldErrors "Department")}}
             </div>
 
