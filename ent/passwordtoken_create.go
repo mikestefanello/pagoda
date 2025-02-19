@@ -106,7 +106,7 @@ func (ptc *PasswordTokenCreate) check() error {
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PasswordToken.created_at"`)}
 	}
-	if _, ok := ptc.mutation.UserID(); !ok {
+	if len(ptc.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PasswordToken.user"`)}
 	}
 	return nil

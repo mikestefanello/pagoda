@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -85,7 +86,7 @@ func (ptq *PasswordTokenQuery) QueryUser() *UserQuery {
 // First returns the first PasswordToken entity from the query.
 // Returns a *NotFoundError when no PasswordToken was found.
 func (ptq *PasswordTokenQuery) First(ctx context.Context) (*PasswordToken, error) {
-	nodes, err := ptq.Limit(1).All(setContextOp(ctx, ptq.ctx, "First"))
+	nodes, err := ptq.Limit(1).All(setContextOp(ctx, ptq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func (ptq *PasswordTokenQuery) FirstX(ctx context.Context) *PasswordToken {
 // Returns a *NotFoundError when no PasswordToken ID was found.
 func (ptq *PasswordTokenQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ptq.Limit(1).IDs(setContextOp(ctx, ptq.ctx, "FirstID")); err != nil {
+	if ids, err = ptq.Limit(1).IDs(setContextOp(ctx, ptq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -131,7 +132,7 @@ func (ptq *PasswordTokenQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one PasswordToken entity is found.
 // Returns a *NotFoundError when no PasswordToken entities are found.
 func (ptq *PasswordTokenQuery) Only(ctx context.Context) (*PasswordToken, error) {
-	nodes, err := ptq.Limit(2).All(setContextOp(ctx, ptq.ctx, "Only"))
+	nodes, err := ptq.Limit(2).All(setContextOp(ctx, ptq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (ptq *PasswordTokenQuery) OnlyX(ctx context.Context) *PasswordToken {
 // Returns a *NotFoundError when no entities are found.
 func (ptq *PasswordTokenQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ptq.Limit(2).IDs(setContextOp(ctx, ptq.ctx, "OnlyID")); err != nil {
+	if ids, err = ptq.Limit(2).IDs(setContextOp(ctx, ptq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -184,7 +185,7 @@ func (ptq *PasswordTokenQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of PasswordTokens.
 func (ptq *PasswordTokenQuery) All(ctx context.Context) ([]*PasswordToken, error) {
-	ctx = setContextOp(ctx, ptq.ctx, "All")
+	ctx = setContextOp(ctx, ptq.ctx, ent.OpQueryAll)
 	if err := ptq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -206,7 +207,7 @@ func (ptq *PasswordTokenQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if ptq.ctx.Unique == nil && ptq.path != nil {
 		ptq.Unique(true)
 	}
-	ctx = setContextOp(ctx, ptq.ctx, "IDs")
+	ctx = setContextOp(ctx, ptq.ctx, ent.OpQueryIDs)
 	if err = ptq.Select(passwordtoken.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -224,7 +225,7 @@ func (ptq *PasswordTokenQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (ptq *PasswordTokenQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ptq.ctx, "Count")
+	ctx = setContextOp(ctx, ptq.ctx, ent.OpQueryCount)
 	if err := ptq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -242,7 +243,7 @@ func (ptq *PasswordTokenQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (ptq *PasswordTokenQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ptq.ctx, "Exist")
+	ctx = setContextOp(ctx, ptq.ctx, ent.OpQueryExist)
 	switch _, err := ptq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -536,7 +537,7 @@ func (ptgb *PasswordTokenGroupBy) Aggregate(fns ...AggregateFunc) *PasswordToken
 
 // Scan applies the selector query and scans the result into the given value.
 func (ptgb *PasswordTokenGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ptgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, ptgb.build.ctx, ent.OpQueryGroupBy)
 	if err := ptgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -584,7 +585,7 @@ func (pts *PasswordTokenSelect) Aggregate(fns ...AggregateFunc) *PasswordTokenSe
 
 // Scan applies the selector query and scans the result into the given value.
 func (pts *PasswordTokenSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pts.ctx, "Select")
+	ctx = setContextOp(ctx, pts.ctx, ent.OpQuerySelect)
 	if err := pts.prepareQuery(ctx); err != nil {
 		return err
 	}

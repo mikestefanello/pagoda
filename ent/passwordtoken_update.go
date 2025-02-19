@@ -113,7 +113,7 @@ func (ptu *PasswordTokenUpdate) check() error {
 			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
-	if _, ok := ptu.mutation.UserID(); ptu.mutation.UserCleared() && !ok {
+	if ptu.mutation.UserCleared() && len(ptu.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
@@ -283,7 +283,7 @@ func (ptuo *PasswordTokenUpdateOne) check() error {
 			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
-	if _, ok := ptuo.mutation.UserID(); ptuo.mutation.UserCleared() && !ok {
+	if ptuo.mutation.UserCleared() && len(ptuo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
