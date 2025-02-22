@@ -60,6 +60,7 @@ func Set(ctx echo.Context, typ Type, message string) {
 
 // Get gets flash messages of a given type from the session storage.
 // Errors will be logged and not returned.
+// TODO return all types with a single call.
 func Get(ctx echo.Context, typ Type) []string {
 	var msgs []string
 

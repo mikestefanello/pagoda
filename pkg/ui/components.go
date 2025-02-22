@@ -82,7 +82,7 @@ func message(class, header string, body Node) Node {
 func sidebarMenu(r *request) Node {
 	return Aside(
 		Class("menu"),
-		Attr("hx-boost", "true"),
+		hxBoost(),
 		P(
 			Class("menu-label"),
 			Text("General"),
@@ -129,7 +129,7 @@ func navBar(r *request) Node {
 			Class("container"),
 			Div(
 				Class("navbar-brand"),
-				Attr("hx-boost", "true"),
+				hxBoost(),
 				A(
 					Href(r.path(routenames.Home)),
 					Class("navbar-item"),
@@ -177,7 +177,7 @@ func search(r *request) Node {
 					P(
 						Class("control"),
 						Input(
-							Attr("hx-get", r.path("search")),
+							Attr("hx-get", r.path(routenames.Search)),
 							Attr("hx-trigger", "keyup changed delay:500ms"),
 							Attr("hx-target", "#results"),
 							Name("query"),
@@ -238,4 +238,8 @@ func buttonLink(href, class, label string) Node {
 		Class("button "+class),
 		Text(label),
 	)
+}
+
+func hxBoost() Node {
+	return Attr("hx-boost", "true")
 }

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/mikestefanello/pagoda/pkg/form"
@@ -33,6 +34,18 @@ type (
 
 	ForgotPasswordForm struct {
 		Email string `form:"email" validate:"required,email"`
+		form.Submission
+	}
+
+	ResetPasswordForm struct {
+		Password        string `form:"password" validate:"required"`
+		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
+		form.Submission
+	}
+
+	TaskForm struct {
+		Delay   int    `form:"delay" validate:"gte=0"`
+		Message string `form:"message" validate:"required"`
 		form.Submission
 	}
 )
@@ -80,7 +93,7 @@ func (f *LoginForm) render(r *request) Node {
 	return Form(
 		ID("login"),
 		Method(http.MethodPost),
-		Attr("hx-boost", "true"),
+		hxBoost(),
 		Action(r.path(routenames.LoginSubmit)),
 		flashMessages(r),
 		formInput(input{
@@ -111,7 +124,7 @@ func (f *RegisterForm) render(r *request) Node {
 	return Form(
 		ID("register"),
 		Method(http.MethodPost),
-		Attr("hx-boost", "true"),
+		hxBoost(),
 		Action(r.path(routenames.RegisterSubmit)),
 		formInput(input{
 			form:      f,
@@ -157,7 +170,7 @@ func (f *ForgotPasswordForm) render(r *request) Node {
 	return Form(
 		ID("forgot-password"),
 		Method(http.MethodPost),
-		Attr("hx-boost", "true"),
+		hxBoost(),
 		Action(r.path(routenames.ForgotPasswordSubmit)),
 		formInput(input{
 			form:      f,
@@ -170,6 +183,65 @@ func (f *ForgotPasswordForm) render(r *request) Node {
 		formControlGroup(
 			button("is-primary", "Reset password"),
 			buttonLink(r.path(routenames.Home), "is-light", "Cancel"),
+		),
+		csrf(r),
+	)
+}
+
+func (f *ResetPasswordForm) render(r *request) Node {
+	return Form(
+		ID("reset-password"),
+		Method(http.MethodPost),
+		hxBoost(),
+		Action(r.Path),
+		formInput(input{
+			form:        f,
+			formField:   "Password",
+			name:        "password",
+			inputType:   "password",
+			label:       "Password",
+			placeholder: "******",
+		}),
+		formInput(input{
+			form:        f,
+			formField:   "PasswordConfirm",
+			name:        "password-confirm",
+			inputType:   "password",
+			label:       "Confirm password",
+			placeholder: "******",
+		}),
+		formControlGroup(
+			button("is-primary", "Update password"),
+		),
+		csrf(r),
+	)
+}
+
+func (f *TaskForm) render(r *request) Node {
+	return Form(
+		ID("task"),
+		Method(http.MethodPost),
+		Attr("hx-post", r.path(routenames.TaskSubmit)),
+		flashMessages(r),
+		formInput(input{
+			form:      f,
+			formField: "Delay",
+			name:      "delay",
+			inputType: "number",
+			label:     "Delay (in seconds)",
+			help:      "How long to wait until the task is executed",
+			value:     fmt.Sprint(f.Delay),
+		}),
+		formTextarea(textarea{
+			form:      f,
+			formField: "Message",
+			name:      "message",
+			label:     "Message",
+			value:     f.Message,
+			help:      "The message the task will output to the log",
+		}),
+		formControlGroup(
+			button("is-link", "Add task to queue"),
 		),
 		csrf(r),
 	)

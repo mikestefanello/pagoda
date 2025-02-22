@@ -70,7 +70,7 @@ func (h *Pages) Home(ctx echo.Context) error {
 	})
 }
 
-// fetchPosts is an mock example of fetching posts to illustrate how paging works
+// fetchPosts is a mock example of fetching posts to illustrate how paging works.
 func (h *Pages) fetchPosts(pager *page.Pager) []ui.Post {
 	pager.SetItems(20)
 	posts := make([]ui.Post, 20)

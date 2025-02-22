@@ -58,7 +58,7 @@ func layoutAuth(r *request, content Node) Node {
 										content,
 										Div(
 											Class("content is-small has-text-centered"),
-											Attr("hx-boost", "true"),
+											hxBoost(),
 											A(Href(r.path(routenames.Login)), Text("Login")),
 											Raw(" &#9676; "),
 											A(Href(r.path("register")), Text("Create an account")),

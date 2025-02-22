@@ -13,19 +13,10 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
-	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/redirect"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/ui"
-	"github.com/mikestefanello/pagoda/templates"
-)
-
-const (
-	routeNameLogout              = "logout"
-	routeNameResetPassword       = "reset_password"
-	routeNameResetPasswordSubmit = "reset_password.submit"
-	routeNameVerifyEmail         = "verify_email"
 )
 
 type (
@@ -33,13 +24,6 @@ type (
 		auth *services.AuthClient
 		mail *services.MailClient
 		orm  *ent.Client
-		*services.TemplateRenderer
-	}
-
-	resetPasswordForm struct {
-		Password        string `form:"password" validate:"required"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		form.Submission
 	}
 )
 
@@ -48,7 +32,6 @@ func init() {
 }
 
 func (h *Auth) Init(c *services.Container) error {
-	h.TemplateRenderer = c.TemplateRenderer
 	h.orm = c.ORM
 	h.auth = c.Auth
 	h.mail = c.Mail
@@ -56,8 +39,8 @@ func (h *Auth) Init(c *services.Container) error {
 }
 
 func (h *Auth) Routes(g *echo.Group) {
-	g.GET("/logout", h.Logout, middleware.RequireAuthentication()).Name = routeNameLogout
-	g.GET("/email/verify/:token", h.VerifyEmail).Name = routeNameVerifyEmail
+	g.GET("/logout", h.Logout, middleware.RequireAuthentication()).Name = routenames.Logout
+	g.GET("/email/verify/:token", h.VerifyEmail).Name = routenames.VerifyEmail
 
 	noAuth := g.Group("/user", middleware.RequireNoAuthentication())
 	noAuth.GET("/login", h.LoginPage).Name = routenames.Login
@@ -71,8 +54,8 @@ func (h *Auth) Routes(g *echo.Group) {
 		middleware.LoadUser(h.orm),
 		middleware.LoadValidPasswordToken(h.auth),
 	)
-	resetGroup.GET("/token/:user/:password_token/:token", h.ResetPasswordPage).Name = routeNameResetPassword
-	resetGroup.POST("/token/:user/:password_token/:token", h.ResetPasswordSubmit).Name = routeNameResetPasswordSubmit
+	resetGroup.GET("/token/:user/:password_token/:token", h.ResetPasswordPage).Name = routenames.ResetPassword
+	resetGroup.POST("/token/:user/:password_token/:token", h.ResetPasswordSubmit).Name = routenames.ResetPasswordSubmit
 }
 
 func (h *Auth) ForgotPasswordPage(ctx echo.Context) error {
@@ -123,7 +106,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 	)
 
 	// Email the user
-	url := ctx.Echo().Reverse(routeNameResetPassword, u.ID, pt.ID, token)
+	url := ctx.Echo().Reverse(routenames.ResetPassword, u.ID, pt.ID, token)
 	err = h.mail.
 		Compose().
 		To(u.Email).
@@ -287,7 +270,7 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	}
 
 	// Send the email
-	url := ctx.Echo().Reverse(routeNameVerifyEmail, token)
+	url := ctx.Echo().Reverse(routenames.VerifyEmail, token)
 	err = h.mail.
 		Compose().
 		To(usr.Email).
@@ -307,17 +290,11 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 }
 
 func (h *Auth) ResetPasswordPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageResetPassword
-	p.Title = "Reset password"
-	p.Form = form.Get[resetPasswordForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return ui.ResetPassword(ctx, form.Get[ui.ResetPasswordForm](ctx))
 }
 
 func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
-	var input resetPasswordForm
+	var input ui.ResetPasswordForm
 
 	err := form.Submit(ctx, &input)
 

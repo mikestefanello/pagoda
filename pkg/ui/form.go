@@ -15,6 +15,7 @@ type (
 		label       string
 		value       string
 		placeholder string
+		help        string
 	}
 
 	radios struct {
@@ -37,6 +38,7 @@ type (
 		name      string
 		label     string
 		value     string
+		help      string
 	}
 )
 
@@ -72,6 +74,7 @@ func formTextarea(el textarea) Node {
 				Text(el.value),
 			),
 		),
+		If(el.help != "", P(Class("help"), Text(el.help))),
 		formFieldErrors(el.form, el.formField),
 	)
 }
@@ -121,6 +124,7 @@ func formInput(el input) Node {
 				Value(el.value),
 			),
 		),
+		If(el.help != "", P(Class("help"), Text(el.help))),
 		formFieldErrors(el.form, el.formField),
 	)
 }
