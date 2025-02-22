@@ -23,7 +23,7 @@ func Home(ctx echo.Context, posts Posts) error {
 		))
 	}
 
-	return r.render(primaryLayout, g)
+	return r.render(layoutPrimary, g)
 }
 
 func ContactUs(ctx echo.Context, form *ContactForm) error {
@@ -53,5 +53,34 @@ func ContactUs(ctx echo.Context, form *ContactForm) error {
 		g = append(g, form.render(r))
 	}
 
-	return r.render(primaryLayout, g)
+	return r.render(layoutPrimary, g)
+}
+
+func Login(ctx echo.Context, form *LoginForm) error {
+	r := newRequest(ctx)
+	r.Title = "Login"
+
+	return r.render(layoutAuth, form.render(r))
+}
+
+func Register(ctx echo.Context, form *RegisterForm) error {
+	r := newRequest(ctx)
+	r.Title = "Register"
+
+	return r.render(layoutAuth, form.render(r))
+}
+
+func ForgotPassword(ctx echo.Context, form *ForgotPasswordForm) error {
+	r := newRequest(ctx)
+	r.Title = "Forgot password"
+
+	g := Group{
+		Div(
+			Class("content"),
+			P(Text("Enter your email address and we'll email you a link that allows you to reset your password.")),
+		),
+		form.render(r),
+	}
+
+	return r.render(layoutAuth, g)
 }

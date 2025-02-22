@@ -224,3 +224,18 @@ func footer(r *request) Node {
 		`)),
 	}
 }
+
+func button(class, label string) Node {
+	return Button(
+		Class("button "+class),
+		Text(label),
+	)
+}
+
+func buttonLink(href, class, label string) Node {
+	return A(
+		Href(href),
+		Class("button "+class),
+		Text(label),
+	)
+}

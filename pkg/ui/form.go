@@ -8,12 +8,13 @@ import (
 
 type (
 	input struct {
-		form      form.Form
-		formField string
-		name      string
-		inputType string
-		label     string
-		value     string
+		form        form.Form
+		formField   string
+		name        string
+		inputType   string
+		label       string
+		value       string
+		placeholder string
 	}
 
 	radios struct {
@@ -39,16 +40,18 @@ type (
 	}
 )
 
-func formSubmit(label string) Node {
+func formControlGroup(controls ...Node) Node {
+	g := make(Group, 0, len(controls))
+	for _, control := range controls {
+		g = append(g, Div(
+			Class("control"),
+			control,
+		))
+	}
+
 	return Div(
 		Class("field is-grouped"),
-		Div(
-			Class("control"),
-			Button(
-				Class("button is-link"),
-				Text(label),
-			),
-		),
+		g,
 	)
 }
 
@@ -113,6 +116,7 @@ func formInput(el input) Node {
 				ID(el.name),
 				Name(el.name),
 				Type(el.inputType),
+				If(el.placeholder != "", Placeholder(el.placeholder)),
 				Class("input "+formFieldStatusClass(el.form, el.formField)),
 				Value(el.value),
 			),

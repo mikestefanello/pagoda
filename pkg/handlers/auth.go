@@ -17,20 +17,15 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/redirect"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/mikestefanello/pagoda/templates"
 )
 
 const (
-	routeNameForgotPassword       = "forgot_password"
-	routeNameForgotPasswordSubmit = "forgot_password.submit"
-	routeNameLogin                = "login"
-	routeNameLoginSubmit          = "login.submit"
-	routeNameLogout               = "logout"
-	routeNameRegister             = "register"
-	routeNameRegisterSubmit       = "register.submit"
-	routeNameResetPassword        = "reset_password"
-	routeNameResetPasswordSubmit  = "reset_password.submit"
-	routeNameVerifyEmail          = "verify_email"
+	routeNameLogout              = "logout"
+	routeNameResetPassword       = "reset_password"
+	routeNameResetPasswordSubmit = "reset_password.submit"
+	routeNameVerifyEmail         = "verify_email"
 )
 
 type (
@@ -39,25 +34,6 @@ type (
 		mail *services.MailClient
 		orm  *ent.Client
 		*services.TemplateRenderer
-	}
-
-	forgotPasswordForm struct {
-		Email string `form:"email" validate:"required,email"`
-		form.Submission
-	}
-
-	loginForm struct {
-		Email    string `form:"email" validate:"required,email"`
-		Password string `form:"password" validate:"required"`
-		form.Submission
-	}
-
-	registerForm struct {
-		Name            string `form:"name" validate:"required"`
-		Email           string `form:"email" validate:"required,email"`
-		Password        string `form:"password" validate:"required"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		form.Submission
 	}
 
 	resetPasswordForm struct {
@@ -84,12 +60,12 @@ func (h *Auth) Routes(g *echo.Group) {
 	g.GET("/email/verify/:token", h.VerifyEmail).Name = routeNameVerifyEmail
 
 	noAuth := g.Group("/user", middleware.RequireNoAuthentication())
-	noAuth.GET("/login", h.LoginPage).Name = routeNameLogin
-	noAuth.POST("/login", h.LoginSubmit).Name = routeNameLoginSubmit
-	noAuth.GET("/register", h.RegisterPage).Name = routeNameRegister
-	noAuth.POST("/register", h.RegisterSubmit).Name = routeNameRegisterSubmit
-	noAuth.GET("/password", h.ForgotPasswordPage).Name = routeNameForgotPassword
-	noAuth.POST("/password", h.ForgotPasswordSubmit).Name = routeNameForgotPasswordSubmit
+	noAuth.GET("/login", h.LoginPage).Name = routenames.Login
+	noAuth.POST("/login", h.LoginSubmit).Name = routenames.LoginSubmit
+	noAuth.GET("/register", h.RegisterPage).Name = routenames.Register
+	noAuth.POST("/register", h.RegisterSubmit).Name = routenames.RegisterSubmit
+	noAuth.GET("/password", h.ForgotPasswordPage).Name = routenames.ForgotPassword
+	noAuth.POST("/password", h.ForgotPasswordSubmit).Name = routenames.ForgotPasswordSubmit
 
 	resetGroup := noAuth.Group("/password/reset",
 		middleware.LoadUser(h.orm),
@@ -100,17 +76,11 @@ func (h *Auth) Routes(g *echo.Group) {
 }
 
 func (h *Auth) ForgotPasswordPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageForgotPassword
-	p.Title = "Forgot password"
-	p.Form = form.Get[forgotPasswordForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return ui.ForgotPassword(ctx, form.Get[ui.ForgotPasswordForm](ctx))
 }
 
 func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
-	var input forgotPasswordForm
+	var input ui.ForgotPasswordForm
 
 	succeed := func() error {
 		form.Clear(ctx)
@@ -169,17 +139,11 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 }
 
 func (h *Auth) LoginPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageLogin
-	p.Title = "Log in"
-	p.Form = form.Get[loginForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return ui.Login(ctx, form.Get[ui.LoginForm](ctx))
 }
 
 func (h *Auth) LoginSubmit(ctx echo.Context) error {
-	var input loginForm
+	var input ui.LoginForm
 
 	authFailed := func() error {
 		input.SetFieldError("Email", "")
@@ -224,7 +188,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return fail(err, "unable to log in user")
 	}
 
-	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
+	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
 
 	return redirect.New(ctx).
 		Route(routenames.Home).
@@ -243,17 +207,11 @@ func (h *Auth) Logout(ctx echo.Context) error {
 }
 
 func (h *Auth) RegisterPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageRegister
-	p.Title = "Register"
-	p.Form = form.Get[registerForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return ui.Register(ctx, form.Get[ui.RegisterForm](ctx))
 }
 
 func (h *Auth) RegisterSubmit(ctx echo.Context) error {
-	var input registerForm
+	var input ui.RegisterForm
 
 	err := form.Submit(ctx, &input)
 
@@ -288,7 +246,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	case *ent.ConstraintError:
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
 		return redirect.New(ctx).
-			Route(routeNameLogin).
+			Route(routenames.Login).
 			Go()
 	default:
 		return fail(err, "unable to create user")
@@ -303,7 +261,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		)
 		msg.Info(ctx, "Your account has been created.")
 		return redirect.New(ctx).
-			Route(routeNameLogin).
+			Route(routenames.Login).
 			Go()
 	}
 
@@ -398,7 +356,7 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 
 	msg.Success(ctx, "Your password has been updated.")
 	return redirect.New(ctx).
-		Route(routeNameLogin).
+		Route(routenames.Login).
 		Go()
 }
 
