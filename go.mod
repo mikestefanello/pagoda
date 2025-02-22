@@ -19,6 +19,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.33.0
+	maragu.dev/gomponents v1.0.0
 )
 
 require (

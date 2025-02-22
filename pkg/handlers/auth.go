@@ -15,6 +15,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/redirect"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/templates"
 )
@@ -226,7 +227,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
 
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
@@ -237,7 +238,7 @@ func (h *Auth) Logout(ctx echo.Context) error {
 		msg.Danger(ctx, "An error occurred. Please try again.")
 	}
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
@@ -312,7 +313,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	h.sendVerificationEmail(ctx, u)
 
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
@@ -410,7 +411,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 	if err != nil {
 		msg.Warning(ctx, "The link is either invalid or has expired.")
 		return redirect.New(ctx).
-			Route(routeNameHome).
+			Route(routenames.Home).
 			Go()
 	}
 
@@ -449,6 +450,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 
 	msg.Success(ctx, "Your email has been successfully verified.")
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }

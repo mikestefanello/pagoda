@@ -2,30 +2,18 @@ package handlers
 
 import (
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
-	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
-)
-
-const (
-	routeNameContact       = "contact"
-	routeNameContactSubmit = "contact.submit"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
 type (
 	Contact struct {
 		mail *services.MailClient
-		*services.TemplateRenderer
-	}
-
-	contactForm struct {
-		Email      string `form:"email" validate:"required,email"`
-		Department string `form:"department" validate:"required,oneof=sales marketing hr"`
-		Message    string `form:"message" validate:"required"`
-		form.Submission
 	}
 )
 
@@ -34,28 +22,21 @@ func init() {
 }
 
 func (h *Contact) Init(c *services.Container) error {
-	h.TemplateRenderer = c.TemplateRenderer
 	h.mail = c.Mail
 	return nil
 }
 
 func (h *Contact) Routes(g *echo.Group) {
-	g.GET("/contact", h.Page).Name = routeNameContact
-	g.POST("/contact", h.Submit).Name = routeNameContactSubmit
+	g.GET("/contact", h.Page).Name = routenames.Contact
+	g.POST("/contact", h.Submit).Name = routenames.ContactSubmit
 }
 
 func (h *Contact) Page(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutMain
-	p.Name = templates.PageContact
-	p.Title = "Contact us"
-	p.Form = form.Get[contactForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return ui.ContactUs(ctx, form.Get[ui.ContactForm](ctx))
 }
 
 func (h *Contact) Submit(ctx echo.Context) error {
-	var input contactForm
+	var input ui.ContactForm
 
 	err := form.Submit(ctx, &input)
 

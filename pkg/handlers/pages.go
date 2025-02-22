@@ -6,23 +6,19 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/mikestefanello/pagoda/templates"
 )
 
 const (
 	routeNameAbout = "about"
-	routeNameHome  = "home"
 )
 
 type (
 	Pages struct {
 		*services.TemplateRenderer
-	}
-
-	post struct {
-		Title string
-		Body  string
 	}
 
 	aboutData struct {
@@ -47,11 +43,12 @@ func (h *Pages) Init(c *services.Container) error {
 }
 
 func (h *Pages) Routes(g *echo.Group) {
-	g.GET("/", h.Home).Name = routeNameHome
+	g.GET("/", h.Home).Name = routenames.Home
+	g.GET("/oldhome", h.HomeOld).Name = "oldhome"
 	g.GET("/about", h.About).Name = routeNameAbout
 }
 
-func (h *Pages) Home(ctx echo.Context) error {
+func (h *Pages) HomeOld(ctx echo.Context) error {
 	p := page.New(ctx)
 	p.Layout = templates.LayoutMain
 	p.Name = templates.PageHome
@@ -63,13 +60,23 @@ func (h *Pages) Home(ctx echo.Context) error {
 	return h.RenderPage(ctx, p)
 }
 
+func (h *Pages) Home(ctx echo.Context) error {
+	pgr := page.NewPager(ctx, 4)
+	p := h.fetchPosts(&pgr)
+
+	return ui.Home(ctx, ui.Posts{
+		Posts: p,
+		Pager: pgr,
+	})
+}
+
 // fetchPosts is an mock example of fetching posts to illustrate how paging works
-func (h *Pages) fetchPosts(pager *page.Pager) []post {
+func (h *Pages) fetchPosts(pager *page.Pager) []ui.Post {
 	pager.SetItems(20)
-	posts := make([]post, 20)
+	posts := make([]ui.Post, 20)
 
 	for k := range posts {
-		posts[k] = post{
+		posts[k] = ui.Post{
 			Title: fmt.Sprintf("Post example #%d", k+1),
 			Body:  fmt.Sprintf("Lorem ipsum example #%d ddolor sit amet, consectetur adipiscing elit. Nam elementum vulputate tristique.", k+1),
 		}
