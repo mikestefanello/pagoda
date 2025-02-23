@@ -48,7 +48,7 @@ type request struct {
 	// If this is populated, all forms must include this value otherwise the requests will be rejected.
 	CSRF string
 
-	Htmx htmx.Request
+	Htmx *htmx.Request
 }
 
 func newRequest(ctx echo.Context) *request {

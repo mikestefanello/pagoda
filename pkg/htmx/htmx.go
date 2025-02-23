@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/context"
 )
 
 // Request headers: https://htmx.org/docs/#request-headers
@@ -28,7 +29,7 @@ const (
 )
 
 type (
-	// Request contains data that HTMX provides during requests
+	// Request contains data that HTMX provides during requests.
 	Request struct {
 		Enabled        bool
 		Boosted        bool
@@ -39,7 +40,7 @@ type (
 		Prompt         string
 	}
 
-	// Response contain data that the server can communicate back to HTMX
+	// Response contain data that the server can communicate back to HTMX.
 	Response struct {
 		PushURL            string
 		Redirect           string
@@ -52,20 +53,22 @@ type (
 	}
 )
 
-// GetRequest extracts HTMX data from the request
-func GetRequest(ctx echo.Context) Request {
-	return Request{
-		Enabled:        ctx.Request().Header.Get(HeaderRequest) == "true",
-		Boosted:        ctx.Request().Header.Get(HeaderBoosted) == "true",
-		Trigger:        ctx.Request().Header.Get(HeaderTrigger),
-		TriggerName:    ctx.Request().Header.Get(HeaderTriggerName),
-		Target:         ctx.Request().Header.Get(HeaderTarget),
-		Prompt:         ctx.Request().Header.Get(HeaderPrompt),
-		HistoryRestore: ctx.Request().Header.Get(HeaderHistoryRestoreRequest) == "true",
-	}
+// GetRequest extracts HTMX data from the request,
+func GetRequest(ctx echo.Context) *Request {
+	return context.Cache(ctx, context.HTMXRequestKey, func(ctx echo.Context) *Request {
+		return &Request{
+			Enabled:        ctx.Request().Header.Get(HeaderRequest) == "true",
+			Boosted:        ctx.Request().Header.Get(HeaderBoosted) == "true",
+			Trigger:        ctx.Request().Header.Get(HeaderTrigger),
+			TriggerName:    ctx.Request().Header.Get(HeaderTriggerName),
+			Target:         ctx.Request().Header.Get(HeaderTarget),
+			Prompt:         ctx.Request().Header.Get(HeaderPrompt),
+			HistoryRestore: ctx.Request().Header.Get(HeaderHistoryRestoreRequest) == "true",
+		}
+	})
 }
 
-// Apply applies data from a Response to a server response
+// Apply applies data from a Response to a server response.
 func (r Response) Apply(ctx echo.Context) {
 	if r.PushURL != "" {
 		ctx.Response().Header().Set(HeaderPushURL, r.PushURL)

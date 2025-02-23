@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/tests"
 
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,11 @@ func TestSetRequest(t *testing.T) {
 	assert.Equal(t, "b", r.TriggerName)
 	assert.Equal(t, "c", r.Target)
 	assert.Equal(t, "d", r.Prompt)
+
+	cached := context.Cache(ctx, context.HTMXRequestKey, func(ctx echo.Context) *Request {
+		return nil
+	})
+	assert.Equal(t, r, cached)
 }
 
 func TestResponse_Apply(t *testing.T) {

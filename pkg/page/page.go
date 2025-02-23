@@ -99,7 +99,7 @@ type Page struct {
 	// HTMX provides the ability to interact with the HTMX library
 	HTMX struct {
 		// Request contains the information provided by HTMX about the current request
-		Request htmx.Request
+		Request *htmx.Request
 
 		// Response contains values to pass back to HTMX
 		Response *htmx.Response
