@@ -275,7 +275,7 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Compose().
 		To(usr.Email).
 		Subject("Confirm your email address").
-		Body(fmt.Sprintf("Click here to confirm your email address: %s", url)).
+		Component(ui.ConfirmEmailAddressEmail(usr.Name, url)).
 		Send(ctx)
 
 	if err != nil {

@@ -204,7 +204,7 @@ func (c *Container) initTemplateRenderer() {
 // initMail initialize the mail client
 func (c *Container) initMail() {
 	var err error
-	c.Mail, err = NewMailClient(c.Config, c.TemplateRenderer)
+	c.Mail, err = NewMailClient(c.Config)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}
