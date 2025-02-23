@@ -1,4 +1,4 @@
-package page
+package pager
 
 import (
 	"fmt"
@@ -19,11 +19,11 @@ func TestNewPager(t *testing.T) {
 	assert.Equal(t, 0, pgr.Items)
 	assert.Equal(t, 1, pgr.Pages)
 
-	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", PageQueryKey, 2))
+	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", QueryKey, 2))
 	pgr = NewPager(ctx, 10)
 	assert.Equal(t, 2, pgr.Page)
 
-	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", PageQueryKey, -2))
+	ctx, _ = tests.NewContext(e, fmt.Sprintf("/abc?%s=%d", QueryKey, -2))
 	pgr = NewPager(ctx, 10)
 	assert.Equal(t, 1, pgr.Page)
 }

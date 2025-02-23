@@ -47,7 +47,7 @@ func BuildRouter(c *services.Container) error {
 		}),
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
-		middleware.ServeCachedPage(c.TemplateRenderer),
+		middleware.ServeCachedPage,
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup:    "form:csrf",
 			CookieHTTPOnly: true,

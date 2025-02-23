@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/ui"
@@ -26,7 +26,7 @@ func (h *Pages) Routes(g *echo.Group) {
 }
 
 func (h *Pages) Home(ctx echo.Context) error {
-	pgr := page.NewPager(ctx, 4)
+	pgr := pager.NewPager(ctx, 4)
 
 	return ui.Home(ctx, ui.Posts{
 		Posts: h.fetchPosts(&pgr),
@@ -35,7 +35,7 @@ func (h *Pages) Home(ctx echo.Context) error {
 }
 
 // fetchPosts is a mock example of fetching posts to illustrate how paging works.
-func (h *Pages) fetchPosts(pager *page.Pager) []ui.Post {
+func (h *Pages) fetchPosts(pager *pager.Pager) []ui.Post {
 	pager.SetItems(20)
 	posts := make([]ui.Post, 20)
 

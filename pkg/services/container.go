@@ -16,7 +16,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/funcmap"
 	"github.com/mikestefanello/pagoda/pkg/log"
 
 	// Require by ent
@@ -53,9 +52,6 @@ type Container struct {
 	// Auth stores an authentication client
 	Auth *AuthClient
 
-	// TemplateRenderer stores a service to easily render and cache templates
-	TemplateRenderer *TemplateRenderer
-
 	// Tasks stores the task client
 	Tasks *backlite.Client
 }
@@ -71,7 +67,6 @@ func NewContainer() *Container {
 	c.initFiles()
 	c.initORM()
 	c.initAuth()
-	c.initTemplateRenderer()
 	c.initMail()
 	c.initTasks()
 	return c
@@ -194,11 +189,6 @@ func (c *Container) initORM() {
 // initAuth initializes the authentication client
 func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
-}
-
-// initTemplateRenderer initializes the template renderer
-func (c *Container) initTemplateRenderer() {
-	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Cache, funcmap.NewFuncMap(c.Web))
 }
 
 // initMail initialize the mail client

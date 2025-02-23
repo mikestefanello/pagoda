@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/pager"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -11,7 +11,7 @@ import (
 type (
 	Posts struct {
 		Posts []Post
-		Pager page.Pager
+		Pager pager.Pager
 	}
 
 	Post struct {
@@ -46,7 +46,7 @@ func (p *Posts) render(path string) Node {
 				Button(
 					Class("button is-primary"),
 					Attr("hx-swap", "outerHTML"),
-					Attr("hx-get", fmt.Sprintf("%s?page=%d", path, p.Pager.Page-1)),
+					Attr("hx-get", fmt.Sprintf("%s?%s=%d", path, pager.QueryKey, p.Pager.Page-1)),
 					Attr("hx-target", "#posts"),
 					Text("Previous page"),
 				),
@@ -56,7 +56,7 @@ func (p *Posts) render(path string) Node {
 				Button(
 					Class("button is-primary"),
 					Attr("hx-swap", "outerHTML"),
-					Attr("hx-get", fmt.Sprintf("%s?page=%d", path, p.Pager.Page+1)),
+					Attr("hx-get", fmt.Sprintf("%s?%s=%d", path, pager.QueryKey, p.Pager.Page+1)),
 					Attr("hx-target", "#posts"),
 					Text("Next page"),
 				),
