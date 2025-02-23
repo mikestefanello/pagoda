@@ -51,6 +51,17 @@ func Home(ctx echo.Context, posts Posts) error {
 
 	g = append(g, posts.render(r.path(routenames.Home)))
 
+	if r.Htmx.Target != "posts" {
+		g = append(g, message(
+			"is-small is-warning mt-5",
+			"Serving files",
+			Group{
+				Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted."),
+				Text("Static files also contain cache-control headers which are configured via middleware."),
+			},
+		))
+	}
+
 	return r.render(layoutPrimary, g)
 }
 
@@ -235,4 +246,46 @@ func UploadFile(ctx echo.Context, files []*File) error {
 	}
 
 	return r.render(layoutPrimary, n)
+}
+
+func About(ctx echo.Context) error {
+	r := newRequest(ctx)
+	r.Title = "About"
+	r.Metatags.Description = "Learn a little about what's included in Pagoda."
+
+	return r.render(layoutPrimary, Group{
+		tabs(
+			"Frontend",
+			"The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.",
+			[]tab{
+				{
+					title: "HTMX",
+					body:  "Completes HTML as a hypertext by providing attributes to AJAXify anything and much more. Visit <a href=\"https://htmx.org/\">htmx.org</a> to learn more.",
+				},
+				{
+					title: "Alpine.js",
+					body:  "Drop-in, Vue-like functionality written directly in your markup. Visit <a href=\"https://alpinejs.dev/\">alpinejs.dev</a> to learn more.",
+				},
+				{
+					title: "Bulma",
+					body:  "Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href=\"https://bulma.io/\">bulma.io</a> to learn more.",
+				},
+			},
+		),
+		Div(Class("mb-4")),
+		tabs(
+			"Backend",
+			"The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.",
+			[]tab{
+				{
+					title: "Echo",
+					body:  "High performance, extensible, minimalist Go web framework. Visit <a href=\"https://echo.labstack.com/\">echo.labstack.com</a> to learn more.",
+				},
+				{
+					title: "Ent",
+					body:  "Simple, yet powerful ORM for modeling and querying data. Visit <a href=\"https://entgo.io/\">entgo.io</a> to learn more.",
+				},
+			},
+		),
+	})
 }

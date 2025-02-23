@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/mikestefanello/pagoda/pkg/msg"
@@ -8,6 +9,10 @@ import (
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
+
+type tab struct {
+	title, body string
+}
 
 func head(r *request) Node {
 	return Head(
@@ -242,4 +247,48 @@ func buttonLink(href, class, label string) Node {
 
 func hxBoost() Node {
 	return Attr("hx-boost", "true")
+}
+
+func tabs(heading, description string, items []tab) Node {
+	renderTitles := func() Node {
+		g := make(Group, 0, len(items))
+		for i, item := range items {
+			g = append(g, Li(
+				Attr(":class", fmt.Sprintf("{'is-active': tab === %d}", i)),
+				Attr("@click", fmt.Sprintf("tab = %d", i)),
+				A(Text(item.title)),
+			))
+		}
+		return g
+	}
+
+	renderBodies := func() Node {
+		g := make(Group, 0, len(items))
+		for i, item := range items {
+			g = append(g, Div(
+				Attr("x-show", fmt.Sprintf("tab == %d", i)),
+				P(Raw(" "+item.body)),
+			))
+		}
+		return g
+	}
+
+	return Div(
+		P(
+			Class("subtitle mt-5"),
+			Text(heading),
+		),
+		P(
+			Class("mb-4"),
+			Text(description),
+		),
+		Div(
+			Attr("x-data", "{tab: 0}"),
+			Div(
+				Class("tabs"),
+				Ul(renderTitles()),
+			),
+			renderBodies(),
+		),
+	)
 }

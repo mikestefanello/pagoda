@@ -2,6 +2,7 @@ package routenames
 
 const (
 	Home                 = "home"
+	About                = "about"
 	Contact              = "contact"
 	ContactSubmit        = "contact.submit"
 	Login                = "login"
