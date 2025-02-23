@@ -10,23 +10,23 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/services"
 )
 
-// BuildRouter builds the router
+// BuildRouter builds the router.
 func BuildRouter(c *services.Container) error {
-	// Static files with proper cache control
-	// funcmap.File() should be used in templates to append a cache key to the URL in order to break cache
-	// after each server restart
+	// Static files with proper cache control.
+	// ui.file() should be used in ui components to append a cache key to the URL in order to break cache
+	// after each server restart.
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
 		Static(config.StaticPrefix, config.StaticDir)
 
-	// Non-static file route group
+	// Non-static file route group.
 	g := c.Web.Group("")
 
-	// Force HTTPS, if enabled
+	// Force HTTPS, if enabled.
 	if c.Config.HTTP.TLS.Enabled {
 		g.Use(echomw.HTTPSRedirect())
 	}
 
-	// Create a cookie store for session data
+	// Create a cookie store for session data.
 	cookieStore := sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))
 	cookieStore.Options.HttpOnly = true
 	cookieStore.Options.Secure = true
@@ -56,11 +56,10 @@ func BuildRouter(c *services.Container) error {
 		}),
 	)
 
-	// Error handler
-	err := Error{c.TemplateRenderer}
-	c.Web.HTTPErrorHandler = err.Page
+	// Error handler.
+	c.Web.HTTPErrorHandler = new(Error).Page
 
-	// Initialize and register all handlers
+	// Initialize and register all handlers.
 	for _, h := range GetHandlers() {
 		if err := h.Init(c); err != nil {
 			return err

@@ -7,44 +7,44 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/session"
 )
 
-// Type is a message type
+// Type is a message type.s
 type Type string
 
 const (
-	// TypeSuccess represents a success message type
+	// TypeSuccess represents a success message type.
 	TypeSuccess Type = "success"
 
-	// TypeInfo represents a info message type
+	// TypeInfo represents a info message type.
 	TypeInfo Type = "info"
 
-	// TypeWarning represents a warning message type
+	// TypeWarning represents a warning message type.
 	TypeWarning Type = "warning"
 
-	// TypeDanger represents a danger message type
+	// TypeDanger represents a danger message type.
 	TypeDanger Type = "danger"
 )
 
 const (
-	// sessionName stores the name of the session which contains flash messages
+	// sessionName stores the name of the session which contains flash messages.
 	sessionName = "msg"
 )
 
-// Success sets a success flash message
+// Success sets a success flash message.
 func Success(ctx echo.Context, message string) {
 	Set(ctx, TypeSuccess, message)
 }
 
-// Info sets an info flash message
+// Info sets an info flash message.
 func Info(ctx echo.Context, message string) {
 	Set(ctx, TypeInfo, message)
 }
 
-// Warning sets a warning flash message
+// Warning sets a warning flash message.
 func Warning(ctx echo.Context, message string) {
 	Set(ctx, TypeWarning, message)
 }
 
-// Danger sets a danger flash message
+// Danger sets a danger flash message.
 func Danger(ctx echo.Context, message string) {
 	Set(ctx, TypeDanger, message)
 }
@@ -77,7 +77,7 @@ func Get(ctx echo.Context, typ Type) []string {
 	return msgs
 }
 
-// getSession gets the flash message session
+// getSession gets the flash message session.
 func getSession(ctx echo.Context) (*sessions.Session, error) {
 	sess, err := session.Get(ctx, sessionName)
 	if err != nil {
@@ -88,7 +88,7 @@ func getSession(ctx echo.Context) (*sessions.Session, error) {
 	return sess, err
 }
 
-// save saves the flash message session
+// save saves the flash message session.
 func save(ctx echo.Context, sess *sessions.Session) {
 	if err := sess.Save(ctx.Request(), ctx.Response()); err != nil {
 		log.Ctx(ctx).Error("failed to set flash message",

@@ -13,6 +13,7 @@ type (
 		Posts []Post
 		Pager page.Pager
 	}
+
 	Post struct {
 		Title, Body string
 	}

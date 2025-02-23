@@ -6,27 +6,23 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/log"
-	"github.com/mikestefanello/pagoda/pkg/page"
-	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
-type Error struct {
-	*services.TemplateRenderer
-}
+type Error struct{}
 
 func (e *Error) Page(err error, ctx echo.Context) {
 	if ctx.Response().Committed || context.IsCanceledError(err) {
 		return
 	}
 
-	// Determine the error status code
+	// Determine the error status code.
 	code := http.StatusInternalServerError
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
 	}
 
-	// Log the error
+	// Log the error.
 	logger := log.Ctx(ctx)
 	switch {
 	case code >= 500:
@@ -35,15 +31,11 @@ func (e *Error) Page(err error, ctx echo.Context) {
 		logger.Warn(err.Error())
 	}
 
-	// Render the error page
-	p := page.New(ctx)
-	p.Layout = templates.LayoutMain
-	p.Name = templates.PageError
-	p.Title = http.StatusText(code)
-	p.StatusCode = code
-	p.HTMX.Request.Enabled = false
+	// Set the status code.
+	ctx.Response().Status = code
 
-	if err = e.RenderPage(ctx, p); err != nil {
+	// Render the error page.
+	if err = ui.Error(ctx, code); err != nil {
 		log.Ctx(ctx).Error("failed to render error page",
 			"error", err,
 		)
