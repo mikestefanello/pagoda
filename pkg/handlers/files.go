@@ -7,69 +7,47 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/msg"
-	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/spf13/afero"
 )
 
-const (
-	routeNameFiles       = "files"
-	routeNameFilesSubmit = "files.submit"
-)
-
-type (
-	Files struct {
-		files afero.Fs
-		*services.TemplateRenderer
-	}
-
-	File struct {
-		Name     string
-		Size     int64
-		Modified string
-	}
-)
+type Files struct {
+	files afero.Fs
+}
 
 func init() {
 	Register(new(Files))
 }
 
 func (h *Files) Init(c *services.Container) error {
-	h.TemplateRenderer = c.TemplateRenderer
 	h.files = c.Files
 	return nil
 }
 
 func (h *Files) Routes(g *echo.Group) {
-	g.GET("/files", h.Page).Name = routeNameFiles
-	g.POST("/files", h.Submit).Name = routeNameFilesSubmit
+	g.GET("/files", h.Page).Name = routenames.Files
+	g.POST("/files", h.Submit).Name = routenames.FilesSubmit
 }
 
 func (h *Files) Page(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutMain
-	p.Name = templates.PageFiles
-	p.Title = "Upload a file"
-
-	// Send a list of all uploaded files to the template to be rendered.
+	// Compile a list of all uploaded files to be rendered.
 	info, err := afero.ReadDir(h.files, "")
 	if err != nil {
 		return err
 	}
 
-	files := make([]File, 0)
+	files := make([]*ui.File, 0)
 	for _, file := range info {
-		files = append(files, File{
+		files = append(files, &ui.File{
 			Name:     file.Name(),
 			Size:     file.Size(),
 			Modified: file.ModTime().Format(time.DateTime),
 		})
 	}
 
-	p.Data = files
-
-	return h.RenderPage(ctx, p)
+	return ui.UploadFile(ctx, files)
 }
 
 func (h *Files) Submit(ctx echo.Context) error {

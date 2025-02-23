@@ -19,4 +19,6 @@ const (
 	TaskSubmit           = "task.submit"
 	Cache                = "cache"
 	CacheSubmit          = "cache.submit"
+	Files                = "files"
+	FilesSubmit          = "files.submit"
 )

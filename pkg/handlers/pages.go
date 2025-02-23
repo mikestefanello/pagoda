@@ -62,10 +62,9 @@ func (h *Pages) HomeOld(ctx echo.Context) error {
 
 func (h *Pages) Home(ctx echo.Context) error {
 	pgr := page.NewPager(ctx, 4)
-	p := h.fetchPosts(&pgr)
 
 	return ui.Home(ctx, ui.Posts{
-		Posts: p,
+		Posts: h.fetchPosts(&pgr),
 		Pager: pgr,
 	})
 }

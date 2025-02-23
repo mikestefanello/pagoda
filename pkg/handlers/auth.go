@@ -19,13 +19,11 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
-type (
-	Auth struct {
-		auth *services.AuthClient
-		mail *services.MailClient
-		orm  *ent.Client
-	}
-)
+type Auth struct {
+	auth *services.AuthClient
+	mail *services.MailClient
+	orm  *ent.Client
+}
 
 func init() {
 	Register(new(Auth))
@@ -81,7 +79,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Attempt to load the user
+	// Attempt to load the user.
 	u, err := h.orm.User.
 		Query().
 		Where(user.Email(strings.ToLower(input.Email))).
@@ -95,7 +93,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return fail(err, "error querying user during forgot password")
 	}
 
-	// Generate the token
+	// Generate the token.
 	token, pt, err := h.auth.GeneratePasswordResetToken(ctx, u.ID)
 	if err != nil {
 		return fail(err, "error generating password reset token")
@@ -105,7 +103,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		"user_id", u.ID,
 	)
 
-	// Email the user
+	// Email the user.
 	url := ctx.Echo().Reverse(routenames.ResetPassword, u.ID, pt.ID, token)
 	err = h.mail.
 		Compose().
@@ -145,7 +143,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Attempt to load the user
+	// Attempt to load the user.
 	u, err := h.orm.User.
 		Query().
 		Where(user.Email(strings.ToLower(input.Email))).
@@ -159,13 +157,13 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return fail(err, "error querying user during login")
 	}
 
-	// Check if the password is correct
+	// Check if the password is correct.
 	err = h.auth.CheckPassword(input.Password, u.Password)
 	if err != nil {
 		return authFailed()
 	}
 
-	// Log the user in
+	// Log the user in.
 	err = h.auth.Login(ctx, u.ID)
 	if err != nil {
 		return fail(err, "unable to log in user")
@@ -206,13 +204,13 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the password
+	// Hash the password.
 	pwHash, err := h.auth.HashPassword(input.Password)
 	if err != nil {
 		return fail(err, "unable to hash password")
 	}
 
-	// Attempt creating the user
+	// Attempt creating the user.
 	u, err := h.orm.User.
 		Create().
 		SetName(input.Name).
@@ -235,7 +233,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		return fail(err, "unable to create user")
 	}
 
-	// Log the user in
+	// Log the user in.
 	err = h.auth.Login(ctx, u.ID)
 	if err != nil {
 		log.Ctx(ctx).Error("unable to log user in",
@@ -250,7 +248,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 
 	msg.Success(ctx, "Your account has been created. You are now logged in.")
 
-	// Send the verification email
+	// Send the verification email.
 	h.sendVerificationEmail(ctx, u)
 
 	return redirect.New(ctx).
@@ -259,7 +257,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 }
 
 func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
-	// Generate a token
+	// Generate a token.
 	token, err := h.auth.GenerateEmailVerificationToken(usr.Email)
 	if err != nil {
 		log.Ctx(ctx).Error("unable to generate email verification token",
@@ -269,7 +267,7 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		return
 	}
 
-	// Send the email
+	// Send the email.
 	url := ctx.Echo().Reverse(routenames.VerifyEmail, token)
 	err = h.mail.
 		Compose().
@@ -306,16 +304,16 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the new password
+	// Hash the new password.
 	hash, err := h.auth.HashPassword(input.Password)
 	if err != nil {
 		return fail(err, "unable to hash password")
 	}
 
-	// Get the requesting user
+	// Get the requesting user.
 	usr := ctx.Get(context.UserKey).(*ent.User)
 
-	// Update the user
+	// Update the user.
 	_, err = usr.
 		Update().
 		SetPassword(hash).
@@ -325,7 +323,7 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		return fail(err, "unable to update password")
 	}
 
-	// Delete all password tokens for this user
+	// Delete all password tokens for this user.
 	err = h.auth.DeletePasswordTokens(ctx, usr.ID)
 	if err != nil {
 		return fail(err, "unable to delete password tokens")
@@ -340,7 +338,7 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 func (h *Auth) VerifyEmail(ctx echo.Context) error {
 	var usr *ent.User
 
-	// Validate the token
+	// Validate the token.
 	token := ctx.Param("token")
 	email, err := h.auth.ValidateEmailVerificationToken(token)
 	if err != nil {
@@ -350,7 +348,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 			Go()
 	}
 
-	// Check if it matches the authenticated user
+	// Check if it matches the authenticated user.
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		authUser := u.(*ent.User)
 
@@ -359,7 +357,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 		}
 	}
 
-	// Query to find a matching user, if needed
+	// Query to find a matching user, if needed.
 	if usr == nil {
 		usr, err = h.orm.User.
 			Query().
@@ -371,7 +369,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 		}
 	}
 
-	// Verify the user, if needed
+	// Verify the user, if needed.
 	if !usr.Verified {
 		usr, err = usr.
 			Update().

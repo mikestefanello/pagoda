@@ -7,12 +7,12 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 )
 
-// Set sets a logger in the context
+// Set sets a logger in the context.
 func Set(ctx echo.Context, logger *slog.Logger) {
 	ctx.Set(context.LoggerKey, logger)
 }
 
-// Ctx returns the logger stored in context, or provides the default logger if one is not present
+// Ctx returns the logger stored in context, or provides the default logger if one is not present.
 func Ctx(ctx echo.Context) *slog.Logger {
 	if l, ok := ctx.Get(context.LoggerKey).(*slog.Logger); ok {
 		return l
@@ -21,7 +21,7 @@ func Ctx(ctx echo.Context) *slog.Logger {
 	return Default()
 }
 
-// Default returns the default logger
+// Default returns the default logger.
 func Default() *slog.Logger {
 	return slog.Default()
 }

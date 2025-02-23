@@ -129,6 +129,27 @@ func formInput(el input) Node {
 	)
 }
 
+func formFile(name, label string) Node {
+	return Div(
+		Class("field file"),
+		Label(
+			Class("file-label"),
+			Input(
+				Class("file-input"),
+				Type("file"),
+				Name(name),
+			),
+			Span(
+				Class("file-cta"),
+				Span(
+					Class("file-label"),
+					Text(label),
+				),
+			),
+		),
+	)
+}
+
 func formFieldStatusClass(fm form.Form, formField string) string {
 	switch {
 	case !fm.IsSubmitted():

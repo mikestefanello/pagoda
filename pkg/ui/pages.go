@@ -185,3 +185,54 @@ func Error(ctx echo.Context, code int) error {
 
 	return r.render(layoutPrimary, P(body))
 }
+
+func UploadFile(ctx echo.Context, files []*File) error {
+	r := newRequest(ctx)
+	r.Title = "Upload a file"
+
+	fileList := make(Group, 0, len(files))
+	for _, file := range files {
+		fileList = append(fileList, file.render())
+	}
+
+	n := Group{
+		message(
+			"is-link",
+			"",
+			P(Text("This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.")),
+		),
+		Hr(),
+		Form(
+			ID("files"),
+			Method(http.MethodPost),
+			Action(r.path(routenames.FilesSubmit)),
+			EncType("multipart/form-data"),
+			formFile("file", "Choose a file.. "),
+			formControlGroup(
+				button("is-link", "Upload"),
+			),
+			csrf(r),
+		),
+		Hr(),
+		H3(
+			Class("title"),
+			Text("Uploaded files"),
+		),
+		message("is-warning", "", P(Text("Below are all files in the configured upload directory."))),
+		Table(
+			Class("table"),
+			THead(
+				Tr(
+					Th(Text("Filename")),
+					Th(Text("Size")),
+					Th(Text("Modified on")),
+				),
+			),
+			TBody(
+				fileList,
+			),
+		),
+	}
+
+	return r.render(layoutPrimary, n)
+}

@@ -39,7 +39,7 @@ func NewMailClient(cfg *config.Config) (*MailClient, error) {
 	}, nil
 }
 
-// Compose creates a new email
+// Compose creates a new email.
 func (m *MailClient) Compose() *mail {
 	return &mail{
 		client: m,
@@ -47,12 +47,12 @@ func (m *MailClient) Compose() *mail {
 	}
 }
 
-// skipSend determines if mail sending should be skipped
+// skipSend determines if mail sending should be skipped.
 func (m *MailClient) skipSend() bool {
 	return m.config.App.Environment != config.EnvProduction
 }
 
-// send attempts to send the email
+// send attempts to send the email.
 func (m *MailClient) send(email *mail, ctx echo.Context) error {
 	switch {
 	case email.to == "":
@@ -73,7 +73,7 @@ func (m *MailClient) send(email *mail, ctx echo.Context) error {
 		email.body = buf.String()
 	}
 
-	// Check if mail sending should be skipped
+	// Check if mail sending should be skipped.
 	if m.skipSend() {
 		log.Ctx(ctx).Debug("skipping email delivery",
 			"to", email.to,
@@ -81,7 +81,7 @@ func (m *MailClient) send(email *mail, ctx echo.Context) error {
 		return nil
 	}
 
-	// TODO: Finish based on your mail sender of choice!
+	// TODO: Finish based on your mail sender of choice or stop logging below!
 	log.Ctx(ctx).Info("sending email",
 		"to", email.to,
 		"subject", email.subject,
@@ -121,7 +121,7 @@ func (m *mail) Component(component gomponents.Node) *mail {
 	return m
 }
 
-// Send attempts to send the email
+// Send attempts to send the email.
 func (m *mail) Send(ctx echo.Context) error {
 	return m.client.send(m, ctx)
 }

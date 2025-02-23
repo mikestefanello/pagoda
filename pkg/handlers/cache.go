@@ -11,11 +11,9 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
-type (
-	Cache struct {
-		cache *services.CacheClient
-	}
-)
+type Cache struct {
+	cache *services.CacheClient
+}
 
 func init() {
 	Register(new(Cache))
@@ -59,7 +57,7 @@ func (h *Cache) Submit(ctx echo.Context) error {
 		return err
 	}
 
-	// Set the cache
+	// Set the cache.
 	err := h.cache.
 		Set().
 		Key("page_cache_example").

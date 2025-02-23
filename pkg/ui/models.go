@@ -22,6 +22,12 @@ type (
 		Title string
 		URL   string
 	}
+
+	File struct {
+		Name     string
+		Size     int64
+		Modified string
+	}
 )
 
 func (p *Posts) render(path string) Node {
@@ -93,5 +99,13 @@ func (s *SearchResult) render() Node {
 		Class("panel-block"),
 		Href(s.URL),
 		Text(s.Title),
+	)
+}
+
+func (f *File) render() Node {
+	return Tr(
+		Td(Text(f.Name)),
+		Td(Text(fmt.Sprint(f.Size))),
+		Td(Text(f.Modified)),
 	)
 }
