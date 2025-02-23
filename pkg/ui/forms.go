@@ -48,6 +48,12 @@ type (
 		Message string `form:"message" validate:"required"`
 		form.Submission
 	}
+
+	CacheForm struct {
+		CurrentValue string
+		Value        string `form:"value"`
+		form.Submission
+	}
 )
 
 func (f *ContactForm) render(r *request) Node {
@@ -242,6 +248,41 @@ func (f *TaskForm) render(r *request) Node {
 		}),
 		formControlGroup(
 			button("is-link", "Add task to queue"),
+		),
+		csrf(r),
+	)
+}
+
+func (f *CacheForm) render(r *request) Node {
+	return Form(
+		ID("cache"),
+		Method(http.MethodPost),
+		Attr("hx-post", r.path(routenames.CacheSubmit)),
+		message(
+			"is-info",
+			"Test the cache",
+			Group{
+				P(Text("This route handler shows how the default in-memory cache works. Try updating the value using the form below and see how it persists after you reload the page.")),
+				P(Text("HTMX makes it easy to re-render the cached value after the form is submitted.")),
+			},
+		),
+		Label(
+			For("value"),
+			Class("value"),
+			Text("Value in cache: "),
+		),
+		If(f.CurrentValue != "", Span(Class("tag is-success"), Text(f.CurrentValue))),
+		If(f.CurrentValue == "", I(Text("(empty)"))),
+		formInput(input{
+			form:      f,
+			formField: "Value",
+			name:      "value",
+			inputType: "text",
+			label:     "Value",
+			value:     f.Value,
+		}),
+		formControlGroup(
+			button("is-link", "Update cache"),
 		),
 		csrf(r),
 	)

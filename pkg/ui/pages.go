@@ -151,3 +151,10 @@ func AddTask(ctx echo.Context, form *TaskForm) error {
 
 	return r.render(layoutPrimary, g)
 }
+
+func UpdateCache(ctx echo.Context, form *CacheForm) error {
+	r := newRequest(ctx)
+	r.Title = "Set a cache entry"
+
+	return r.render(layoutPrimary, form.render(r))
+}

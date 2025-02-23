@@ -17,4 +17,6 @@ const (
 	Search               = "search"
 	Task                 = "task"
 	TaskSubmit           = "task.submit"
+	Cache                = "cache"
+	CacheSubmit          = "cache.submit"
 )
