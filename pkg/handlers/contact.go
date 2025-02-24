@@ -11,11 +11,9 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
-type (
-	Contact struct {
-		mail *services.MailClient
-	}
-)
+type Contact struct {
+	mail *services.MailClient
+}
 
 func init() {
 	Register(new(Contact))

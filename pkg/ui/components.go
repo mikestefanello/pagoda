@@ -95,11 +95,11 @@ func sidebarMenu(r *request) Node {
 		Ul(
 			Class("menu-list"),
 			menuLink(r, "Dashboard", routenames.Home),
-			menuLink(r, "About", "about"),
+			menuLink(r, "About", routenames.About),
 			menuLink(r, "Contact", routenames.Contact),
-			menuLink(r, "Cache", "cache"),
-			menuLink(r, "Task", "task"),
-			menuLink(r, "Files", "files"),
+			menuLink(r, "Cache", routenames.Cache),
+			menuLink(r, "Task", routenames.Task),
+			menuLink(r, "Files", routenames.Files),
 		),
 		P(
 			Class("menu-label"),
@@ -107,10 +107,10 @@ func sidebarMenu(r *request) Node {
 		),
 		Ul(
 			Class("menu-list"),
-			If(r.IsAuth, menuLink(r, "Logout", "logout")),
-			If(!r.IsAuth, menuLink(r, "Login", "login")),
-			If(!r.IsAuth, menuLink(r, "Register", "register")),
-			If(!r.IsAuth, menuLink(r, "Forgot password", "forgot_password")),
+			If(r.IsAuth, menuLink(r, "Logout", routenames.Logout)),
+			If(!r.IsAuth, menuLink(r, "Login", routenames.Login)),
+			If(!r.IsAuth, menuLink(r, "Register", routenames.Register)),
+			If(!r.IsAuth, menuLink(r, "Forgot password", routenames.ForgotPasswordSubmit)),
 		),
 	)
 }

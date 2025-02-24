@@ -10,9 +10,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui"
 )
 
-type (
-	Search struct{}
-)
+type Search struct{}
 
 func init() {
 	Register(new(Search))

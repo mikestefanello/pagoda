@@ -16,11 +16,9 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/tasks"
 )
 
-type (
-	Task struct {
-		tasks *backlite.Client
-	}
-)
+type Task struct {
+	tasks *backlite.Client
+}
 
 func init() {
 	Register(new(Task))
