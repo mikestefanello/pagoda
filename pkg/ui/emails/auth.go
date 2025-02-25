@@ -1,11 +1,11 @@
-package ui
+package emails
 
 import (
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
 
-func ConfirmEmailAddressEmail(username, url string) Node {
+func ConfirmEmailAddress(username, url string) Node {
 	return Group{
 		Strong(Textf("Hello %s,", username)),
 		Br(),

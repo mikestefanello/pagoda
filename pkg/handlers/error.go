@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/log"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
 type Error struct{}
@@ -35,7 +35,7 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	ctx.Response().Status = code
 
 	// Render the error page.
-	if err = ui.Error(ctx, code); err != nil {
+	if err = pages.Error(ctx, code); err != nil {
 		log.Ctx(ctx).Error("failed to render error page",
 			"error", err,
 		)

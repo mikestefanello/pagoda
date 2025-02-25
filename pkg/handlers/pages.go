@@ -7,7 +7,8 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/models"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
 type Pages struct{}
@@ -28,19 +29,19 @@ func (h *Pages) Routes(g *echo.Group) {
 func (h *Pages) Home(ctx echo.Context) error {
 	pgr := pager.NewPager(ctx, 4)
 
-	return ui.Home(ctx, ui.Posts{
+	return pages.Home(ctx, &models.Posts{
 		Posts: h.fetchPosts(&pgr),
 		Pager: pgr,
 	})
 }
 
 // fetchPosts is a mock example of fetching posts to illustrate how paging works.
-func (h *Pages) fetchPosts(pager *pager.Pager) []ui.Post {
+func (h *Pages) fetchPosts(pager *pager.Pager) []models.Post {
 	pager.SetItems(20)
-	posts := make([]ui.Post, 20)
+	posts := make([]models.Post, 20)
 
 	for k := range posts {
-		posts[k] = ui.Post{
+		posts[k] = models.Post{
 			Title: fmt.Sprintf("Post example #%d", k+1),
 			Body:  fmt.Sprintf("Lorem ipsum example #%d ddolor sit amet, consectetur adipiscing elit. Nam elementum vulputate tristique.", k+1),
 		}
@@ -49,5 +50,5 @@ func (h *Pages) fetchPosts(pager *pager.Pager) []ui.Post {
 }
 
 func (h *Pages) About(ctx echo.Context) error {
-	return ui.About(ctx)
+	return pages.About(ctx)
 }

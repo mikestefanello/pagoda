@@ -16,7 +16,9 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/redirect"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/emails"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
 type Auth struct {
@@ -57,11 +59,11 @@ func (h *Auth) Routes(g *echo.Group) {
 }
 
 func (h *Auth) ForgotPasswordPage(ctx echo.Context) error {
-	return ui.ForgotPassword(ctx, form.Get[ui.ForgotPasswordForm](ctx))
+	return pages.ForgotPassword(ctx, form.Get[forms.ForgotPassword](ctx))
 }
 
 func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
-	var input ui.ForgotPasswordForm
+	var input forms.ForgotPassword
 
 	succeed := func() error {
 		form.Clear(ctx)
@@ -120,11 +122,11 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 }
 
 func (h *Auth) LoginPage(ctx echo.Context) error {
-	return ui.Login(ctx, form.Get[ui.LoginForm](ctx))
+	return pages.Login(ctx, form.Get[forms.Login](ctx))
 }
 
 func (h *Auth) LoginSubmit(ctx echo.Context) error {
-	var input ui.LoginForm
+	var input forms.Login
 
 	authFailed := func() error {
 		input.SetFieldError("Email", "")
@@ -188,11 +190,11 @@ func (h *Auth) Logout(ctx echo.Context) error {
 }
 
 func (h *Auth) RegisterPage(ctx echo.Context) error {
-	return ui.Register(ctx, form.Get[ui.RegisterForm](ctx))
+	return pages.Register(ctx, form.Get[forms.Register](ctx))
 }
 
 func (h *Auth) RegisterSubmit(ctx echo.Context) error {
-	var input ui.RegisterForm
+	var input forms.Register
 
 	err := form.Submit(ctx, &input)
 
@@ -273,7 +275,7 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Compose().
 		To(usr.Email).
 		Subject("Confirm your email address").
-		Component(ui.ConfirmEmailAddressEmail(usr.Name, url)).
+		Component(emails.ConfirmEmailAddress(usr.Name, url)).
 		Send(ctx)
 
 	if err != nil {
@@ -288,11 +290,11 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 }
 
 func (h *Auth) ResetPasswordPage(ctx echo.Context) error {
-	return ui.ResetPassword(ctx, form.Get[ui.ResetPasswordForm](ctx))
+	return pages.ResetPassword(ctx, form.Get[forms.ResetPassword](ctx))
 }
 
 func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
-	var input ui.ResetPasswordForm
+	var input forms.ResetPassword
 
 	err := form.Submit(ctx, &input)
 

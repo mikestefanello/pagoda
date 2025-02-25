@@ -1,9 +1,10 @@
-package ui
+package models
 
 import (
 	"fmt"
 
 	"github.com/mikestefanello/pagoda/pkg/pager"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -17,23 +18,12 @@ type (
 	Post struct {
 		Title, Body string
 	}
-
-	SearchResult struct {
-		Title string
-		URL   string
-	}
-
-	File struct {
-		Name     string
-		Size     int64
-		Modified string
-	}
 )
 
-func (p *Posts) render(path string) Node {
+func (p *Posts) Render(path string) Node {
 	g := make(Group, 0, len(p.Posts))
 	for _, post := range p.Posts {
-		g = append(g, post.render())
+		g = append(g, post.Render())
 	}
 
 	return Div(
@@ -65,7 +55,7 @@ func (p *Posts) render(path string) Node {
 	)
 }
 
-func (p *Post) render() Node {
+func (p *Post) Render() Node {
 	return Article(
 		Class("media"),
 		Figure(
@@ -73,7 +63,7 @@ func (p *Post) render() Node {
 			P(
 				Class("image is-64x64"),
 				Img(
-					Src(file("gopher.png")),
+					Src(ui.File("gopher.png")),
 					Alt("Gopher"),
 				),
 			),
@@ -91,21 +81,5 @@ func (p *Post) render() Node {
 				),
 			),
 		),
-	)
-}
-
-func (s *SearchResult) render() Node {
-	return A(
-		Class("panel-block"),
-		Href(s.URL),
-		Text(s.Title),
-	)
-}
-
-func (f *File) render() Node {
-	return Tr(
-		Td(Text(f.Name)),
-		Td(Text(fmt.Sprint(f.Size))),
-		Td(Text(f.Modified)),
 	)
 }

@@ -8,7 +8,8 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
 type Cache struct {
@@ -30,7 +31,7 @@ func (h *Cache) Routes(g *echo.Group) {
 }
 
 func (h *Cache) Page(ctx echo.Context) error {
-	f := form.Get[ui.CacheForm](ctx)
+	f := form.Get[forms.Cache](ctx)
 
 	// Fetch the value from the cache.
 	value, err := h.cache.
@@ -47,11 +48,11 @@ func (h *Cache) Page(ctx echo.Context) error {
 		return fail(err, "failed to fetch from cache")
 	}
 
-	return ui.UpdateCache(ctx, f)
+	return pages.UpdateCache(ctx, f)
 }
 
 func (h *Cache) Submit(ctx echo.Context) error {
-	var input ui.CacheForm
+	var input forms.Cache
 
 	if err := form.Submit(ctx, &input); err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	appName = "Pagoda"
+	AppName = "Pagoda"
 )
 
 var (
@@ -16,6 +16,6 @@ var (
 	cacheBuster = random.String(10)
 )
 
-func file(filepath string) string {
+func File(filepath string) string {
 	return fmt.Sprintf("/%s/%s?v=%s", config.StaticPrefix, filepath, cacheBuster)
 }

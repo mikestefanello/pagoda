@@ -9,7 +9,8 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/models"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 	"github.com/spf13/afero"
 )
 
@@ -38,16 +39,16 @@ func (h *Files) Page(ctx echo.Context) error {
 		return err
 	}
 
-	files := make([]*ui.File, 0)
+	files := make([]*models.File, 0)
 	for _, file := range info {
-		files = append(files, &ui.File{
+		files = append(files, &models.File{
 			Name:     file.Name(),
 			Size:     file.Size(),
 			Modified: file.ModTime().Format(time.DateTime),
 		})
 	}
 
-	return ui.UploadFile(ctx, files)
+	return pages.UploadFile(ctx, files)
 }
 
 func (h *Files) Submit(ctx echo.Context) error {

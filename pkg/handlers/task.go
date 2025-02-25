@@ -7,7 +7,8 @@ import (
 	"github.com/mikestefanello/backlite"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -35,11 +36,11 @@ func (h *Task) Routes(g *echo.Group) {
 }
 
 func (h *Task) Page(ctx echo.Context) error {
-	return ui.AddTask(ctx, form.Get[ui.TaskForm](ctx))
+	return pages.AddTask(ctx, form.Get[forms.Task](ctx))
 }
 
 func (h *Task) Submit(ctx echo.Context) error {
-	var input ui.TaskForm
+	var input forms.Task
 
 	err := form.Submit(ctx, &input)
 

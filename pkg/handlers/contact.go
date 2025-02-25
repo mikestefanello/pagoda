@@ -8,7 +8,8 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
 type Contact struct {
@@ -30,11 +31,11 @@ func (h *Contact) Routes(g *echo.Group) {
 }
 
 func (h *Contact) Page(ctx echo.Context) error {
-	return ui.ContactUs(ctx, form.Get[ui.ContactForm](ctx))
+	return pages.ContactUs(ctx, form.Get[forms.Contact](ctx))
 }
 
 func (h *Contact) Submit(ctx echo.Context) error {
-	var input ui.ContactForm
+	var input forms.Contact
 
 	err := form.Submit(ctx, &input)
 

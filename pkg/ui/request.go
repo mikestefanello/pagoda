@@ -9,9 +9,9 @@ import (
 	"maragu.dev/gomponents"
 )
 
-type layoutFunc func(*request, gomponents.Node) gomponents.Node
+type LayoutFunc func(*Request, gomponents.Node) gomponents.Node
 
-type request struct {
+type Request struct {
 	// AppName stores the name of the application.
 	// If omitted, the configuration value will be used.
 	AppName string
@@ -22,8 +22,8 @@ type request struct {
 	// Context stores the request context
 	Context echo.Context
 
-	// Path stores the path of the current request
-	Path string
+	// CurrentPath stores the path of the current request
+	CurrentPath string
 
 	// IsHome stores whether the requested page is the home page or not
 	IsHome bool
@@ -51,14 +51,14 @@ type request struct {
 	Htmx *htmx.Request
 }
 
-func newRequest(ctx echo.Context) *request {
-	p := &request{
-		Context: ctx,
-		Path:    ctx.Request().URL.Path,
-		Htmx:    htmx.GetRequest(ctx),
+func NewRequest(ctx echo.Context) *Request {
+	p := &Request{
+		Context:     ctx,
+		CurrentPath: ctx.Request().URL.Path,
+		Htmx:        htmx.GetRequest(ctx),
 	}
 
-	p.IsHome = p.Path == "/"
+	p.IsHome = p.CurrentPath == "/"
 
 	if csrf := ctx.Get(echomw.DefaultCSRFConfig.ContextKey); csrf != nil {
 		p.CSRF = csrf.(string)
@@ -72,11 +72,11 @@ func newRequest(ctx echo.Context) *request {
 	return p
 }
 
-func (r *request) path(routeName string, routeParams ...string) string {
+func (r *Request) Path(routeName string, routeParams ...string) string {
 	return r.Context.Echo().Reverse(routeName, routeParams)
 }
 
-func (r *request) render(layout layoutFunc, node gomponents.Node) error {
+func (r *Request) Render(layout LayoutFunc, node gomponents.Node) error {
 	if r.Htmx.Enabled && !r.Htmx.Boosted {
 		return node.Render(r.Context.Response().Writer)
 	}
