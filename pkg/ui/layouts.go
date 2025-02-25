@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"github.com/mikestefanello/pagoda/pkg/routenames"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -56,15 +55,7 @@ func layoutAuth(r *request, content Node) Node {
 										Class("notification"),
 										flashMessages(r),
 										content,
-										Div(
-											Class("content is-small has-text-centered"),
-											hxBoost(),
-											A(Href(r.path(routenames.Login)), Text("Login")),
-											Raw(" &#9676; "),
-											A(Href(r.path("register")), Text("Create an account")),
-											Raw(" &#9676; "),
-											A(Href(r.path("forgot_password")), Text("Forgot password")),
-										),
+										authNavBar(r),
 									),
 								),
 							),

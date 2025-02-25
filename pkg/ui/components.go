@@ -127,6 +127,21 @@ func menuLink(r *request, title, routeName string, routeParams ...string) Node {
 	)
 }
 
+func authNavBar(r *request) Node {
+	return Nav(
+		Class("navbar"),
+		Div(
+			Class("navbar-menu"),
+			Div(
+				Class("navbar-start"),
+				A(Class("navbar-item"), Href(r.path(routenames.Login)), Text("Login")),
+				A(Class("navbar-item"), Href(r.path(routenames.Register)), Text("Create an account")),
+				A(Class("navbar-item"), Href(r.path(routenames.ForgotPassword)), Text("Forgot password")),
+			),
+		),
+	)
+}
+
 func navBar(r *request) Node {
 	return Nav(
 		Class("navbar is-dark"),
