@@ -11,7 +11,6 @@ http:
     key: ""
 
 app:
-  name: "Pagoda"
   environment: "local"
   # Change this on any live environments
   encryptionKey: "?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"

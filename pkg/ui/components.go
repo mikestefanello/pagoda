@@ -19,7 +19,7 @@ func head(r *request) Node {
 		Meta(Charset("utf-8")),
 		Meta(Name("viewport"), Content("width=device-width, initial-scale=1")),
 		Link(Rel("icon"), Href(file("favicon.png"))),
-		TitleEl(Text(r.Title)),
+		TitleEl(Text(appName), If(r.Title != "", Text(" | "+r.Title))),
 		If(r.Metatags.Description != "", Meta(Name("description"), Content(r.Metatags.Description))),
 		If(len(r.Metatags.Keywords) > 0, Meta(Name("keywords"), Content(strings.Join(r.Metatags.Keywords, ", ")))),
 		Link(Href("https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"), Rel("stylesheet")),

@@ -41,7 +41,7 @@ func (p *Posts) render(path string) Node {
 		g,
 		Div(
 			Class("field is-grouped is-grouped-centered"),
-			P(
+			If(!p.Pager.IsBeginning(), P(
 				Class("control"),
 				Button(
 					Class("button is-primary"),
@@ -50,8 +50,8 @@ func (p *Posts) render(path string) Node {
 					Attr("hx-target", "#posts"),
 					Text("Previous page"),
 				),
-			),
-			P(
+			)),
+			If(!p.Pager.IsEnd(), P(
 				Class("control"),
 				Button(
 					Class("button is-primary"),
@@ -60,7 +60,7 @@ func (p *Posts) render(path string) Node {
 					Attr("hx-target", "#posts"),
 					Text("Next page"),
 				),
-			),
+			)),
 		),
 	)
 }

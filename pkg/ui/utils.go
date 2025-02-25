@@ -7,8 +7,12 @@ import (
 	"github.com/mikestefanello/pagoda/config"
 )
 
+const (
+	appName = "Pagoda"
+)
+
 var (
-	// CacheBuster stores a random string used as a cache buster for static files.
+	// cacheBuster stores a random string used as a cache buster for static files.
 	cacheBuster = random.String(10)
 )
 
