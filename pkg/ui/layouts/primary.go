@@ -3,6 +3,7 @@ package layouts
 import (
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/cache"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -41,6 +42,9 @@ func Primary(r *ui.Request, content Node) Node {
 }
 
 func headerNavBar(r *ui.Request) Node {
+	if n := cache.Get("layout.headerNavBar"); n != nil {
+		return n
+	}
 	return Nav(
 		Class("navbar is-dark"),
 		Div(
@@ -67,6 +71,9 @@ func headerNavBar(r *ui.Request) Node {
 }
 
 func search(r *ui.Request) Node {
+	if n := cache.Get("layout.search"); n != nil {
+		return n
+	}
 	return Div(
 		Class("search mr-2 mt-1"),
 		Attr("x-data", "{modal:false}"),

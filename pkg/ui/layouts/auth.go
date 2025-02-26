@@ -3,6 +3,7 @@ package layouts
 import (
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/cache"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -46,6 +47,9 @@ func Auth(r *ui.Request, content Node) Node {
 }
 
 func authNavBar(r *ui.Request) Node {
+	if n := cache.Get("layout.authNavBar"); n != nil {
+		return n
+	}
 	return Nav(
 		Class("navbar"),
 		Div(
