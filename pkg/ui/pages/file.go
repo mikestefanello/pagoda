@@ -3,7 +3,7 @@ package pages
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/ui"
-	"github.com/mikestefanello/pagoda/pkg/ui/components"
+	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	"github.com/mikestefanello/pagoda/pkg/ui/models"
@@ -21,7 +21,7 @@ func UploadFile(ctx echo.Context, files []*models.File) error {
 	}
 
 	n := Group{
-		components.Message(
+		Message(
 			"is-link",
 			"",
 			P(Text("This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.")),
@@ -33,7 +33,7 @@ func UploadFile(ctx echo.Context, files []*models.File) error {
 			Class("title"),
 			Text("Uploaded files"),
 		),
-		components.Message("is-warning", "", P(Text("Below are all files in the configured upload directory."))),
+		Message("is-warning", "", P(Text("Below are all files in the configured upload directory."))),
 		Table(
 			Class("table"),
 			THead(

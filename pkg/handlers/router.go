@@ -13,7 +13,7 @@ import (
 // BuildRouter builds the router.
 func BuildRouter(c *services.Container) error {
 	// Static files with proper cache control.
-	// ui.file() should be used in ui components to append a cache key to the URL in order to break cache
+	// ui.File() should be used in ui components to append a cache key to the URL in order to break cache
 	// after each server restart.
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
 		Static(config.StaticPrefix, config.StaticDir)
@@ -47,7 +47,6 @@ func BuildRouter(c *services.Container) error {
 		}),
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
-		middleware.ServeCachedPage,
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup:    "form:csrf",
 			CookieHTTPOnly: true,
