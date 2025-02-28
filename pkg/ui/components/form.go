@@ -44,12 +44,12 @@ type (
 )
 
 func ControlGroup(controls ...Node) Node {
-	g := make(Group, 0, len(controls))
-	for _, control := range controls {
-		g = append(g, Div(
+	g := make(Group, len(controls))
+	for i, control := range controls {
+		g[i] = Div(
 			Class("control"),
 			control,
-		))
+		)
 	}
 
 	return Div(
@@ -81,9 +81,9 @@ func TextareaField(el TextareaFieldParams) Node {
 }
 
 func Radios(el RadiosParams) Node {
-	buttons := make(Group, 0, len(el.Options))
-	for _, opt := range el.Options {
-		buttons = append(buttons, Label(
+	buttons := make(Group, len(el.Options))
+	for i, opt := range el.Options {
+		buttons[i] = Label(
 			Class("radio"),
 			Input(
 				Type("radio"),
@@ -92,7 +92,7 @@ func Radios(el RadiosParams) Node {
 				If(el.Value == opt.Value, Checked()),
 			),
 			Text(" "+opt.Label),
-		))
+		)
 	}
 
 	return Div(
@@ -168,12 +168,12 @@ func formFieldErrors(fm form.Form, field string) Node {
 		return nil
 	}
 
-	g := make(Group, 0, len(errs))
-	for _, err := range errs {
-		g = append(g, P(
+	g := make(Group, len(errs))
+	for i, err := range errs {
+		g[i] = P(
 			Class("help is-danger"),
 			Text(err),
-		))
+		)
 	}
 
 	return g

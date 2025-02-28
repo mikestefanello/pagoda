@@ -21,9 +21,9 @@ type (
 )
 
 func (p *Posts) Render(path string) Node {
-	g := make(Group, 0, len(p.Posts))
-	for _, post := range p.Posts {
-		g = append(g, post.Render())
+	g := make(Group, len(p.Posts))
+	for i, post := range p.Posts {
+		g[i] = post.Render()
 	}
 
 	return Div(

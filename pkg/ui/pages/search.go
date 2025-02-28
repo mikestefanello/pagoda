@@ -11,9 +11,9 @@ import (
 func SearchResults(ctx echo.Context, results []*models.SearchResult) error {
 	r := ui.NewRequest(ctx)
 
-	g := make(Group, 0, len(results))
-	for _, result := range results {
-		g = append(g, result.Render())
+	g := make(Group, len(results))
+	for i, result := range results {
+		g[i] = result.Render()
 	}
 
 	return r.Render(layouts.Primary, g)

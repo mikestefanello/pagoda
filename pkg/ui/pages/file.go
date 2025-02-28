@@ -15,9 +15,9 @@ func UploadFile(ctx echo.Context, files []*models.File) error {
 	r := ui.NewRequest(ctx)
 	r.Title = "Upload a file"
 
-	fileList := make(Group, 0, len(files))
-	for _, file := range files {
-		fileList = append(fileList, file.Render())
+	fileList := make(Group, len(files))
+	for i, file := range files {
+		fileList[i] = file.Render()
 	}
 
 	n := Group{

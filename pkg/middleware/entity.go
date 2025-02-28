@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// LoadUser loads the user based on the ID provided as a path parameter
+// LoadUser loads the user based on the ID provided as a path parameter.
 func LoadUser(orm *ent.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

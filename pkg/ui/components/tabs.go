@@ -13,24 +13,24 @@ type Tab struct {
 
 func Tabs(heading, description string, items []Tab) Node {
 	renderTitles := func() Node {
-		g := make(Group, 0, len(items))
+		g := make(Group, len(items))
 		for i, item := range items {
-			g = append(g, Li(
+			g[i] = Li(
 				Attr(":class", fmt.Sprintf("{'is-active': tab === %d}", i)),
 				Attr("@click", fmt.Sprintf("tab = %d", i)),
 				A(Text(item.Title)),
-			))
+			)
 		}
 		return g
 	}
 
 	renderBodies := func() Node {
-		g := make(Group, 0, len(items))
+		g := make(Group, len(items))
 		for i, item := range items {
-			g = append(g, Div(
+			g[i] = Div(
 				Attr("x-show", fmt.Sprintf("tab == %d", i)),
 				P(Raw(" "+item.Body)),
-			))
+			)
 		}
 		return g
 	}

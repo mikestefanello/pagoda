@@ -36,15 +36,6 @@ func JS(r *ui.Request) Node {
 	return Group{
 		Script(Src("https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js")),
 		Script(Src("https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"), Defer()),
-		If(len(r.CSRF) > 0, Script(
-			Raw(`
-			document.body.addEventListener('htmx:configRequest', function(evt)  {
-				if (evt.detail.verb !== "get") {
-					evt.detail.parameters['csrf'] = '`+r.CSRF+`';
-				}
-			})
-			`),
-		)),
 		Script(Raw(htmxErr)),
 		csrf,
 	}
