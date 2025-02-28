@@ -2,8 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/labstack/gommon/random"
 	"github.com/mikestefanello/pagoda/config"
 )
 
@@ -11,8 +11,8 @@ import (
 const AppName = "Pagoda"
 
 var (
-	// cacheBuster stores a random string used as a cache buster for static files.
-	cacheBuster = random.String(10)
+	// cacheBuster stores the current time as a cache buster for static files.
+	cacheBuster = fmt.Sprint(time.Now().Unix())
 )
 
 // File generates a relative URL to a static file including a cache-buster query parameter.

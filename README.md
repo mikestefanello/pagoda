@@ -1162,6 +1162,7 @@ Future work includes but is not limited to:
 Thank you to all of the following amazing projects for making this possible.
 
 - [afero](https://github.com/spf13/afero)
+- [air](https://github.com/air-verse/air)
 - [alpinejs](https://github.com/alpinejs/alpine)
 - [backlite](https://github.com/mikestefanello/backlite)
 - [bulma](https://github.com/jgthms/bulma)
@@ -1169,12 +1170,12 @@ Thank you to all of the following amazing projects for making this possible.
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
 - [go-sqlite3](https://github.com/mattn/go-sqlite3)
+- [gomponents](https://github.com/maragudk/gomponents)
 - [goquery](https://github.com/PuerkitoBio/goquery)
 - [htmx](https://github.com/bigskysoftware/htmx)
 - [jwt](https://github.com/golang-jwt/jwt)
 - [otter](https://github.com/maypok86/otter)
 - [sessions](https://github.com/gorilla/sessions)
-- [sprig](https://github.com/Masterminds/sprig)
 - [sqlite](https://sqlite.org/)
 - [testify](https://github.com/stretchr/testify)
 - [validator](https://github.com/go-playground/validator)
