@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	// cache stores a cache of assembled components keyed by an ID.
+	// cache stores a cache of assembled components by key.
 	cache = make(map[string]gomponents.Node)
 
 	// mu handles concurrent access to the cache.

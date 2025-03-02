@@ -31,9 +31,12 @@ const (
 
 	// CSRFKey is the key used to store the CSRF token in context.
 	CSRFKey = "csrf"
+
+	// ConfigKey is the key used to store the configuration in context.
+	ConfigKey = "config"
 )
 
-// IsCanceledError determines if an error is due to a context cancelation.
+// IsCanceledError determines if an error is due to a context cancellation.
 func IsCanceledError(err error) bool {
 	return errors.Is(err, context.Canceled)
 }

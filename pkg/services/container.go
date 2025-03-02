@@ -18,7 +18,7 @@ import (
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/log"
 
-	// Require by ent
+	// Required by ent.
 	_ "github.com/mikestefanello/pagoda/ent/runtime"
 )
 

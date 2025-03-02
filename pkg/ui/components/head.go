@@ -19,7 +19,7 @@ func JS(r *ui.Request) Node {
 		});
 	`
 
-	const htmxCSFR = `
+	const htmxCSRF = `
 		document.body.addEventListener('htmx:configRequest', function(evt)  {
 			if (evt.detail.verb !== "get") {
 				evt.detail.parameters['csrf'] = '%s';
@@ -30,7 +30,7 @@ func JS(r *ui.Request) Node {
 	var csrf Node
 
 	if len(r.CSRF) > 0 {
-		csrf = Script(Raw(fmt.Sprintf(htmxCSFR, r.CSRF)))
+		csrf = Script(Raw(fmt.Sprintf(htmxCSRF, r.CSRF)))
 	}
 
 	return Group{
@@ -53,7 +53,7 @@ func Metatags(r *ui.Request) Node {
 		Meta(Charset("utf-8")),
 		Meta(Name("viewport"), Content("width=device-width, initial-scale=1")),
 		Link(Rel("icon"), Href(ui.File("favicon.png"))),
-		TitleEl(Text(ui.AppName), If(r.Title != "", Text(" | "+r.Title))),
+		TitleEl(Text(r.Config.App.Name), If(r.Title != "", Text(" | "+r.Title))),
 		If(r.Metatags.Description != "", Meta(Name("description"), Content(r.Metatags.Description))),
 		If(len(r.Metatags.Keywords) > 0, Meta(Name("keywords"), Content(strings.Join(r.Metatags.Keywords, ", ")))),
 	}

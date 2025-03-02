@@ -270,12 +270,11 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 	}
 
 	// Send the email.
-	url := ctx.Echo().Reverse(routenames.VerifyEmail, token)
 	err = h.mail.
 		Compose().
 		To(usr.Email).
 		Subject("Confirm your email address").
-		Component(emails.ConfirmEmailAddress(usr.Name, url)).
+		Component(emails.ConfirmEmailAddress(ctx, usr.Name, token)).
 		Send(ctx)
 
 	if err != nil {

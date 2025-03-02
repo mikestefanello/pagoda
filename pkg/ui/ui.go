@@ -7,9 +7,6 @@ import (
 	"github.com/mikestefanello/pagoda/config"
 )
 
-// AppName is the name of the application.
-const AppName = "Pagoda"
-
 var (
 	// cacheBuster stores the current time as a cache buster for static files.
 	cacheBuster = fmt.Sprint(time.Now().Unix())

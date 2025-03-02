@@ -6,7 +6,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func MenuLink(r *ui.Request, title, routeName string, routeParams ...string) Node {
+func MenuLink(r *ui.Request, title, routeName string, routeParams ...any) Node {
 	href := r.Path(routeName, routeParams...)
 
 	return Li(

@@ -11,8 +11,12 @@ http:
     key: ""
 
 app:
+  name: "Pagoda"
+  # We manually set this rather than using the HTTP settings in order to build absolute URLs for users
+  # since it's likely your app's HTTP settings are not identical to what is exposed by your server.
+  host: "http://localhost:8000"
   environment: "local"
-  # Change this on any live environments
+  # Change this on any live environments.
   encryptionKey: "?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"
   timeout: "20s"
   passwordToken:

@@ -46,6 +46,7 @@ func BuildRouter(c *services.Container) error {
 		echomw.TimeoutWithConfig(echomw.TimeoutConfig{
 			Timeout: c.Config.App.Timeout,
 		}),
+		middleware.Config(c.Config),
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{

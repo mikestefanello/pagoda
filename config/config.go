@@ -76,6 +76,8 @@ type (
 
 	// AppConfig stores application configuration.
 	AppConfig struct {
+		Name          string
+		Host          string
 		Environment   environment
 		EncryptionKey string
 		Timeout       time.Duration

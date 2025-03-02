@@ -2,6 +2,7 @@ package ui
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
@@ -46,6 +47,10 @@ type (
 
 		// Htmx stores information provided by HTMX about this request.
 		Htmx *htmx.Request
+
+		// Config stores the application configuration.
+		// This will only be populated if the Config middleware is installed in the router.
+		Config *config.Config
 	}
 
 	// LayoutFunc is a callback function intended to render your page node within a given layout.
@@ -74,14 +79,23 @@ func NewRequest(ctx echo.Context) *Request {
 		p.AuthUser = u.(*ent.User)
 	}
 
+	if cfg := ctx.Get(context.ConfigKey); cfg != nil {
+		p.Config = cfg.(*config.Config)
+	}
+
 	return p
 }
 
 // Path generates a URL path for a given route name and optional route parameters.
 // This will only work if you've supplied names for each of your routes. It's optional to use and helps avoids
 // having duplicate, hard-coded paths and parameters all over your application.
-func (r *Request) Path(routeName string, routeParams ...string) string {
-	return r.Context.Echo().Reverse(routeName, routeParams)
+func (r *Request) Path(routeName string, routeParams ...any) string {
+	return r.Context.Echo().Reverse(routeName, routeParams...)
+}
+
+// Url generates an absolute URL for a given route name and optional route parameters.
+func (r *Request) Url(routeName string, routeParams ...any) string {
+	return r.Config.App.Host + r.Path(routeName, routeParams...)
 }
 
 // Render renders a given node, optionally within a given layout based on the HTMX request headers.

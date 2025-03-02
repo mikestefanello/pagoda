@@ -1,11 +1,17 @@
 package emails
 
 import (
+	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
+	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
 
-func ConfirmEmailAddress(username, url string) Node {
+func ConfirmEmailAddress(ctx echo.Context, username, token string) Node {
+	url := ui.NewRequest(ctx).
+		Url(routenames.VerifyEmail, token)
+
 	return Group{
 		Strong(Textf("Hello %s,", username)),
 		Br(),
