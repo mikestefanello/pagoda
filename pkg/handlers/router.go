@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/sessions"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mikestefanello/pagoda/config"
+	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/services"
 )
@@ -52,6 +53,7 @@ func BuildRouter(c *services.Container) error {
 			CookieHTTPOnly: true,
 			CookieSecure:   true,
 			CookieSameSite: http.SameSiteStrictMode,
+			ContextKey:     context.CSRFKey,
 		}),
 	)
 

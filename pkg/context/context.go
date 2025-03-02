@@ -28,6 +28,9 @@ const (
 
 	// HTMXRequestKey is the key used to store the HTMX request data in context.
 	HTMXRequestKey = "htmx"
+
+	// CSRFKey is the key used to store the CSRF token in context.
+	CSRFKey = "csrf"
 )
 
 // IsCanceledError determines if an error is due to a context cancelation.

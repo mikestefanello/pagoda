@@ -2,7 +2,6 @@ package ui
 
 import (
 	"github.com/labstack/echo/v4"
-	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/htmx"
@@ -66,7 +65,7 @@ func NewRequest(ctx echo.Context) *Request {
 
 	p.IsHome = p.CurrentPath == "/"
 
-	if csrf := ctx.Get(echomw.DefaultCSRFConfig.ContextKey); csrf != nil {
+	if csrf := ctx.Get(context.CSRFKey); csrf != nil {
 		p.CSRF = csrf.(string)
 	}
 
