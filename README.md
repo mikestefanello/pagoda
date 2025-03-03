@@ -20,7 +20,7 @@
 * [Getting started](#getting-started)
   * [Dependencies](#dependencies)
   * [Start the application](#start-the-application)
-  * [Running tests](#running-tests)
+  * [Live reloading](#live-reloading)
 * [Service container](#service-container)
   * [Dependency injection](#dependency-injection)
   * [Test dependencies](#test-dependencies)
@@ -46,34 +46,30 @@
   * [Custom middleware](#custom-middleware)
   * [Handlers](#handlers)
   * [Errors](#errors)
+  * [Redirects](#redirects)
   * [Testing](#testing)
     * [HTTP server](#http-server)
     * [Request / Request helpers](#request--response-helpers)
     * [Goquery](#goquery)
-* [Pages](#pages)
-  * [Flash messaging](#flash-messaging)
-  * [Pager](#pager)
-  * [CSRF](#csrf)
-  * [Automatic template parsing](#automatic-template-parsing)
-  * [Cached responses](#cached-responses)
-    * [Cache tags](#cache-tags)
-    * [Cache middleware](#cache-middleware)
-  * [Data](#data)
+* [User interface](#user-interface)
+  * [Why Gomponents?](#why-gomponents)
+  * [Request](#request)
+    * [Title and metatags](#title-and-metatags)
+    * [URL generation](#url-generation)
+    * [HTMX support and rendering](#htmx-support-and-rendering)
+  * [Components](#components)
+  * [Layouts](#layouts)
+  * [Pages](#pages)
+    * [Rendering the page](#rendering-the-page)
   * [Forms](#forms)
     * [Submission processing](#submission-processing)
     * [Inline validation](#inline-validation)
-  * [Headers](#headers)
-  * [Status code](#status-code)
-  * [Metatags](#metatags)
-  * [URL and link generation](#url-and-link-generation)
+    * [CSRF](#csrf)
+  * [Models](#models)
   * [HTMX support](#htmx-support)
-  * [Rendering the page](#rendering-the-page)
-* [Template renderer](#template-renderer)
-  * [Custom functions](#custom-functions)
-  * [Caching](#caching)
-  * [Hot-reload for development](#hot-reload-for-development)
-  * [File configuration](#file-configuration)
-* [Funcmap](#funcmap)
+  * [Node caching](#node-caching)
+  * [Flash messaging](#flash-messaging)
+* [Pager](#pager)
 * [Cache](#cache)
   * [Set data](#set-data)
   * [Get data](#get-data)
@@ -101,7 +97,7 @@ _Pagoda_ is not a framework but rather a base starter-kit for rapid, easy full-s
 
 Built on a solid [foundation](#foundation) of well-established frameworks and modules, _Pagoda_ aims to be a starting point for any web application with the benefit over a mega-framework in that you have full control over all of the code, the ability to easily swap any frameworks or modules in or out, no strict patterns or interfaces to follow, and no fear of lock-in.
 
-While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that _Go_ templates can be powerful and easy to work with, and interesting [frontend](#frontend) libraries can provide the same modern functionality and behavior without having to write any JS at all.
+While separate JavaScript frontends have surged in popularity, many prefer the reliability, simplicity and speed of a full-stack approach with server-side rendered HTML. Even the popular JS frameworks all have SSR options. This project aims to highlight that _Go_ alone can be powerful and easy to work with as a full-stack solution, and interesting [frontend](#frontend) libraries can provide the same modern functionality and behavior without having to write any JS or CSS at all. In fact, you can even avoid writing HTML as well.
 
 ### Foundation
 
@@ -111,6 +107,7 @@ While many great projects were used to build this, all of which are listed in th
 
 - [Echo](https://echo.labstack.com/): High performance, extensible, minimalist Go web framework.
 - [Ent](https://entgo.io/): Simple, yet powerful ORM for modeling and querying data.
+- [Gomponents](https://github.com/maragudk/gomponents): HTML components written in pure Go. They render to HTML 5, and make it easy for you to build reusable components.
 
 #### Frontend
 
@@ -162,27 +159,26 @@ By default, you should be able to access the application in your browser at `loc
 
 By default, your data will be stored within the `dbs` directory. If you ever want to quickly delete all data just remove this directory.
 
-### Running tests
+### Live reloading
 
-To run all tests in the application, execute `make test`. This ensures that the tests from each package are not run in parallel. This is required since many packages contain tests that connect to the test database which is stored in memory and reset automatically for each package.
+Rather than using `make run`, if you prefer live reloading so your app automatically rebuilds and run whenever you make changes, start by installing [air](https://github.com/air-verse/air) by running `make air-install`, then use `make watch` to start the application with automatic live reloading.
 
 ## Service container
 
 The container is located at `pkg/services/container.go` and is meant to house all of your application's services and/or dependencies. It is easily extensible and can be created and initialized in a single call. The services currently included in the container are:
 
-- Configuration
-- Cache
-- Database
-- ORM
-- Web
-- Validator
 - Authentication
-- Mail
-- Template renderer
-- Tasks
+- Cache
+- Configuration
+- Database
 - Files
+- Mail
+- ORM
+- Tasks
+- Validator
+- Web
 
-A new container can be created and initialized via `services.NewContainer()`. It can be later shutdown via `Shutdown()`.
+A new container can be created and initialized via `services.NewContainer()`. It can be later shutdown via `Shutdown()`, which will attempt to gracefully shutdown all services.
 
 ### Dependency injection
 
@@ -196,7 +192,7 @@ It is common that your tests will require access to dependencies, like the datab
 
 The `config` package provides a flexible, extensible way to store all configuration for the application. Configuration is added to the `Container` as a _Service_, making it accessible across most of the application.
 
-Be sure to review and adjust all of the default configuration values provided in `config/config.yaml`.
+Be sure to review and adjust all the default configuration values provided in `config/config.yaml`.
 
 ### Environment overrides
 
@@ -394,7 +390,6 @@ For this example, we'll create a new handler which includes a GET and POST route
 ```go
 type Example struct {
     orm *ent.Client
-    *services.TemplateRenderer
 }
 ```
 
@@ -410,7 +405,6 @@ func init() {
 
 ```go
 func (e *Example) Init(c *services.Container) error {
-    e.TemplateRenderer = c.TemplateRenderer
     e.orm = c.ORM
     return nil
 }
@@ -418,12 +412,12 @@ func (e *Example) Init(c *services.Container) error {
 
 4) Declare the routes
 
-**It is highly recommended** that you provide a `Name` for your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs.
+**It is highly recommended** that you provide a `Name` for your routes. Most methods on the back and frontend leverage the route name and parameters in order to generate URLs. All route names are currently stored as consts in the `routenames` package so they are accessible from within the `ui` layer.
 
 ```go
 func (e *Example) Routes(g *echo.Group) {
-    g.GET("/example", e.Page).Name = "example"
-    g.POST("/example", c.PageSubmit).Name = "example.submit"
+    g.GET("/example", e.Page).Name = routenames.Example
+    g.POST("/example", c.PageSubmit).Name = routenames.ExampleSubmit
 }
 ```
 
@@ -441,9 +435,9 @@ func (e *Example) PageSubmit(ctx echo.Context) error {
 
 ### Errors
 
-Routes can return errors to indicate that something wrong happened. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code. You can use `return echo.NewHTTPError(http.StatusInternalServerError)`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
+Routes can return errors to indicate that something wrong happened and an error page should be rendered for the request. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code, and optionally a message that will be logged. You can use `return echo.NewHTTPError(http.StatusInternalServerError, "optional message")`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
 
-The [error handler](https://echo.labstack.com/guide/error-handling/) is set to the provided `Handler` in `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route conveniently constructs and renders a `Page` which uses the template `templates/pages/error.gohtml`. The status code is passed to the template so you can easily alter the markup depending on the error type.
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to the provided `Handler` in `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route passes the status code to the `page.Error` UI component, allowing you to easily adjust the markup depending on the error type.
 
 ### Redirects
 
@@ -469,7 +463,7 @@ Only a brief example of route tests were provided in order to highlight what is 
 
 #### HTTP server
 
-When the route tests initialize, a new `Container` is created which provides full access to all of the _Services_ that will be available during normal application execution. Also provided is a test HTTP server with the router added. This means your tests can make requests and expect responses exactly as the application would behave outside of tests. You do not need to mock the requests and responses.
+When the route tests initialize, a new `Container` is created which provides full access to all the _Services_ that will be available during normal application execution. Also provided is a test HTTP server with the router added. This means your tests can make requests and expect responses exactly as the application would behave outside of tests. You do not need to mock the requests and responses.
 
 #### Request / Response helpers
 
@@ -501,35 +495,216 @@ assert.Len(t, h1.Nodes, 1)
 assert.Equal(t, "About", h1.Text())
 ```
 
-## Pages
+## User interface
 
-The `Page` is the major building block of your `Handler` responses. It is a _struct_ type located at `pkg/page/page.go`. The concept of the `Page` is that it provides a consistent structure for building responses and transmitting data and functionality to the templates. Pages are rendered with the `TemplateRenderer`.
+todo
 
-All example routes provided construct and _render_ a `Page`. It's recommended that you review both the `Page` and the example routes as they try to illustrate all included functionality.
+### Why Gomponents?
 
-As you develop your application, the `Page` can be easily extended to include whatever data or functions you want to provide to your templates.
+Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_ which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more, the end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough easily provide re-usable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
 
-Initializing a new page is simple:
+While I was extremely hesitant to adopt a rendering option outside the standard library, if an option exists that I personally feel is far superior, that is what I'm going to go with. [Templ](https://github.com/a-h/templ) was also a consideration as that project has made massive progress, seen an explosion in adoption, and aims to solve all the problems previously mentioned. I did not feel that it was a good fit for this project though as it requires you to know and understand their templating language, to install a CLI and an IDE plugin (which does not work with all IDEs; especially GoLand), and separately compile template code.
+
+[Gomponents](https://github.com/maragudk/gomponents) allows you to build HTML using nothing except pure, type-safe Go; whether that's entire documents or dynamic, reusable components. [Here](https://www.gomponents.com/) are some basic examples to give you an idea of how it works and [this tool](https://gomponents.morehart.dev/) is incredibly useful for quickly converting HTML to _gomponent_ Go code. When I first came across this library, I was very much against it, and couldn't imagine writing tons of nested function calls just to produce some HTML; especially for complex markup. But after actually spending some time using it to replicate the UI of this project, and feeling the downsides of Go templates, I quickly became a big fan and supporter of this approach. Between this and the chosen JS/CSS libraries, you can literally write your entire frontend without leaving Go.
+
+Before making any quick judgements of your own, I ask that you deeply consider what you've used in the past, review what previously existed in this project, and compare to the current solution and code presented here. I believe I've laid out the `ui` package in a way that makes building your frontend with _gomponents_ very easy and enjoyable.
+
+### Request
+
+The `Request` type in the `ui` package is a foundational helper that provides useful data from the current request as well as resources and methods that make rendering UI components much easier. Using the `echo.Context`, a `Request` can be generated by executing `ui.NewRequest(ctx)`. As you develop and expand your application, you will likely want to expand this type to include additional data and methods that your frontend requires.
+
+`NewRequest()` will automatically populate the following fields using the `echo.Context` from the current request:
+
+- `Context`: The provided _echo.Context_
+- `CurrentPath`: The requested URL path
+- `IsHome`: If the request was for the homepage
+- `IsAuth`: If the user is authenticated
+- `AuthUser`: The logged-in user entity, if one
+- `CSRF`: The CSRF token, if the middleware is being used
+- `Htmx`: Data from the HTMX headers, if HTMX made the request
+- `Config`: The application configuration, if the middleware is being used
+
+#### Title and metatags
+
+The `Request` type has additional fields to make it easy to set static values within components being rendered on a given page. While the _title_ is always important, the others are provided as an example:
+
+* `Title`: The page title
+* `Metatags`:
+  * `Description`: The description of the page
+  * `Tags`: A slice of keyword tags
+
+#### URL generation
+
+As mentioned in the [Routes](#routes) section, it is recommended, though not required, to provide names for each of your routes. These are currently defined as consts in the `routenames` package. If you use names for your routes, you can leverage the URL generation methods on the `Request`. This allows you to prevent hard-coding your route paths and parameters in multiple places.
+
+The methods both take a route name and optional variadic route parameters:
+
+* `Path`: Generates a relative path for a given route.
+* `Url`: Generates an absolute URL for a given route. This uses the `App.Host` field in your [configuration](#configuration) to determine the host of the URL.
+
+#### HTMX support and rendering
+
+While using HTMX is completely optional, tools are provided to make working with it as easy as possible and there are examples of it all throughout this project.
+
+As mentioned, the `Request` automatically contains an `htmx.Request` object which contains values from all the HTMX headers. This allows your frontend code, especially [pages](#pages), to dynamically react to which partial section of the page is being requested, for example.
+
+The `Request` type also contains a `Render()` method which automatically handles partial rendering, omitting the [layout](#layouts) and only rendering the [page](#pages) if the request is made by HTMX and is not boosted.
+
+See the [pages](#pages) section for more details or view the code in the `pages` package.
+
+**Example:**
 
 ```go
-func (c *home) Get(ctx echo.Context) error {
-    p := page.New(ctx)
+g.GET("/user/:uid", profilePage).Name = routenames.Profile
+```
+
+```go
+func ProfileLink(r *ui.Request, userName string, userID int64) gomponents.Node {
+    return A(
+        Class("profile"),
+        Href(r.Path(routenames.Profile, userID)), 
+        Text(userName),
+    )
 }
 ```
 
-Using the `echo.Context`, the `Page` will be initialized with the following fields populated:
+### Components
 
-- `Context`: The passed in _context_
-- `Path`: The requested URL path
-- `URL`: The requested URL
-- `StatusCode`: Defaults to 200
-- `Pager`: Initialized `Pager` (see below)
-- `RequestID`: The request ID, if the middleware is being used
-- `IsHome`: If the request was for the homepage
-- `IsAuth`: If the user is authenticated
-- `AuthUser`: The logged in user entity, if one
-- `CSRF`: The CSRF token, if the middleware is being used
-- `HTMX.Request`: Data from the HTMX headers, if HTMX made the request (see below)
+The [components package](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/components) is meant to be your library of reusable _gomponent_ components. Having this makes building your [layouts](#layouts), [pages](#pages), [forms](#forms), [models](#models) and the rest of your user interface much easier. Some of the examples provided include components for [flash messages](#flash-messaging), navigation menus, tabs, metatags, and form elements used to automatically provide [inline validation](#inline-form-validation).  
+
+### Layouts
+
+Layouts are full HTML templates that are used by [pages](#pages) to inject themselves in to, allowing you to easily have multiple pages that all use the same layout, and to easily switch layouts between different pages. [Included](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/layouts) is a _primary_ and _auth_ layout as an example, which you can see in action by navigating to the login, register, and forgot password pages.
+
+### Pages
+
+todo
+
+    * [Rendering the page](#rendering-the-page)
+
+### Forms
+
+Building, rendering, validating and processing forms is made extremely easy with [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator), [form.Submission](https://github.com/mikestefanello/pagoda/blob/templates/pkg/form/submission.go), and the provided _gomponent_ [components](#components).
+
+Start by declaring the form within the [forms](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/forms) package:
+
+```go
+type Guestbook struct {
+    Message    string `form:"message" validate:"required"`
+    form.Submission
+}
+```
+
+Embedding `form.Submission` satisfies the `form.Form` interface and handles submissions and validation for you.
+
+Next, provide a method that renders the form:
+
+```go
+func (f *Guestbook) Render(r *ui.Request) Node {
+    return Form(
+        ID("contact"),
+        Method(http.MethodPost),
+        Attr("hx-post", r.Path(routenames.GuestbookSubmit)),
+        TextareaField(TextareaFieldParams{
+            Form:      f,
+            FormField: "Message",
+            Name:      "message",
+            Label:     "Message",
+            Value:     f.Message,
+        }),
+        ControlGroup(
+            FormButton("is-link", "Submit"),
+        ),
+        CSRF(r),
+    )
+}
+```
+
+Then, create a _page_ that includes your form:
+
+```go
+func UserGuestbook(ctx echo.Context, form *forms.Guestbook) error {
+    r := ui.NewRequest(ctx)
+	
+    content := Div(
+        Class("guestbook"),
+        H1(Text("My guestbook")),
+        P(Text("Hi, please sign my guestbook!")),
+        form.Render(r)
+    )
+	
+    return r.Render(layouts.Primary, content)
+}
+```
+
+And last, have your handler render the _page_ in a route, and provide a route for the submission.
+
+```go
+func (e *Example) Routes(g *echo.Group) {
+    g.GET("/guestbook", e.Page).Name = routenames.Guestbook
+    g.POST("/guestbook", c.PageSubmit).Name = routenames.GuestbookSubmit
+}
+
+func (e *Example) Page(ctx echo.Context) error {
+    return pages.UserGuestbook(ctx, form.Get[forms.Guestbook](ctx))
+}
+```
+
+`form.Get` will either initialize a new form, or load one previously stored in the context (ie, if it was already submitted).
+
+#### Submission processing
+
+Using the example form above, this is all you would have to do within the _POST_ callback for your route:
+
+Start by submitting the form along with the request context. This will:
+1. Store a pointer to the form so that your _GET_ callback can access the form values (shown previously). That allows the form to easily be re-rendered with any validation errors it may have as well as the values that were provided.
+2. Parse the input in the _POST_ data to map to the struct so the fields becomes populated. This uses the `form` struct tags to map form input values to the struct fields.
+3. Validate the values in the struct fields according to the rules provided in the optional `validate` struct tags.
+
+```go
+func (e *Example) Submit(ctx echo.Context) error {
+    var input forms.Guestbook
+
+    // Submit the form.
+    err := form.Submit(ctx, &input)
+
+    // Check the error returned, and act accordingly.
+    switch err.(type) {
+    case nil:
+        // All good!
+    case validator.ValidationErrors:
+        // The form input was not valid, so re-render the form.
+        return e.Page(ctx)
+    default:
+        // Request failed, show the error page.
+        return err
+    }
+}
+```
+
+#### Inline validation
+
+The `Submission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that the provided form [components](#components), such as `TextareaField` shown in the example above, use to automatically provide classes and error messages. The example form above will have inline validation without doing anything other than what is shown.
+
+While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `Submission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
+
+#### CSRF
+
+By default, all non `GET` requests will require a CSRF token be provided as a form value. This is provided by middleware and can be adjusted or removed in the router.
+
+The `Request` automatically extracts the CSRF token from the context, but you must include it in your forms by using the provided `CSRF()` [component](#components) as shown in the example above.
+
+### Models
+
+todo
+
+### HTMX support
+
+todo
+
+### Node caching
+
+todo
 
 ### Flash messaging
 
@@ -545,15 +720,11 @@ There are four types of messages, and each can be created as follows:
 - Warning: `msg.Warning(ctx echo.Context, message string)`
 - Danger: `msg.Danger(ctx echo.Context, message string)`
 
-The _message_ string can contain HTML.
-
 #### Rendering messages
 
 When a flash message is retrieved from storage in order to be rendered, it is deleted from storage so that it cannot be rendered again.
 
-The `Page` has a method that can be used to fetch messages for a given type from within the template: `Page.GetMessages(typ msg.Type)`. This is used rather than the _funcmap_ because the `Page` contains the request context which is required in order to access the session data. Since the `Page` is the data destined for the templates, you can use: `{{.GetMessages "success"}}` for example.
-
-To make things easier, a template _component_ is already provided, located at `templates/components/messages.gohtml`. This will render all messages of all types simply by using `{{template "messages" .}}` either within your page or layout template.
+A [component](#components), `FlashMessages()`, is provided to render flash messages within your UI.
 
 ### Pager
 
@@ -569,210 +740,6 @@ Methods include:
 - `GetOffset()`: Get the offset which can be useful is constructing a paged database query
 
 There is currently no template (yet) to easily render a pager.
-
-### CSRF
-
-By default, all non GET requests will require a CSRF token be provided as a form value. This is provided by middleware and can be adjusted or removed in the router.
-
-The `Page` will contain the CSRF token for the given request. There is a CSRF helper component template which can be used to easily render a hidden form element in your form which will contain the CSRF token and the proper element name. Simply include `{{template "csrf" .}}` within your form.
-
-### Automatic template parsing
-
-Dealing with templates can be quite tedious and annoying so the `Page` aims to make it as simple as possible with the help of the [template renderer](#template-renderer). To start, templates for _pages_ are grouped in the following directories within the `templates` directory:
-
-- `layouts`: Base templates that provide the entire HTML wrapper/layout. This template should include a call to `{{template "content" .}}` to render the content of the `Page`.
-- `pages`: Templates that are specific for a given route/page. These must contain `{{define "content"}}{{end}}` which will be injected in to the _layout_ template.
-- `components`: A shared library of common components that the layout and base template can leverage.
-
-Specifying which templates to render for a given `Page` is as easy as:
-
-```go
-page.Name = "home"
-page.Layout = "main"
-```
-
-That alone will result in the following templates being parsed and executed when the `Page` is rendered:
-
-1) `layouts/main.gohtml` as the base template
-2) `pages/home.gohtml` to provide the `content` template for the layout
-3) All template files located within the `components` directory
-4) The entire [funcmap](#funcmap)
-
-The [template renderer](#template-renderer) also provides caching and local hot-reloading.
-
-### Cached responses
-
-A `Page` can have cached enabled just by setting `Page.Cache.Enabled` to `true`. The `TemplateRenderer` will automatically handle caching the HTML output, headers and status code. Cached pages are stored using a key that matches the full request URL and [middleware](#cache-middleware) is used to serve it on matching requests.
-
-By default, the cache expiration time will be set according to the configuration value located at `Config.Cache.Expiration.Page` but it can be set per-page at `Page.Cache.Expiration`.
-
-#### Cache tags
-
-You can optionally specify cache tags for the `Page` by setting a slice of strings on `Page.Cache.Tags`. This provides the ability to build in cache invalidation logic in your application driven by events such as entity operations, for example.
-
-You can use the [cache client](#cache) on the `Container` to easily [flush cache tags](#flush-tags), if needed.
-
-#### Cache middleware
-
-Cached pages are served via the middleware `ServeCachedPage()` in the `middleware` package.
-
-The cache is bypassed if the requests meet any of the following criteria:
-1) Is not a GET request
-2) Is made by an authenticated user
-
-Cached pages are looked up for a key that matches the exact, full URL of the given request.
-
-### Data
-
-The `Data` field on the `Page` is of type `any` and is what allows your route to pass whatever it requires to the templates, alongside the `Page` itself.
-
-### Forms
-
-The `Form` field on the `Page` is similar to the `Data` field, but it's meant to store a struct that represents a form being rendered on the page.
-
-An example of this pattern is:
-
-```go
-type ContactForm struct {
-    Email      string `form:"email" validate:"required,email"`
-    Message    string `form:"message" validate:"required"`
-    form.Submission
-}
-```
-
-Embedding `form.Submission` satisfies the `form.Form` interface and makes dealing with submissions and validation extremely easy.
-
-Then in your page:
-
-```go
-p := page.New(ctx)
-p.Form = form.Get[ContactForm](ctx)
-```
-
-This will either initialize a new form to be rendered, or load one previously stored in the context (ie, if it was already submitted). How the _form_ gets populated with values so that your template can render them is covered in the next section.
-
-#### Submission processing
-
-Form submission processing is made extremely simple by leveraging functionality provided by [Echo binding](https://echo.labstack.com/guide/binding/), [validator](https://github.com/go-playground/validator) and the `Submission` struct located in `pkg/form/submission.go`.
-
-Using the example form above, this is all you would have to do within the _POST_ callback for your route:
-
-Start by submitting the form along with the request context. This will:
-1. Store a pointer to the form so that your _GET_ callback can access the form values (shown previously). That allows the form to easily be re-rendered with any validation errors it may have as well as the values that were provided.
-2. Parse the input in the _POST_ data to map to the struct so the fields becomes populated. This uses the `form` struct tags to map form input values to the struct fields.
-3. Validate the values in the struct fields according to the rules provided in the optional `validate` struct tags.
-
-```go
-var input ContactForm
-
-err := form.Submit(ctx, &input)
-```
-
-Check the error returned, and act accordingly. For example:
-```go
-switch err.(type) {
-case nil:
-    // All good!
-case validator.ValidationErrors:
-    // The form input was not valid, so re-render the form
-    return c.Page(ctx)
-default:
-    // Request failed, show the error page
-    return err
-}
-```
-
-And finally, your template:
-```html
-<form id="contact" method="post" hx-post="{{url "contact.post"}}">
-    <input id="email" name="email" type="email" class="input" value="{{.Form.Email}}">
-    <input id="message" name="message" type="text" class="input" value="{{.Form.Message}}">
-</form
-```
-
-#### Inline validation
-
-The `Submission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that your templates can use to provide classes and extract the error messages.
-
-While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `Submission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
-
-To provide the inline validation in your template, there are two things that need to be done.
-
-First, include a status class on the element so it will highlight green or red based on the validation:
-```html
-<input id="email" name="email" type="email" class="input {{.Form.GetFieldStatusClass "Email"}}" value="{{.Form.Email}}">
-```
-
-Second, render the error messages, if there are any for a given field:
-```go
-{{template "field-errors" (.Form.GetFieldErrors "Email")}}
-```
-
-### Headers
-
-HTTP headers can be set either via the `Page` or the _context_:
-
-```go
-p := page.New(ctx)
-p.Headers["HeaderName"] = "header-value"
-```
-
-```go
-ctx.Response().Header().Set("HeaderName", "header-value")
-```
-
-### Status code
-
-The HTTP response status code can be set either via the `Page` or the _context_:
-
-```go
-p := page.New(ctx)
-p.StatusCode = http.StatusTooManyRequests
-```
-
-```go
-ctx.Response().Status = http.StatusTooManyRequests
-```
-
-### Metatags
-
-The `Page` provides the ability to set basic HTML metatags which can be especially useful if your web application is publicly accessible. Only fields for the _description_ and _keywords_ are provided but adding additional fields is very easy.
-
-```go
-p := page.New(ctx)
-p.Metatags.Description = "The page description."
-p.Metatags.Keywords = []string{"Go", "Software"}
-```
-
-A _component_ template is included to render metatags in `core.gohtml` which can be used by adding `{{template "metatags" .}}` to your _layout_.
-
-### URL and link generation
-
-Generating URLs in the templates is made easy if you follow the [routing patterns](#patterns) and provide names for your routes. Echo provides a `Reverse` function to generate a route URL with a given route name and optional parameters. This function is made accessible to the templates via _funcmap_ function `url`.
-
-As an example, if you have route such as:
-```go
-e.GET("/user/profile/:user", handler.Get).Name = "user_profile"
-```
-
-And you want to generate a URL in the template, you can:
-```go
-{{url "user_profile" 1}
-```
-
-Which will generate: `/user/profile/1`
-
-There is also a helper function provided in the [funcmap](#funcmap) to generate links which has the benefit of adding an _active_ class if the link URL matches the current path. This is especially useful for navigation menus.
-
-```go
-{{link (url "user_profile" .AuthUser.ID) "Profile" .Path "extra-class"}}
-```
-
-Will generate:
-```html
-<a href="/user/profile/1" class="is-active extra-class">Profile</a>
-```
-Assuming the current _path_ is `/user/profile/1`; otherwise the `is-active` class will be excluded.
 
 ### HTMX support
 
@@ -819,100 +786,6 @@ if page.HTMX.Request.Target == "search" {
 #### CSRF token
 
 If [CSRF](#csrf) protection is enabled, the token value will automatically be passed to HTMX to be included in all non-GET requests. This is done in the `footer` template by leveraging HTMX [events](https://htmx.org/reference/#events).
-
-### Rendering the page
-
-Once your `Page` is fully built, rendering it via the embedded `TemplateRenderer` in your _handler_ can be done simply by calling `RenderPage()`:
-
-```go
-func (c *home) Get(ctx echo.Context) error {
-    p := page.New(ctx)
-    p.Layout = templates.LayoutMain
-    p.Name = templates.PageHome
-    return c.RenderPage(ctx, p)
-}
-```
-
-## Template renderer
-
-The _template renderer_ is a _Service_ on the `Container` that aims to make template parsing and rendering easy and flexible. It is the mechanism that allows the `Page` to do [automatic template parsing](#automatic-template-parsing). The standard `html/template` is still the engine used behind the scenes. The code can be found in `pkg/services/template_renderer.go`.
-
-Here is an example of a complex rendering that uses multiple template files as well as an entire directory of template files:
-
-```go
-buf, err = c.TemplateRenderer.
-    Parse().
-    Group("page").
-    Key("home").
-    Base("main").
-    Files("layouts/main", "pages/home").
-    Directories("components").
-    Execute(data)
-```
-
-This will do the following:
-- [Cache](#caching) the parsed template with a _group_ of `page` and _key_ of `home` so this parse only happens once
-- Set the _base template file_ as `main`
-- Include the templates `templates/layout/main.gohtml` and `templates/pages/home.gohtml`
-- Include all templates located within the directory `templates/components`
-- Include the [funcmap](#funcmap)
-- Execute the parsed template with `data` being passed in to the templates
-
-Using the example from the [page rendering](#rendering-the-page), this is will execute:
-
-```go
-buf, err = c.TemplateRenderer.
-    Parse().
-    Group("page").
-    Key(page.Name).
-    Base(page.Layout).
-    Files(
-        fmt.Sprintf("layouts/%s", page.Layout),
-        fmt.Sprintf("pages/%s", page.Name),
-    ).
-    Directories("components").
-    Execute(page)
-```
-
-If you have a need to _separately_ parse and cache the templates then later execute, you can separate the operations:
-
-```go
-_, err := c.TemplateRenderer.
-    Parse().
-    Group("my-group").
-    Key("my-key").
-    Base("auth").
-    Files("layouts/auth", "pages/login").
-    Directories("components").
-    Store()
-```
-
-```go
-tpl, err := c.TemplateRenderer.Load("my-group", "my-key")
-buf, err := tpl.Execute(data)
-```
-
-### Custom functions
-
-All templates will be parsed with the [funcmap](#funcmap) so all of your custom functions as well as the functions provided by [sprig](https://github.com/Masterminds/sprig) will be available.
-
-### Caching
-
-Parsed templates will be cached within a `sync.Map` so the operation will only happen once per cache _group_ and _ID_. Be careful with your cache _group_ and _ID_ parameters to avoid collisions.
-
-### Hot-reload for development
-
-If the current [environment](#environments) is set to `config.EnvLocal`, which is the default, the cache will be bypassed and templates will be parsed every time they are requested. This allows you to have hot-reloading without having to restart the application so you can see your HTML changes in the browser immediately.
-
-### File configuration
-
-To make things easier and less repetitive, parameters given to the _template renderer_ must not include the `templates` directory or the template file extensions. The file extension is stored as a constant (`TemplateExt`) within the `config` package.
-
-## Funcmap
-
-The `funcmap` package provides a _function map_ (`template.FuncMap`) which will be included for all templates rendered with the [template renderer](#template-renderer). Aside from a few custom functions, [sprig](https://github.com/Masterminds/sprig) is included which provides over 100 commonly used template functions. The full list is available [here](http://masterminds.github.io/sprig/).
-
-To include additional custom functions, add to the map in `NewFuncMap()` and define the function in the package. It will then become automatically available in all templates.
 
 ## Cache
 
