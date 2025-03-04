@@ -500,11 +500,10 @@ assert.Equal(t, "About", h1.Text())
 
 ## User interface
 
-todo
 
 ### Why Gomponents?
 
-Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_ which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more, the end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough to easily provide reusable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
+Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_ which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more. The end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough to easily provide reusable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
 
 While I was extremely hesitant to adopt a rendering option outside the standard library, if an option exists that I personally feel is far superior, that is what I'm going to go with. [Templ](https://github.com/a-h/templ) was also a consideration as that project has made massive progress, seen an explosion in adoption, and aims to solve all the problems previously mentioned. I did not feel that it was a good fit for this project though as it requires you to know and understand their templating language, to install a CLI and an IDE plugin (which does not work with all IDEs; especially GoLand), and separately compile template code.
 
@@ -613,7 +612,6 @@ Layouts are full HTML templates that are used by [pages](#pages) to inject thems
 
 ### Pages
 
-todo
 
 #### Rendering
 
@@ -797,22 +795,22 @@ A [component](#components), `FlashMessages()`, is provided to render flash messa
 
 ## Pager
 
-A very basic mechanism is provided to handle and facilitate paging located in `pkg/pager` and can be initialized via `pager.NewPager()`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager. This query can be controlled via the `QueryKey` constant.
+A very basic mechanism is provided to handle and facilitate paging located in `pkg/pager` and can be initialized via `pager.NewPager()`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager. This query parameter can be controlled via the `QueryKey` constant.
 
 Methods include:
 
 - `SetItems(items int)`: Set the total amount of items in the entire result-set
 - `IsBeginning()`: Determine if the pager is at the beginning of the pages
 - `IsEnd()`: Determine if the pager is at the end of the pages
-- `GetOffset()`: Get the offset which can be useful is constructing a paged database query
+- `GetOffset()`: Get the offset which can be useful in constructing a paged database query
 
 There is currently no generic component to easily render a pager, but the homepage does have an example.
 
 ## Cache
 
-As previously mentioned, the default cache implementation is a simple in-memory store, backed by [otter](https://github.com/maypok86/otter), a lockless cache that uses [S3-FIFO](https://s3fifo.com/) eviction. The `Container` houses a `CacheClient` which is a useful, wrapper to interact with the cache (see examples below). Within the `CacheClient` is the underlying store interface `CacheStore`. If you wish to use a different store, such as Redis, and want to keep using the `CacheClient`, simply implement the `CacheStore` interface with a Redis library and adjust the `Container` initialization to use that.
+As previously mentioned, the default cache implementation is a simple in-memory store, backed by [otter](https://github.com/maypok86/otter), a lockless cache that uses [S3-FIFO](https://s3fifo.com/) eviction. The `Container` houses a `CacheClient` which is a useful wrapper to interact with the cache (see examples below). Within the `CacheClient` is the underlying store interface `CacheStore`. If you wish to use a different store, such as Redis, and want to keep using the `CacheClient`, simply implement the `CacheStore` interface with a Redis library and adjust the `Container` initialization to use that.
 
-The built-in usage of the cache is currently only for used for a simple example route located at `/cache` where you can set and view the value of a given cache entry.
+The built-in usage of the cache is currently only used for a simple example route located at `/cache` where you can set and view the value of a given cache entry.
 
 Since the current cache is in-memory, there's no need to adjust the `Container` during tests. When this project used Redis, the configuration had a separate database that would be used strictly for tests to avoid writing to your primary database. If you need that functionality, it is easy to add back in.
 
@@ -890,7 +888,7 @@ As shown in the previous examples, cache tags were provided because they can be 
 
 ## Tasks
 
-Tasks are queued operations to be executed in the background, either immediately, at a specfic time, or after a given amount of time has passed. Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, etc.
+Tasks are queued operations to be executed in the background, either immediately, at a specific time, or after a given amount of time has passed. Some examples of tasks could be long-running operations, bulk processing, cleanup, notifications, etc.
 
 Since we're already using [SQLite](https://sqlite.org/) for our database, it's available to act as a persistent store for queued tasks so that tasks are never lost, can be retried until successful, and their concurrent execution can be managed. [Backlite](https://github.com/mikestefanello/backlite) is the library chosen to interface with [SQLite](https://sqlite.org/) and handle queueing tasks and processing them asynchronously. I wrote that specifically to address the requirements I wanted to satisfy for this project.
 
@@ -938,7 +936,7 @@ The cache max-life is controlled by the configuration at `Config.Cache.Expiratio
 
 ### Cache-buster
 
-While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function, `File()`, is provided in the `ui` package to generate a static file URL for a given file that appends a cache-buster query. This query string generated using the timestamp of when the app started and persists until the application restarts.
+While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function, `File()`, is provided in the `ui` package to generate a static file URL for a given file that appends a cache-buster query. This query string is generated using the timestamp of when the app started and persists until the application restarts.
 
 For example, to render a file located in `static/picture.png`, you would use:
 ```go
