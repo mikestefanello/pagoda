@@ -7,13 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const (
-	// DefaultItemsPerPage stores the default amount of items per page.
-	DefaultItemsPerPage = 20
-
-	// QueryKey stores the query key used to indicate the current page.
-	QueryKey = "page"
-)
+// QueryKey stores the query key used to indicate the current page.
+const QueryKey = "page"
 
 // Pager provides a mechanism to allow a user to page results via a query parameter.
 type Pager struct {

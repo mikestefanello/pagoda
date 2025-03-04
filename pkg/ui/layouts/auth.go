@@ -47,10 +47,12 @@ func Auth(r *ui.Request, content Node) Node {
 }
 
 func authNavBar(r *ui.Request) Node {
-	if n := cache.Get("layout.authNavBar"); n != nil {
+	const cacheKey = "authNavBar"
+	if n := cache.Get(cacheKey); n != nil {
 		return n
 	}
-	return Nav(
+
+	n := Nav(
 		Class("navbar"),
 		Div(
 			Class("navbar-menu"),
@@ -62,4 +64,7 @@ func authNavBar(r *ui.Request) Node {
 			),
 		),
 	)
+
+	cache.Set(cacheKey, n)
+	return n
 }

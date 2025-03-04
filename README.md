@@ -53,6 +53,10 @@
     * [Goquery](#goquery)
 * [User interface](#user-interface)
   * [Why Gomponents?](#why-gomponents)
+  * [HTMX support](#htmx-support)
+    * [Header management](#header-management)
+    * [Conditional and partial rendering](#conditional-and-partial-rendering)
+    * [CSRF token](#csrf-token)
   * [Request](#request)
     * [Title and metatags](#title-and-metatags)
     * [URL generation](#url-generation)
@@ -66,7 +70,6 @@
     * [Inline validation](#inline-validation)
     * [CSRF](#csrf)
   * [Models](#models)
-  * [HTMX support](#htmx-support)
   * [Node caching](#node-caching)
   * [Flash messaging](#flash-messaging)
 * [Pager](#pager)
@@ -501,13 +504,53 @@ todo
 
 ### Why Gomponents?
 
-Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_ which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more, the end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough easily provide re-usable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
+Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_ which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more, the end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough to easily provide reusable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
 
 While I was extremely hesitant to adopt a rendering option outside the standard library, if an option exists that I personally feel is far superior, that is what I'm going to go with. [Templ](https://github.com/a-h/templ) was also a consideration as that project has made massive progress, seen an explosion in adoption, and aims to solve all the problems previously mentioned. I did not feel that it was a good fit for this project though as it requires you to know and understand their templating language, to install a CLI and an IDE plugin (which does not work with all IDEs; especially GoLand), and separately compile template code.
 
 [Gomponents](https://github.com/maragudk/gomponents) allows you to build HTML using nothing except pure, type-safe Go; whether that's entire documents or dynamic, reusable components. [Here](https://www.gomponents.com/) are some basic examples to give you an idea of how it works and [this tool](https://gomponents.morehart.dev/) is incredibly useful for quickly converting HTML to _gomponent_ Go code. When I first came across this library, I was very much against it, and couldn't imagine writing tons of nested function calls just to produce some HTML; especially for complex markup. But after actually spending some time using it to replicate the UI of this project, and feeling the downsides of Go templates, I quickly became a big fan and supporter of this approach. Between this and the chosen JS/CSS libraries, you can literally write your entire frontend without leaving Go.
 
 Before making any quick judgements of your own, I ask that you deeply consider what you've used in the past, review what previously existed in this project, and compare to the current solution and code presented here. I believe I've laid out the `ui` package in a way that makes building your frontend with _gomponents_ very easy and enjoyable.
+
+### HTMX support
+
+[HTMX](https://htmx.org/) is an awesome JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
+
+Many examples of its usage are available in the included examples:
+- All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
+- All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
+- The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
+- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts via AJAX.
+
+All of this can be easily accomplished without writing any JavaScript at all.
+
+Another benefit of [HTMX](https://htmx.org/) is that it's completely backend-agnostic and does not require any special tools or integrations on the backend, though many things are provided here to make it simple. 
+
+#### Header management
+
+Included is an [htmx package](https://github.com/mikestefanello/pagoda/blob/main/pkg/htmx/htmx.go) to read and write [HTTP headers](https://htmx.org/docs/#requests) that HTMX uses to communicate additional information and commands for both the request and response. This allows you, for example, to determine if HTMX is making the given request and what exactly it is doing, which could be useful both in your _route_ and your _ui_.
+
+From within your _route_, you can fetch HTMX request details by calling `htmx.GetRequest(ctx)`, and you can send commands back to HTMX by calling `htmx.Response{...}.Apply(ctx)`, and populating any fields on the `htmx.Response` struct.
+
+From within your _ui_, the [Request](#request) object will automatically contain the request details on the `Htmx` field.
+
+#### Conditional and partial rendering
+
+Since HTMX communicates what it is doing with the server, you can use the request headers to conditionally process in your _route_ or render in your _ui_, if needed.
+
+The most important case to support is _partial_ rendering. If HTMX is making a request, unless it is [boosted](https://htmx.org/docs/#boosting), you only want to render the _content_ of your _route_, and not the entire [layout](#layouts). This is automatically handled by the `Render()` method on the [Request](#request) type. More can be read about that [here](#rendering).
+
+If your routes aren't doing multiple things, you may not need _conditional_ rendering, but it's worth knowing how flexible you can be. A simple example of this:
+
+```go
+if htmx.GetRequest(ctx).Target == "search" {
+    // This request is HTMX fetching content just for the #search element
+}
+```
+
+#### CSRF token
+
+If [CSRF](#csrf) protection is enabled, the token value will automatically be passed to HTMX to be included in all non-GET requests. This is done in the `JS()` [component](#components) by leveraging HTMX [events](https://htmx.org/reference/#events).
 
 ### Request
 
@@ -539,18 +582,8 @@ As mentioned in the [Routes](#routes) section, it is recommended, though not req
 
 The methods both take a route name and optional variadic route parameters:
 
-* `Path`: Generates a relative path for a given route.
-* `Url`: Generates an absolute URL for a given route. This uses the `App.Host` field in your [configuration](#configuration) to determine the host of the URL.
-
-#### HTMX support and rendering
-
-While using HTMX is completely optional, tools are provided to make working with it as easy as possible and there are examples of it all throughout this project.
-
-As mentioned, the `Request` automatically contains an `htmx.Request` object which contains values from all the HTMX headers. This allows your frontend code, especially [pages](#pages), to dynamically react to which partial section of the page is being requested, for example.
-
-The `Request` type also contains a `Render()` method which automatically handles partial rendering, omitting the [layout](#layouts) and only rendering the [page](#pages) if the request is made by HTMX and is not boosted.
-
-See the [pages](#pages) section for more details or view the code in the `pages` package.
+* `Path()`: Generates a relative path for a given route.
+* `Url()`: Generates an absolute URL for a given route. This uses the `App.Host` field in your [configuration](#configuration) to determine the host of the URL.
 
 **Example:**
 
@@ -570,7 +603,9 @@ func ProfileLink(r *ui.Request, userName string, userID int64) gomponents.Node {
 
 ### Components
 
-The [components package](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/components) is meant to be your library of reusable _gomponent_ components. Having this makes building your [layouts](#layouts), [pages](#pages), [forms](#forms), [models](#models) and the rest of your user interface much easier. Some of the examples provided include components for [flash messages](#flash-messaging), navigation menus, tabs, metatags, and form elements used to automatically provide [inline validation](#inline-form-validation).  
+The [components package](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/components) is meant to be your library of reusable _gomponent_ components. Having this makes building your [layouts](#layouts), [pages](#pages), [forms](#forms), [models](#models) and the rest of your user interface much easier. Some of the examples provided include components for [flash messages](#flash-messaging), navigation menus, tabs, metatags, and form elements used to automatically provide [inline validation](#inline-form-validation).
+
+Your components can also make using utility-based CSS libraries, such as [Tailwind CSS](https://tailwindcss.com/), much easier by avoiding excessive duplication of classes across elements.
 
 ### Layouts
 
@@ -580,7 +615,24 @@ Layouts are full HTML templates that are used by [pages](#pages) to inject thems
 
 todo
 
-    * [Rendering the page](#rendering-the-page)
+#### Rendering
+
+While using HTMX is completely optional, tools are provided to make working with it as easy as possible and there are examples of it all throughout this project.
+
+As mentioned, the `Request` automatically contains an `htmx.Request` object which contains values from all the HTMX headers. This allows your frontend code, especially [pages](#pages), to dynamically react to which partial section of the page is being requested, for example.
+
+The `Request` type also contains a `Render()` method which automatically handles partial rendering, omitting the [layout](#layouts) and only rendering the [page](#pages) if the request is made by HTMX and is not boosted. This is accomplished by passing in your layout and _page_ separately, for example:
+
+```go
+func MyPage(ctx echo.Context) error {
+    r := ui.NewRequest(ctx)
+    r.Title = "My page"
+    node := Div(Text("Hello world!"))
+    return r.Render(layouts.Primary, node)
+}
+```
+
+Using `Render()`, in this example, only `node` will render if HTMX made the request in a non-boosted fashion, otherwise `node` will render within `layouts.Primary`.
 
 ### Forms
 
@@ -625,10 +677,11 @@ Then, create a _page_ that includes your form:
 ```go
 func UserGuestbook(ctx echo.Context, form *forms.Guestbook) error {
     r := ui.NewRequest(ctx)
+    r.Title = "User page"
 	
     content := Div(
         Class("guestbook"),
-        H1(Text("My guestbook")),
+        H2(Text("My guestbook")),
         P(Text("Hi, please sign my guestbook!")),
         form.Render(r)
     )
@@ -696,15 +749,31 @@ The `Request` automatically extracts the CSRF token from the context, but you mu
 
 ### Models
 
-todo
-
-### HTMX support
-
-todo
+Models are objects built and provided by your _routes_ that can be rendered by your _ui_. Though not required, they reside in the [models package](https://github.com/mikestefanello/pagoda/tree/main/pkg/ui/models) and each has a `Render()` method, making them easy to render within your [pages](#pages). Please see example routes such as the homepage and search for an example.
 
 ### Node caching
 
-todo
+While most likely unnecessary for most applications, but because optimizing software is fun, a simple `gomponent.Node` cache is provided. This is not because _gomponents_ is inefficient, in fact my basic benchmarks put it as either similar or slightly better than Go templates, but rather because there are _some_ performance gains to be seen by caching static nodes and it may seem wasteful to build and render static HTML on every single page load. It is important to note, you can only cache nodes that are static and will never change.
+
+A good example of this, and one included, is the entire upper navigation bar, search form, and search modal in the _Primary_ layout. It contains a large amount of nested _gomponent_ function calls and a lot of rendering is required. There is no reason to do this more than once.
+
+The cache functions are available in `pkg/ui/cache` and can be used like this:
+
+```go
+func SearchModal() gomponent.Node {
+    const cacheKey = "searchModal"
+    if n := cache.Get(cacheKey); n != nil {
+        return n
+    }
+
+    n := Div(...your entire nested node...)
+    cache.Set(cacheKey, n)
+    return n
+}
+```
+`cache.Get()` does more than just cache the `Node` in-memory. It renders the entire `Node` into a `bytes.Buffer`, then stores a `Raw()` `Node` using the rendered content. This means that everytime the `Node` is taken from the cache and rendered, the pre-rendered `string` is used rather than having to iterate through the nested component, executing all of the element functions and rendering and building the entire HTML output.
+
+It's worth noting that my benchmarking was very limited and cannot be considered anything definitive. In my tests, gomponents was faster, allocated less overall, but had more allocations in total. If you're able to cache static nodes, gomponents can perform significantly better. Reiterating, for most applications, these differences in nanoseconds and bytes will most likely be completely insignificant and unnoticed; but it's worth being aware of.
 
 ### Flash messaging
 
@@ -726,11 +795,9 @@ When a flash message is retrieved from storage in order to be rendered, it is de
 
 A [component](#components), `FlashMessages()`, is provided to render flash messages within your UI.
 
-### Pager
+## Pager
 
-A very basic mechanism is provided to handle and facilitate paging located in `pkg/page/pager.go`. When a `Page` is initialized, so is a `Pager` at `Page.Pager`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager.
-
-During initialization, the _items per page_ amount will be set to the default, controlled via constant, which has a value of 20. It can be overridden by changing `Pager.ItemsPerPage` but should be done before other values are set in order to not provide incorrect calculations.
+A very basic mechanism is provided to handle and facilitate paging located in `pkg/pager` and can be initialized via `pager.NewPager()`. If the requested URL contains a `page` query parameter with a numeric value, that will be set as the page number in the pager. This query can be controlled via the `QueryKey` constant.
 
 Methods include:
 
@@ -739,59 +806,13 @@ Methods include:
 - `IsEnd()`: Determine if the pager is at the end of the pages
 - `GetOffset()`: Get the offset which can be useful is constructing a paged database query
 
-There is currently no template (yet) to easily render a pager.
-
-### HTMX support
-
-[HTMX](https://htmx.org/) is an awesome JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
-
-Many examples of its usage are available in the included examples:
-- All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
-- All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
-- The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
-- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts via AJAX.
-
-All of this can be easily accomplished without writing any JavaScript at all.
-
-Another benefit of [HTMX](https://htmx.org/) is that it's completely backend-agnostic and does not require any special tools or integrations on the backend. But to make things easier, included is a small package to read and write [HTTP headers](https://htmx.org/docs/#requests) that HTMX uses to communicate additional information and commands.
-
-The `htmx` package contains the headers for the _request_ and _response_. When a `Page` is initialized, `Page.HTMX.Request` will also be initialized and populated with the headers that HTMX provides, if HTMX made the request. This allows you to determine if HTMX is making the given request and what exactly it is doing, which could be useful both in your _route_ as well as your _templates_.
-
-If you need to set any HTMX headers in your `Page` response, this can be done by altering `Page.HTMX.Response`.
-
-#### Layout template override
-
-To facilitate easy partial rendering for HTMX requests, the `Page` will automatically change your _Layout_ template to use `htmx.gohtml`, which currently only renders `{{template "content" .}}`. This allows you to use an HTMX request to only update the content portion of the page, rather than the entire HTML.
-
-This override only happens if the HTMX request being made is **not a boost** request because **boost** requests replace the entire `body` element so there is no need to do a partial render.
-
-#### Conditional processing / rendering
-
-Since HTMX communicates what it is doing with the server, you can use the request headers to conditionally process in your _route_ or render in your _template_, if needed. If your routes aren't doing multiple things, you may not need this, but it's worth knowing how flexible you can be.
-
-A simple example of this:
-
-```go
-if page.HTMX.Request.Target == "search" {
-    // You know this request HTMX is fetching content just for the #search element
-}
-```
-
-```go
-{{if eq .HTMX.Request.Target "search"}}
-    // Render content for the #search element
-{{end}}
-```
-
-#### CSRF token
-
-If [CSRF](#csrf) protection is enabled, the token value will automatically be passed to HTMX to be included in all non-GET requests. This is done in the `footer` template by leveraging HTMX [events](https://htmx.org/reference/#events).
+There is currently no generic component to easily render a pager, but the homepage does have an example.
 
 ## Cache
 
 As previously mentioned, the default cache implementation is a simple in-memory store, backed by [otter](https://github.com/maypok86/otter), a lockless cache that uses [S3-FIFO](https://s3fifo.com/) eviction. The `Container` houses a `CacheClient` which is a useful, wrapper to interact with the cache (see examples below). Within the `CacheClient` is the underlying store interface `CacheStore`. If you wish to use a different store, such as Redis, and want to keep using the `CacheClient`, simply implement the `CacheStore` interface with a Redis library and adjust the `Container` initialization to use that.
 
-The built-in usage of the cache is currently only for optional [page caching](#cached-responses) and a simple example route located at `/cache` where you can set and view the value of a given cache entry.
+The built-in usage of the cache is currently only for used for a simple example route located at `/cache` where you can set and view the value of a given cache entry.
 
 Since the current cache is in-memory, there's no need to adjust the `Container` during tests. When this project used Redis, the configuration had a separate database that would be used strictly for tests to avoid writing to your primary database. If you need that functionality, it is easy to add back in.
 
@@ -917,25 +938,27 @@ The cache max-life is controlled by the configuration at `Config.Cache.Expiratio
 
 ### Cache-buster
 
-While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function is provided in the [funcmap](#funcmap) to generate a static file URL for a given file that appends a cache-buster query. This query string is randomly generated and persisted until the application restarts.
+While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function, `File()`, is provided in the `ui` package to generate a static file URL for a given file that appends a cache-buster query. This query string generated using the timestamp of when the app started and persists until the application restarts.
 
 For example, to render a file located in `static/picture.png`, you would use:
-```html
-<img src="{{file "picture.png"}}"/>
+```go
+return Img(Src(ui.File("picture.png")))
 ```
 
 Which would result in:
 ```html
-<img src="/files/picture.png?v=9fhe73kaf3"/>
+<img src="/files/picture.png?v=1741053493"/>
 ```
 
-Where `9fhe73kaf3` is the randomly-generated cache-buster.
+Where `1741053493` is the cache-buster.
 
 ## Email
 
-An email client was added as a _Service_ to the `Container` but it is just a skeleton without any actual email-sending functionality. The reason is because there are a lot of ways to send email and most prefer using a SaaS solution for that. That makes it difficult to provide a generic solution that will work for most applications.
+An email client was added as a _Service_ to the `Container` but it is just a skeleton without any actual email-sending functionality. The reason is that there are a lot of ways to send email and most prefer using a SaaS solution for that. That makes it difficult to provide a generic solution that will work for most applications.
 
-The structure in the client (`MailClient`) makes composing emails very easy and you have the option to construct the body using either a simple string or with a template by leveraging the [template renderer](#template-renderer). The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction. **You must** finish the implementation of `MailClient.send`.
+The structure in the client (`MailClient`) makes composing emails very easy, and you have the option to construct the body using either a simple string or with a renderable _gomponent_, as explained in the [user interface](#user-interface), in order to produce HTML emails. A simple example is provided in `pkg/ui/emails`.
+
+The standard library can be used if you wish to send email via SMTP and most SaaS providers have a Go package that can be used if you choose to go that direction. **You must** finish the implementation of `MailClient.send`.
 
 The _from_ address will default to the configuration value at `Config.Mail.FromAddress`. This can be overridden per-email by calling `From()` on the email and passing in the desired address.
 
@@ -952,19 +975,18 @@ err = c.Mail.
     Send(ctx)
 ```
 
-**Sending with a template body**:
+**Sending an HTML body using a gomponent**:
 
 ```go
 err = c.Mail.
     Compose().
     To("hello@example.com").
-    Subject("Welcome!").
-    Template("welcome").
-    TemplateData(templateData).
+    Subject("Confirm your email address").
+    Component(emails.ConfirmEmailAddress(ctx, username, token)).
     Send(ctx)
 ```
 
-This will use the template located at `templates/emails/welcome.gohtml` and pass `templateData` to it.
+This will use the HTML provided when rendering the _gomponent_ as the email body.
 
 ## HTTPS
 
@@ -1032,7 +1054,7 @@ Future work includes but is not limited to:
 
 ## Credits
 
-Thank you to all of the following amazing projects for making this possible.
+Thank you to all the following amazing projects for making this possible.
 
 - [afero](https://github.com/spf13/afero)
 - [air](https://github.com/air-verse/air)

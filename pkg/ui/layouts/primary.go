@@ -42,10 +42,12 @@ func Primary(r *ui.Request, content Node) Node {
 }
 
 func headerNavBar(r *ui.Request) Node {
-	if n := cache.Get("layout.headerNavBar"); n != nil {
+	const cacheKey = "layout.headerNavBar"
+	if n := cache.Get(cacheKey); n != nil {
 		return n
 	}
-	return Nav(
+
+	n := Nav(
 		Class("navbar is-dark"),
 		Div(
 			Class("container"),
@@ -68,13 +70,17 @@ func headerNavBar(r *ui.Request) Node {
 			),
 		),
 	)
+	cache.Set(cacheKey, n)
+	return n
 }
 
 func search(r *ui.Request) Node {
+	const cacheKey = "layout.search"
 	if n := cache.Get("layout.search"); n != nil {
 		return n
 	}
-	return Div(
+
+	n := Div(
 		Class("search mr-2 mt-1"),
 		Attr("x-data", "{modal:false}"),
 		Input(
@@ -126,6 +132,8 @@ func search(r *ui.Request) Node {
 			),
 		),
 	)
+	cache.Set(cacheKey, n)
+	return n
 }
 
 func sidebarMenu(r *ui.Request) Node {
