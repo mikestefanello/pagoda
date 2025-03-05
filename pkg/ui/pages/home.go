@@ -59,7 +59,7 @@ func Home(ctx echo.Context, posts *models.Posts) error {
 			"is-small is-warning mt-5",
 			"Serving files",
 			Group{
-				Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted."),
+				Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted. "),
 				Text("Static files also contain cache-control headers which are configured via middleware."),
 			},
 		))
