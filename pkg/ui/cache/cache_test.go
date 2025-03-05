@@ -32,7 +32,7 @@ func TestCache_GetSet(t *testing.T) {
 }
 
 func TestCache_SetIfNotExists(t *testing.T) {
-	key := "test"
+	key := "test2"
 	called := 0
 	callback := func() Node {
 		called++
