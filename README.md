@@ -439,7 +439,7 @@ func (e *Example) PageSubmit(ctx echo.Context) error {
 
 Routes can return errors to indicate that something wrong happened and an error page should be rendered for the request. Ideally, the error is of type `*echo.HTTPError` to indicate the intended HTTP response code, and optionally a message that will be logged. You can use `return echo.NewHTTPError(http.StatusInternalServerError, "optional message")`, for example. If an error of a different type is returned, an _Internal Server Error_ is assumed.
 
-The [error handler](https://echo.labstack.com/guide/error-handling/) is set to the provided `Handler` in `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route passes the status code to the `page.Error` UI component, allowing you to easily adjust the markup depending on the error type.
+The [error handler](https://echo.labstack.com/guide/error-handling/) is set to the provided `Handler` in `pkg/handlers/error.go` in the `BuildRouter()` function. That means that if any middleware or route return an error, the request gets routed there. This route passes the status code to the `pages.Error` UI component page, allowing you to easily adjust the markup depending on the error type.
 
 ### Redirects
 
@@ -606,7 +606,7 @@ Your components can also make using utility-based CSS libraries, such as [Tailwi
 
 ### Layouts
 
-_Layouts_ are full HTML templates that are used by [pages](#pages) to inject themselves in to, allowing you to easily have multiple pages that all use the same layout, and to easily switch layouts between different pages. [Included](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/layouts) is a _primary_ and _auth_ layout as an example, which you can see in action by navigating to the login, register, and forgot password pages.
+_Layouts_ are full HTML templates that are used by [pages](#pages) to inject themselves in to, allowing you to easily have multiple pages that all use the same layout, and to easily switch layouts between different pages. [Included](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/layouts) is a _primary_ and _auth_ layout as an example, which you can see in action by navigating between the links on the _General_ and _Account_ sidebar menus.
 
 ### Pages
 
@@ -655,7 +655,7 @@ Next, provide a method that renders the form:
 ```go
 func (f *Guestbook) Render(r *ui.Request) Node {
     return Form(
-        ID("contact"),
+        ID("guestbook"),
         Method(http.MethodPost),
         Attr("hx-post", r.Path(routenames.GuestbookSubmit)),
         TextareaField(TextareaFieldParams{
@@ -710,10 +710,12 @@ func (e *Example) Page(ctx echo.Context) error {
 
 Using the example form above, this is all you would have to do within the _POST_ callback for your route:
 
-Start by submitting the form along with the request context. This will:
-1. Store a pointer to the form so that your _GET_ callback can access the form values (shown previously). That allows the form to easily be re-rendered with any validation errors it may have as well as the values that were provided.
+Start by submitting the form via `form.Submit()`, along with the request context. This will:
+1. Store a pointer to the form in the _context_ so that your _GET_ callback can access the form values (shown previously). That allows the form to easily be re-rendered with any validation errors it may have as well as the values that were provided.
 2. Parse the input in the _POST_ data to map to the struct so the fields becomes populated. This uses the `form` struct tags to map form input values to the struct fields.
 3. Validate the values in the struct fields according to the rules provided in the optional `validate` struct tags.
+
+Then, evaluate the error returned, if one, and process the form values however you need to:
 
 ```go
 func (e *Example) Submit(ctx echo.Context) error {
@@ -727,7 +729,7 @@ func (e *Example) Submit(ctx echo.Context) error {
     case nil:
         // All good!
     case validator.ValidationErrors:
-        // The form input was not valid, so re-render the form.
+        // The form input was not valid, so re-render the form with the errors included.
         return e.Page(ctx)
     default:
         // Request failed, show the error page.
@@ -735,12 +737,16 @@ func (e *Example) Submit(ctx echo.Context) error {
     }
 
     msg.Success(fmt.Sprintf("Your message was: %s", input.Message))
+    
+    return redirect.New(ctx).
+        Route(routenames.Home).
+        Go()
 }
 ```
 
 #### Inline validation
 
-The `Submission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that the provided form [components](#components), such as `TextareaField` shown in the example above, use to automatically provide classes and error messages. The example form above will have inline validation without doing anything other than what is shown.
+The `Submission` makes inline validation easier because it will store all validation errors in a map, keyed by the form struct field name. It also contains helper methods that the provided form [components](#components), such as `TextareaField` shown in the example above, use to automatically provide classes and error messages. The example form above will have inline validation without requiring anything other than what is shown above.
 
 While [validator](https://github.com/go-playground/validator) is a great package that is used to validate based on struct tags, the downside is that the messaging, by default, is not very human-readable or easy to override. Within `Submission.setErrorMessages()` the validation errors are converted to more readable messages based on the tag that failed validation. Only a few tags are provided as an example, so be sure to expand on that as needed.
 
@@ -756,25 +762,23 @@ Models are objects built and provided by your _routes_ that can be rendered by y
 
 ### Node caching
 
-While most likely unnecessary for most applications, but because optimizing software is fun, a simple `gomponent.Node` cache is provided. This is not because _gomponents_ is inefficient, in fact my basic benchmarks put it as either similar or slightly better than Go templates, but rather because there are _some_ performance gains to be seen by caching static nodes and it may seem wasteful to build and render static HTML on every single page load. It is important to note, you can only cache nodes that are static and will never change.
+While most likely unnecessary for most applications, but because optimizing software is fun, a simple `gomponents.Node` cache is provided. This is not because _gomponents_ is inefficient, in fact my basic benchmarks put it as either similar or slightly better than Go templates, but rather because there are _some_ performance gains to be seen by caching static nodes and it may seem wasteful to build and render static HTML on every single page load. It is important to note, you can only cache nodes that are static and will never change.
 
 A good example of this, and one included, is the entire upper navigation bar, search form, and search modal in the _Primary_ layout. It contains a large amount of nested _gomponent_ function calls and a lot of rendering is required. There is no reason to do this more than once.
 
-The cache functions are available in `pkg/ui/cache` and can be used like this:
+The cache functions are available in `pkg/ui/cache` and can most easily used like this:
 
 ```go
-func SearchModal() gomponent.Node {
-    const cacheKey = "searchModal"
-    if n := cache.Get(cacheKey); n != nil {
-        return n
-    }
-
-    n := Div(...your entire nested node...)
-    cache.Set(cacheKey, n)
-    return n
+func SearchModal() gomponents.Node {
+    return cache.SetIfNotExists("searchModal", func() gomponents.Node {
+        return Div(...your entire nested node...)
+    })
 }
 ```
-`cache.Get()` does more than just cache the `Node` in-memory. It renders the entire `Node` into a `bytes.Buffer`, then stores a `Raw()` `Node` using the rendered content. This means that everytime the `Node` is taken from the cache and rendered, the pre-rendered `string` is used rather than having to iterate through the nested component, executing all of the element functions and rendering and building the entire HTML output.
+
+`cache.SetIfNotExists()`is a helper function that uses `cache.Get()` to check if the `Node` is already cached under the provided _key_, and if not, executes the _func_ to generate the `Node`, and caches that via `cache.Set()`.
+
+`cache.Set()` does more than just cache the `Node` in-memory. It renders the entire `Node` into a `bytes.Buffer`, then stores a `Raw()` `Node` using the rendered content. This means that everytime the `Node` is taken from the cache and rendered, the pre-rendered `string` is used rather than having to iterate through the nested component, executing all of the element functions and rendering and building the entire HTML output.
 
 It's worth noting that my benchmarking was very limited and cannot be considered anything definitive. In my tests, gomponents was faster, allocated less overall, but had more allocations in total. If you're able to cache static nodes, gomponents can perform significantly better. Reiterating, for most applications, these differences in nanoseconds and bytes will most likely be completely insignificant and unnoticed; but it's worth being aware of.
 
