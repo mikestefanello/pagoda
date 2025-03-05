@@ -10,7 +10,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func TestCache(t *testing.T) {
+func TestCache_GetSet(t *testing.T) {
 	key := "test"
 	assert.Nil(t, Get(key))
 
@@ -29,4 +29,29 @@ func TestCache(t *testing.T) {
 	require.NoError(t, node.Render(buf1))
 	require.NoError(t, got.Render(buf2))
 	assert.Equal(t, buf1.String(), buf2.String())
+}
+
+func TestCache_SetIfNotExists(t *testing.T) {
+	key := "test"
+	called := 0
+	callback := func() Node {
+		called++
+		return Div(Text("hello"))
+	}
+
+	assertRender := func(n Node) {
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, n.Render(buf))
+		assert.Equal(t, `<div>hello</div>`, buf.String())
+	}
+
+	got := SetIfNotExists(key, callback)
+	assert.Equal(t, 1, called)
+	require.NotNil(t, got)
+	assertRender(got)
+
+	got = SetIfNotExists(key, callback)
+	assert.Equal(t, 1, called)
+	require.NotNil(t, got)
+	assertRender(got)
 }

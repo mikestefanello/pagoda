@@ -50,3 +50,15 @@ func Get(key string) gomponents.Node {
 	defer mu.RUnlock()
 	return cache[key]
 }
+
+// SetIfNotExists will return the cached Node for the key, if it exists, otherwise it will use the provided callback
+// function to generate the node and cache it.
+func SetIfNotExists(key string, gen func() gomponents.Node) gomponents.Node {
+	if n := Get(key); n != nil {
+		return n
+	}
+
+	n := gen()
+	Set(key, n)
+	return n
+}

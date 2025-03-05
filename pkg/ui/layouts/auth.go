@@ -47,24 +47,18 @@ func Auth(r *ui.Request, content Node) Node {
 }
 
 func authNavBar(r *ui.Request) Node {
-	const cacheKey = "authNavBar"
-	if n := cache.Get(cacheKey); n != nil {
-		return n
-	}
-
-	n := Nav(
-		Class("navbar"),
-		Div(
-			Class("navbar-menu"),
+	return cache.SetIfNotExists("authNavBar", func() Node {
+		return Nav(
+			Class("navbar"),
 			Div(
-				Class("navbar-start"),
-				A(Class("navbar-item"), Href(r.Path(routenames.Login)), Text("Login")),
-				A(Class("navbar-item"), Href(r.Path(routenames.Register)), Text("Create an account")),
-				A(Class("navbar-item"), Href(r.Path(routenames.ForgotPassword)), Text("Forgot password")),
+				Class("navbar-menu"),
+				Div(
+					Class("navbar-start"),
+					A(Class("navbar-item"), Href(r.Path(routenames.Login)), Text("Login")),
+					A(Class("navbar-item"), Href(r.Path(routenames.Register)), Text("Create an account")),
+					A(Class("navbar-item"), Href(r.Path(routenames.ForgotPassword)), Text("Forgot password")),
+				),
 			),
-		),
-	)
-
-	cache.Set(cacheKey, n)
-	return n
+		)
+	})
 }

@@ -42,98 +42,88 @@ func Primary(r *ui.Request, content Node) Node {
 }
 
 func headerNavBar(r *ui.Request) Node {
-	const cacheKey = "layout.headerNavBar"
-	if n := cache.Get(cacheKey); n != nil {
-		return n
-	}
-
-	n := Nav(
-		Class("navbar is-dark"),
-		Div(
-			Class("container"),
+	return cache.SetIfNotExists("layout.headerNavBar", func() Node {
+		return Nav(
+			Class("navbar is-dark"),
 			Div(
-				Class("navbar-brand"),
-				HxBoost(),
-				A(
-					Href(r.Path(routenames.Home)),
-					Class("navbar-item"),
-					Text("Pagoda"),
-				),
-			),
-			Div(
-				ID("navbarMenu"),
-				Class("navbar-menu"),
+				Class("container"),
 				Div(
-					Class("navbar-end"),
-					search(r),
+					Class("navbar-brand"),
+					HxBoost(),
+					A(
+						Href(r.Path(routenames.Home)),
+						Class("navbar-item"),
+						Text("Pagoda"),
+					),
+				),
+				Div(
+					ID("navbarMenu"),
+					Class("navbar-menu"),
+					Div(
+						Class("navbar-end"),
+						search(r),
+					),
 				),
 			),
-		),
-	)
-	cache.Set(cacheKey, n)
-	return n
+		)
+	})
 }
 
 func search(r *ui.Request) Node {
-	const cacheKey = "layout.search"
-	if n := cache.Get("layout.search"); n != nil {
-		return n
-	}
-
-	n := Div(
-		Class("search mr-2 mt-1"),
-		Attr("x-data", "{modal:false}"),
-		Input(
-			Class("input"),
-			Type("search"),
-			Placeholder("Search..."),
-			Attr("@click", "modal = true; $nextTick(() => $refs.input.focus());"),
-		),
-		Div(
-			Class("modal"),
-			Attr(":class", "modal ? 'is-active' : ''"),
-			Attr("x-show", "modal == true"),
-			Div(
-				Class("modal-background"),
+	return cache.SetIfNotExists("layout.search", func() Node {
+		return Div(
+			Class("search mr-2 mt-1"),
+			Attr("x-data", "{modal:false}"),
+			Input(
+				Class("input"),
+				Type("search"),
+				Placeholder("Search..."),
+				Attr("@click", "modal = true; $nextTick(() => $refs.input.focus());"),
 			),
 			Div(
-				Class("modal-content"),
-				Attr("@click.outside", "modal = false;"),
+				Class("modal"),
+				Attr(":class", "modal ? 'is-active' : ''"),
+				Attr("x-show", "modal == true"),
 				Div(
-					Class("box"),
-					H2(
-						Class("subtitle"),
-						Text("Search"),
-					),
-					P(
-						Class("control"),
-						Input(
-							Attr("hx-get", r.Path(routenames.Search)),
-							Attr("hx-trigger", "keyup changed delay:500ms"),
-							Attr("hx-target", "#results"),
-							Name("query"),
-							Class("input"),
-							Type("search"),
-							Placeholder("Search..."),
-							Attr("x-ref", "input"),
+					Class("modal-background"),
+				),
+				Div(
+					Class("modal-content"),
+					Attr("@click.outside", "modal = false;"),
+					Div(
+						Class("box"),
+						H2(
+							Class("subtitle"),
+							Text("Search"),
+						),
+						P(
+							Class("control"),
+							Input(
+								Attr("hx-get", r.Path(routenames.Search)),
+								Attr("hx-trigger", "keyup changed delay:500ms"),
+								Attr("hx-target", "#results"),
+								Name("query"),
+								Class("input"),
+								Type("search"),
+								Placeholder("Search..."),
+								Attr("x-ref", "input"),
+							),
+						),
+						Div(
+							Class("block"),
+						),
+						Div(
+							ID("results"),
 						),
 					),
-					Div(
-						Class("block"),
-					),
-					Div(
-						ID("results"),
-					),
+				),
+				Button(
+					Class("modal-close is-large"),
+					Aria("label", "close"),
 				),
 			),
-			Button(
-				Class("modal-close is-large"),
-				Aria("label", "close"),
-			),
-		),
-	)
-	cache.Set(cacheKey, n)
-	return n
+		)
+	})
 }
 
 func sidebarMenu(r *ui.Request) Node {

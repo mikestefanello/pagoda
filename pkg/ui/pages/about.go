@@ -15,14 +15,9 @@ func About(ctx echo.Context) error {
 	r.Title = "About"
 	r.Metatags.Description = "Learn a little about what's included in Pagoda."
 
-	tabs := func() Node {
-		// The tabs are static so we can render and cache them.
-		const cacheKey = "pages.about.Tabs"
-		if n := cache.Get(cacheKey); n != nil {
-			return n
-		}
-
-		n := Group{
+	// The tabs are static so we can render and cache them.
+	tabs := cache.SetIfNotExists("pages.about.Tabs", func() Node {
+		return Group{
 			Tabs(
 				"Frontend",
 				"The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.",
@@ -57,10 +52,7 @@ func About(ctx echo.Context) error {
 				},
 			),
 		}
+	})
 
-		cache.Set(cacheKey, n)
-		return n
-	}
-
-	return r.Render(layouts.Primary, tabs())
+	return r.Render(layouts.Primary, tabs)
 }
