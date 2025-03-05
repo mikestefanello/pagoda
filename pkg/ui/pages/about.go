@@ -17,10 +17,12 @@ func About(ctx echo.Context) error {
 
 	tabs := func() Node {
 		// The tabs are static so we can render and cache them.
-		if n := cache.Get("pages.about.Tabs"); n != nil {
+		const cacheKey = "pages.about.Tabs"
+		if n := cache.Get(cacheKey); n != nil {
 			return n
 		}
-		return Group{
+
+		n := Group{
 			Tabs(
 				"Frontend",
 				"The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.",
@@ -55,6 +57,9 @@ func About(ctx echo.Context) error {
 				},
 			),
 		}
+
+		cache.Set(cacheKey, n)
+		return n
 	}
 
 	return r.Render(layouts.Primary, tabs())
