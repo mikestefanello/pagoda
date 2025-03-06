@@ -9,35 +9,32 @@ import (
 )
 
 const (
-	// TemplateExt stores the extension used for the template files
-	TemplateExt = ".gohtml"
-
-	// StaticDir stores the name of the directory that will serve static files
+	// StaticDir stores the name of the directory that will serve static files.
 	StaticDir = "static"
 
-	// StaticPrefix stores the URL prefix used when serving static files
+	// StaticPrefix stores the URL prefix used when serving static files.
 	StaticPrefix = "files"
 )
 
 type environment string
 
 const (
-	// EnvLocal represents the local environment
+	// EnvLocal represents the local environment.
 	EnvLocal environment = "local"
 
-	// EnvTest represents the test environment
+	// EnvTest represents the test environment.
 	EnvTest environment = "test"
 
-	// EnvDevelop represents the development environment
+	// EnvDevelop represents the development environment.
 	EnvDevelop environment = "dev"
 
-	// EnvStaging represents the staging environment
+	// EnvStaging represents the staging environment.
 	EnvStaging environment = "staging"
 
-	// EnvQA represents the qa environment
+	// EnvQA represents the qa environment.
 	EnvQA environment = "qa"
 
-	// EnvProduction represents the production environment
+	// EnvProduction represents the production environment.
 	EnvProduction environment = "prod"
 )
 
@@ -51,7 +48,7 @@ func SwitchEnvironment(env environment) {
 }
 
 type (
-	// Config stores complete configuration
+	// Config stores complete configuration.
 	Config struct {
 		HTTP     HTTPConfig
 		App      AppConfig
@@ -62,7 +59,7 @@ type (
 		Mail     MailConfig
 	}
 
-	// HTTPConfig stores HTTP configuration
+	// HTTPConfig stores HTTP configuration.
 	HTTPConfig struct {
 		Hostname        string
 		Port            uint16
@@ -77,9 +74,10 @@ type (
 		}
 	}
 
-	// AppConfig stores application configuration
+	// AppConfig stores application configuration.
 	AppConfig struct {
 		Name          string
+		Host          string
 		Environment   environment
 		EncryptionKey string
 		Timeout       time.Duration
@@ -90,7 +88,7 @@ type (
 		EmailVerificationTokenExpiration time.Duration
 	}
 
-	// CacheConfig stores the cache configuration
+	// CacheConfig stores the cache configuration.
 	CacheConfig struct {
 		Capacity   int
 		Expiration struct {
@@ -99,19 +97,19 @@ type (
 		}
 	}
 
-	// DatabaseConfig stores the database configuration
+	// DatabaseConfig stores the database configuration.
 	DatabaseConfig struct {
 		Driver         string
 		Connection     string
 		TestConnection string
 	}
 
-	// FilesConfig stores the file system configuration
+	// FilesConfig stores the file system configuration.
 	FilesConfig struct {
 		Directory string
 	}
 
-	// TasksConfig stores the tasks configuration
+	// TasksConfig stores the tasks configuration.
 	TasksConfig struct {
 		Goroutines      int
 		ReleaseAfter    time.Duration
@@ -119,7 +117,7 @@ type (
 		ShutdownTimeout time.Duration
 	}
 
-	// MailConfig stores the mail configuration
+	// MailConfig stores the mail configuration.
 	MailConfig struct {
 		Hostname    string
 		Port        uint16
@@ -129,11 +127,11 @@ type (
 	}
 )
 
-// GetConfig loads and returns configuration
+// GetConfig loads and returns configuration.
 func GetConfig() (Config, error) {
 	var c Config
 
-	// Load the config file
+	// Load the config file.
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -141,7 +139,7 @@ func GetConfig() (Config, error) {
 	viper.AddConfigPath("../config")
 	viper.AddConfigPath("../../config")
 
-	// Load env variables
+	// Load env variables.
 	viper.SetEnvPrefix("pagoda")
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))

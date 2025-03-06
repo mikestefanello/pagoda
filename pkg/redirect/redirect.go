@@ -24,7 +24,7 @@ type Redirect struct {
 func New(ctx echo.Context) *Redirect {
 	return &Redirect{
 		ctx:    ctx,
-		status: http.StatusFound,
+		status: http.StatusTemporaryRedirect,
 	}
 }
 

@@ -2,14 +2,16 @@ package tasks
 
 import (
 	"context"
-	"github.com/mikestefanello/backlite"
 	"time"
+
+	"github.com/mikestefanello/backlite"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/services"
 )
 
-// ExampleTask is an example implementation of backlite.Task
+// ExampleTask is an example implementation of backlite.Task.
 // This represents the task that can be queued for execution via the task client and should contain everything
 // that your queue processor needs to process the task.
 type ExampleTask struct {
@@ -34,7 +36,7 @@ func (t ExampleTask) Config() backlite.QueueConfig {
 	}
 }
 
-// NewExampleTaskQueue provides a Queue that can process ExampleTask tasks
+// NewExampleTaskQueue provides a Queue that can process ExampleTask tasks.
 // The service container is provided so the subscriber can have access to the app dependencies.
 // All queues must be registered in the Register() function.
 // Whenever an ExampleTask is added to the task client, it will be queued and eventually sent here for execution.
@@ -44,7 +46,7 @@ func NewExampleTaskQueue(c *services.Container) backlite.Queue {
 			"message", task.Message,
 		)
 		log.Default().Info("This can access the container for dependencies",
-			"echo", c.Web.Reverse("home"),
+			"echo", c.Web.Reverse(routenames.Home),
 		)
 		return nil
 	})

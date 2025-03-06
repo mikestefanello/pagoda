@@ -13,25 +13,25 @@ import (
 // Submission represents the state of the submission of a form, not including the form itself.
 // This satisfies the Form interface.
 type Submission struct {
-	// isSubmitted indicates if the form has been submitted
+	// isSubmitted indicates if the form has been submitted.
 	isSubmitted bool
 
-	// errors stores a slice of error message strings keyed by form struct field name
+	// errors stores a slice of error message strings keyed by form struct field name.
 	errors map[string][]string
 }
 
 func (f *Submission) Submit(ctx echo.Context, form any) error {
 	f.isSubmitted = true
 
-	// Set in context so the form can later be retrieved
+	// Set in context so the form can later be retrieved.
 	ctx.Set(context.FormKey, form)
 
-	// Bind the values from the incoming request to the form struct
+	// Bind the values from the incoming request to the form struct.
 	if err := ctx.Bind(form); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("unable to bind form: %v", err))
 	}
 
-	// Validate the form
+	// Validate the form.
 	if err := ctx.Validate(form); err != nil {
 		f.setErrorMessages(err)
 		return err
@@ -73,17 +73,7 @@ func (f *Submission) GetFieldErrors(fieldName string) []string {
 	return f.errors[fieldName]
 }
 
-func (f *Submission) GetFieldStatusClass(fieldName string) string {
-	if f.isSubmitted {
-		if f.FieldHasErrors(fieldName) {
-			return "is-danger"
-		}
-		return "is-success"
-	}
-	return ""
-}
-
-// setErrorMessages sets errors messages on the submission for all fields that failed validation
+// setErrorMessages sets errors messages on the submission for all fields that failed validation.
 func (f *Submission) setErrorMessages(err error) {
 	// Only this is supported right now
 	ves, ok := err.(validator.ValidationErrors)
@@ -94,8 +84,8 @@ func (f *Submission) setErrorMessages(err error) {
 	for _, ve := range ves {
 		var message string
 
-		// Provide better error messages depending on the failed validation tag
-		// This should be expanded as you use additional tags in your validation
+		// Provide better error messages depending on the failed validation tag.
+		// This should be expanded as you use additional tags in your validation.
 		switch ve.Tag() {
 		case "required":
 			message = "This field is required."
@@ -109,7 +99,7 @@ func (f *Submission) setErrorMessages(err error) {
 			message = "Invalid value."
 		}
 
-		// Add the error
+		// Add the error.
 		f.SetFieldError(ve.Field(), message)
 	}
 }

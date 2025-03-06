@@ -13,65 +13,25 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
-	"github.com/mikestefanello/pagoda/pkg/page"
 	"github.com/mikestefanello/pagoda/pkg/redirect"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
+	"github.com/mikestefanello/pagoda/pkg/ui/emails"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
-const (
-	routeNameForgotPassword       = "forgot_password"
-	routeNameForgotPasswordSubmit = "forgot_password.submit"
-	routeNameLogin                = "login"
-	routeNameLoginSubmit          = "login.submit"
-	routeNameLogout               = "logout"
-	routeNameRegister             = "register"
-	routeNameRegisterSubmit       = "register.submit"
-	routeNameResetPassword        = "reset_password"
-	routeNameResetPasswordSubmit  = "reset_password.submit"
-	routeNameVerifyEmail          = "verify_email"
-)
-
-type (
-	Auth struct {
-		auth *services.AuthClient
-		mail *services.MailClient
-		orm  *ent.Client
-		*services.TemplateRenderer
-	}
-
-	forgotPasswordForm struct {
-		Email string `form:"email" validate:"required,email"`
-		form.Submission
-	}
-
-	loginForm struct {
-		Email    string `form:"email" validate:"required,email"`
-		Password string `form:"password" validate:"required"`
-		form.Submission
-	}
-
-	registerForm struct {
-		Name            string `form:"name" validate:"required"`
-		Email           string `form:"email" validate:"required,email"`
-		Password        string `form:"password" validate:"required"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		form.Submission
-	}
-
-	resetPasswordForm struct {
-		Password        string `form:"password" validate:"required"`
-		ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
-		form.Submission
-	}
-)
+type Auth struct {
+	auth *services.AuthClient
+	mail *services.MailClient
+	orm  *ent.Client
+}
 
 func init() {
 	Register(new(Auth))
 }
 
 func (h *Auth) Init(c *services.Container) error {
-	h.TemplateRenderer = c.TemplateRenderer
 	h.orm = c.ORM
 	h.auth = c.Auth
 	h.mail = c.Mail
@@ -79,37 +39,31 @@ func (h *Auth) Init(c *services.Container) error {
 }
 
 func (h *Auth) Routes(g *echo.Group) {
-	g.GET("/logout", h.Logout, middleware.RequireAuthentication()).Name = routeNameLogout
-	g.GET("/email/verify/:token", h.VerifyEmail).Name = routeNameVerifyEmail
+	g.GET("/logout", h.Logout, middleware.RequireAuthentication()).Name = routenames.Logout
+	g.GET("/email/verify/:token", h.VerifyEmail).Name = routenames.VerifyEmail
 
 	noAuth := g.Group("/user", middleware.RequireNoAuthentication())
-	noAuth.GET("/login", h.LoginPage).Name = routeNameLogin
-	noAuth.POST("/login", h.LoginSubmit).Name = routeNameLoginSubmit
-	noAuth.GET("/register", h.RegisterPage).Name = routeNameRegister
-	noAuth.POST("/register", h.RegisterSubmit).Name = routeNameRegisterSubmit
-	noAuth.GET("/password", h.ForgotPasswordPage).Name = routeNameForgotPassword
-	noAuth.POST("/password", h.ForgotPasswordSubmit).Name = routeNameForgotPasswordSubmit
+	noAuth.GET("/login", h.LoginPage).Name = routenames.Login
+	noAuth.POST("/login", h.LoginSubmit).Name = routenames.LoginSubmit
+	noAuth.GET("/register", h.RegisterPage).Name = routenames.Register
+	noAuth.POST("/register", h.RegisterSubmit).Name = routenames.RegisterSubmit
+	noAuth.GET("/password", h.ForgotPasswordPage).Name = routenames.ForgotPassword
+	noAuth.POST("/password", h.ForgotPasswordSubmit).Name = routenames.ForgotPasswordSubmit
 
 	resetGroup := noAuth.Group("/password/reset",
 		middleware.LoadUser(h.orm),
 		middleware.LoadValidPasswordToken(h.auth),
 	)
-	resetGroup.GET("/token/:user/:password_token/:token", h.ResetPasswordPage).Name = routeNameResetPassword
-	resetGroup.POST("/token/:user/:password_token/:token", h.ResetPasswordSubmit).Name = routeNameResetPasswordSubmit
+	resetGroup.GET("/token/:user/:password_token/:token", h.ResetPasswordPage).Name = routenames.ResetPassword
+	resetGroup.POST("/token/:user/:password_token/:token", h.ResetPasswordSubmit).Name = routenames.ResetPasswordSubmit
 }
 
 func (h *Auth) ForgotPasswordPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageForgotPassword
-	p.Title = "Forgot password"
-	p.Form = form.Get[forgotPasswordForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return pages.ForgotPassword(ctx, form.Get[forms.ForgotPassword](ctx))
 }
 
 func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
-	var input forgotPasswordForm
+	var input forms.ForgotPassword
 
 	succeed := func() error {
 		form.Clear(ctx)
@@ -127,7 +81,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Attempt to load the user
+	// Attempt to load the user.
 	u, err := h.orm.User.
 		Query().
 		Where(user.Email(strings.ToLower(input.Email))).
@@ -141,7 +95,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		return fail(err, "error querying user during forgot password")
 	}
 
-	// Generate the token
+	// Generate the token.
 	token, pt, err := h.auth.GeneratePasswordResetToken(ctx, u.ID)
 	if err != nil {
 		return fail(err, "error generating password reset token")
@@ -151,8 +105,8 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		"user_id", u.ID,
 	)
 
-	// Email the user
-	url := ctx.Echo().Reverse(routeNameResetPassword, u.ID, pt.ID, token)
+	// Email the user.
+	url := ctx.Echo().Reverse(routenames.ResetPassword, u.ID, pt.ID, token)
 	err = h.mail.
 		Compose().
 		To(u.Email).
@@ -168,17 +122,11 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 }
 
 func (h *Auth) LoginPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageLogin
-	p.Title = "Log in"
-	p.Form = form.Get[loginForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return pages.Login(ctx, form.Get[forms.Login](ctx))
 }
 
 func (h *Auth) LoginSubmit(ctx echo.Context) error {
-	var input loginForm
+	var input forms.Login
 
 	authFailed := func() error {
 		input.SetFieldError("Email", "")
@@ -197,7 +145,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Attempt to load the user
+	// Attempt to load the user.
 	u, err := h.orm.User.
 		Query().
 		Where(user.Email(strings.ToLower(input.Email))).
@@ -211,22 +159,22 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		return fail(err, "error querying user during login")
 	}
 
-	// Check if the password is correct
+	// Check if the password is correct.
 	err = h.auth.CheckPassword(input.Password, u.Password)
 	if err != nil {
 		return authFailed()
 	}
 
-	// Log the user in
+	// Log the user in.
 	err = h.auth.Login(ctx, u.ID)
 	if err != nil {
 		return fail(err, "unable to log in user")
 	}
 
-	msg.Success(ctx, fmt.Sprintf("Welcome back, <strong>%s</strong>. You are now logged in.", u.Name))
+	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
 
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
@@ -237,22 +185,16 @@ func (h *Auth) Logout(ctx echo.Context) error {
 		msg.Danger(ctx, "An error occurred. Please try again.")
 	}
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
 func (h *Auth) RegisterPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageRegister
-	p.Title = "Register"
-	p.Form = form.Get[registerForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return pages.Register(ctx, form.Get[forms.Register](ctx))
 }
 
 func (h *Auth) RegisterSubmit(ctx echo.Context) error {
-	var input registerForm
+	var input forms.Register
 
 	err := form.Submit(ctx, &input)
 
@@ -264,13 +206,13 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the password
+	// Hash the password.
 	pwHash, err := h.auth.HashPassword(input.Password)
 	if err != nil {
 		return fail(err, "unable to hash password")
 	}
 
-	// Attempt creating the user
+	// Attempt creating the user.
 	u, err := h.orm.User.
 		Create().
 		SetName(input.Name).
@@ -287,13 +229,13 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	case *ent.ConstraintError:
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
 		return redirect.New(ctx).
-			Route(routeNameLogin).
+			Route(routenames.Login).
 			Go()
 	default:
 		return fail(err, "unable to create user")
 	}
 
-	// Log the user in
+	// Log the user in.
 	err = h.auth.Login(ctx, u.ID)
 	if err != nil {
 		log.Ctx(ctx).Error("unable to log user in",
@@ -302,22 +244,22 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		)
 		msg.Info(ctx, "Your account has been created.")
 		return redirect.New(ctx).
-			Route(routeNameLogin).
+			Route(routenames.Login).
 			Go()
 	}
 
 	msg.Success(ctx, "Your account has been created. You are now logged in.")
 
-	// Send the verification email
+	// Send the verification email.
 	h.sendVerificationEmail(ctx, u)
 
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }
 
 func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
-	// Generate a token
+	// Generate a token.
 	token, err := h.auth.GenerateEmailVerificationToken(usr.Email)
 	if err != nil {
 		log.Ctx(ctx).Error("unable to generate email verification token",
@@ -327,13 +269,12 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		return
 	}
 
-	// Send the email
-	url := ctx.Echo().Reverse(routeNameVerifyEmail, token)
+	// Send the email.
 	err = h.mail.
 		Compose().
 		To(usr.Email).
 		Subject("Confirm your email address").
-		Body(fmt.Sprintf("Click here to confirm your email address: %s", url)).
+		Component(emails.ConfirmEmailAddress(ctx, usr.Name, token)).
 		Send(ctx)
 
 	if err != nil {
@@ -348,17 +289,11 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 }
 
 func (h *Auth) ResetPasswordPage(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutAuth
-	p.Name = templates.PageResetPassword
-	p.Title = "Reset password"
-	p.Form = form.Get[resetPasswordForm](ctx)
-
-	return h.RenderPage(ctx, p)
+	return pages.ResetPassword(ctx, form.Get[forms.ResetPassword](ctx))
 }
 
 func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
-	var input resetPasswordForm
+	var input forms.ResetPassword
 
 	err := form.Submit(ctx, &input)
 
@@ -370,16 +305,16 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the new password
+	// Hash the new password.
 	hash, err := h.auth.HashPassword(input.Password)
 	if err != nil {
 		return fail(err, "unable to hash password")
 	}
 
-	// Get the requesting user
+	// Get the requesting user.
 	usr := ctx.Get(context.UserKey).(*ent.User)
 
-	// Update the user
+	// Update the user.
 	_, err = usr.
 		Update().
 		SetPassword(hash).
@@ -389,7 +324,7 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		return fail(err, "unable to update password")
 	}
 
-	// Delete all password tokens for this user
+	// Delete all password tokens for this user.
 	err = h.auth.DeletePasswordTokens(ctx, usr.ID)
 	if err != nil {
 		return fail(err, "unable to delete password tokens")
@@ -397,24 +332,24 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 
 	msg.Success(ctx, "Your password has been updated.")
 	return redirect.New(ctx).
-		Route(routeNameLogin).
+		Route(routenames.Login).
 		Go()
 }
 
 func (h *Auth) VerifyEmail(ctx echo.Context) error {
 	var usr *ent.User
 
-	// Validate the token
+	// Validate the token.
 	token := ctx.Param("token")
 	email, err := h.auth.ValidateEmailVerificationToken(token)
 	if err != nil {
 		msg.Warning(ctx, "The link is either invalid or has expired.")
 		return redirect.New(ctx).
-			Route(routeNameHome).
+			Route(routenames.Home).
 			Go()
 	}
 
-	// Check if it matches the authenticated user
+	// Check if it matches the authenticated user.
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		authUser := u.(*ent.User)
 
@@ -423,7 +358,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 		}
 	}
 
-	// Query to find a matching user, if needed
+	// Query to find a matching user, if needed.
 	if usr == nil {
 		usr, err = h.orm.User.
 			Query().
@@ -435,7 +370,7 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 		}
 	}
 
-	// Verify the user, if needed
+	// Verify the user, if needed.
 	if !usr.Verified {
 		usr, err = usr.
 			Update().
@@ -449,6 +384,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 
 	msg.Success(ctx, "Your email has been successfully verified.")
 	return redirect.New(ctx).
-		Route(routeNameHome).
+		Route(routenames.Home).
 		Go()
 }

@@ -1,9 +1,0 @@
-{{define "csrf"}}
-    <input type="hidden" name="csrf" value="{{.CSRF}}"/>
-{{end}}
-
-{{define "field-errors"}}
-    {{- range .}}
-        <p class="help is-danger">{{.}}</p>
-    {{- end}}
-{{end}}

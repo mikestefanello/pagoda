@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +12,7 @@ import (
 // this test package
 func TestPages__About(t *testing.T) {
 	doc := request(t).
-		setRoute(routeNameAbout).
+		setRoute(routenames.About).
 		get().
 		assertStatusCode(http.StatusOK).
 		toDoc()

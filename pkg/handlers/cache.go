@@ -2,79 +2,63 @@ package handlers
 
 import (
 	"errors"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
-	"github.com/mikestefanello/pagoda/pkg/page"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
-	"github.com/mikestefanello/pagoda/templates"
-	"time"
+	"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
 
-const (
-	routeNameCache       = "cache"
-	routeNameCacheSubmit = "cache.submit"
-)
-
-type (
-	Cache struct {
-		cache *services.CacheClient
-		*services.TemplateRenderer
-	}
-
-	cacheForm struct {
-		Value string `form:"value"`
-		form.Submission
-	}
-)
+type Cache struct {
+	cache *services.CacheClient
+}
 
 func init() {
 	Register(new(Cache))
 }
 
 func (h *Cache) Init(c *services.Container) error {
-	h.TemplateRenderer = c.TemplateRenderer
 	h.cache = c.Cache
 	return nil
 }
 
 func (h *Cache) Routes(g *echo.Group) {
-	g.GET("/cache", h.Page).Name = routeNameCache
-	g.POST("/cache", h.Submit).Name = routeNameCacheSubmit
+	g.GET("/cache", h.Page).Name = routenames.Cache
+	g.POST("/cache", h.Submit).Name = routenames.CacheSubmit
 }
 
 func (h *Cache) Page(ctx echo.Context) error {
-	p := page.New(ctx)
-	p.Layout = templates.LayoutMain
-	p.Name = templates.PageCache
-	p.Title = "Set a cache entry"
-	p.Form = form.Get[cacheForm](ctx)
+	f := form.Get[forms.Cache](ctx)
 
-	// Fetch the value from the cache
+	// Fetch the value from the cache.
 	value, err := h.cache.
 		Get().
 		Key("page_cache_example").
 		Fetch(ctx.Request().Context())
 
-	// Store the value in the page, so it can be rendered, if found
+	// Store the value in the form, so it can be rendered, if found.
 	switch {
 	case err == nil:
-		p.Data = value.(string)
+		f.CurrentValue = value.(string)
 	case errors.Is(err, services.ErrCacheMiss):
 	default:
 		return fail(err, "failed to fetch from cache")
 	}
 
-	return h.RenderPage(ctx, p)
+	return pages.UpdateCache(ctx, f)
 }
 
 func (h *Cache) Submit(ctx echo.Context) error {
-	var input cacheForm
+	var input forms.Cache
 
 	if err := form.Submit(ctx, &input); err != nil {
 		return err
 	}
 
-	// Set the cache
+	// Set the cache.
 	err := h.cache.
 		Set().
 		Key("page_cache_example").

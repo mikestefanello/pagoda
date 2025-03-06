@@ -16,51 +16,47 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/pkg/funcmap"
 	"github.com/mikestefanello/pagoda/pkg/log"
 
-	// Require by ent
+	// Required by ent.
 	_ "github.com/mikestefanello/pagoda/ent/runtime"
 )
 
 // Container contains all services used by the application and provides an easy way to handle dependency
-// injection including within tests
+// injection including within tests.
 type Container struct {
 	// Validator stores a validator
 	Validator *Validator
 
-	// Web stores the web framework
+	// Web stores the web framework.
 	Web *echo.Echo
 
-	// Config stores the application configuration
+	// Config stores the application configuration.
 	Config *config.Config
 
-	// Cache contains the cache client
+	// Cache contains the cache client.
 	Cache *CacheClient
 
-	// Database stores the connection to the database
+	// Database stores the connection to the database.
 	Database *sql.DB
 
 	// Files stores the file system.
 	Files afero.Fs
 
-	// ORM stores a client to the ORM
+	// ORM stores a client to the ORM.
 	ORM *ent.Client
 
-	// Mail stores an email sending client
+	// Mail stores an email sending client.
 	Mail *MailClient
 
-	// Auth stores an authentication client
+	// Auth stores an authentication client.
 	Auth *AuthClient
 
-	// TemplateRenderer stores a service to easily render and cache templates
-	TemplateRenderer *TemplateRenderer
-
-	// Tasks stores the task client
+	// Tasks stores the task client.
 	Tasks *backlite.Client
 }
 
-// NewContainer creates and initializes a new Container
+// NewContainer creates and initializes a new Container.
 func NewContainer() *Container {
 	c := new(Container)
 	c.initConfig()
@@ -71,7 +67,6 @@ func NewContainer() *Container {
 	c.initFiles()
 	c.initORM()
 	c.initAuth()
-	c.initTemplateRenderer()
 	c.initMail()
 	c.initTasks()
 	return c
@@ -107,7 +102,7 @@ func (c *Container) Shutdown() error {
 	return nil
 }
 
-// initConfig initializes configuration
+// initConfig initializes configuration.
 func (c *Container) initConfig() {
 	cfg, err := config.GetConfig()
 	if err != nil {
@@ -115,7 +110,7 @@ func (c *Container) initConfig() {
 	}
 	c.Config = &cfg
 
-	// Configure logging
+	// Configure logging.
 	switch cfg.App.Environment {
 	case config.EnvProduction:
 		slog.SetLogLoggerLevel(slog.LevelInfo)
@@ -124,19 +119,19 @@ func (c *Container) initConfig() {
 	}
 }
 
-// initValidator initializes the validator
+// initValidator initializes the validator.
 func (c *Container) initValidator() {
 	c.Validator = NewValidator()
 }
 
-// initWeb initializes the web framework
+// initWeb initializes the web framework.
 func (c *Container) initWeb() {
 	c.Web = echo.New()
 	c.Web.HideBanner = true
 	c.Web.Validator = c.Validator
 }
 
-// initCache initializes the cache
+// initCache initializes the cache.
 func (c *Container) initCache() {
 	store, err := newInMemoryCache(c.Config.Cache.Capacity)
 	if err != nil {
@@ -146,7 +141,7 @@ func (c *Container) initCache() {
 	c.Cache = NewCacheClient(store)
 }
 
-// initDatabase initializes the database
+// initDatabase initializes the database.
 func (c *Container) initDatabase() {
 	var err error
 	var connection string
@@ -180,7 +175,7 @@ func (c *Container) initFiles() {
 	c.Files = afero.NewBasePathFs(fs, c.Config.Files.Directory)
 }
 
-// initORM initializes the ORM
+// initORM initializes the ORM.
 func (c *Container) initORM() {
 	drv := entsql.OpenDB(c.Config.Database.Driver, c.Database)
 	c.ORM = ent.NewClient(ent.Driver(drv))
@@ -191,30 +186,25 @@ func (c *Container) initORM() {
 	}
 }
 
-// initAuth initializes the authentication client
+// initAuth initializes the authentication client.
 func (c *Container) initAuth() {
 	c.Auth = NewAuthClient(c.Config, c.ORM)
 }
 
-// initTemplateRenderer initializes the template renderer
-func (c *Container) initTemplateRenderer() {
-	c.TemplateRenderer = NewTemplateRenderer(c.Config, c.Cache, funcmap.NewFuncMap(c.Web))
-}
-
-// initMail initialize the mail client
+// initMail initialize the mail client.
 func (c *Container) initMail() {
 	var err error
-	c.Mail, err = NewMailClient(c.Config, c.TemplateRenderer)
+	c.Mail, err = NewMailClient(c.Config)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create mail client: %v", err))
 	}
 }
 
-// initTasks initializes the task client
+// initTasks initializes the task client.
 func (c *Container) initTasks() {
 	var err error
 	// You could use a separate database for tasks, if you'd like. but using one
-	// makes transaction support easier
+	// makes transaction support easier.
 	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
 		DB:              c.Database,
 		Logger:          log.Default(),
@@ -232,10 +222,10 @@ func (c *Container) initTasks() {
 	}
 }
 
-// openDB opens a database connection
+// openDB opens a database connection.
 func openDB(driver, connection string) (*sql.DB, error) {
 	// Helper to automatically create the directories that the specified sqlite file
-	// should reside in, if one
+	// should reside in, if one.
 	if driver == "sqlite3" {
 		d := strings.Split(connection, "/")
 
