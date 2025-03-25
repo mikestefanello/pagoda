@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"sync"
 
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"maragu.dev/gomponents"
 )
 
@@ -36,7 +37,11 @@ var (
 func Set(key string, node gomponents.Node) {
 	buf := bytes.NewBuffer(nil)
 	if err := node.Render(buf); err != nil {
-		panic(err)
+		log.Default().Error("failed to cache ui node",
+			"error", err,
+			"key", key,
+		)
+		return
 	}
 
 	mu.Lock()
