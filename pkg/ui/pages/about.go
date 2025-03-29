@@ -49,6 +49,10 @@ func About(ctx echo.Context) error {
 						Title: "Ent",
 						Body:  "Simple, yet powerful ORM for modeling and querying data. Visit <a href=\"https://entgo.io/\">entgo.io</a> to learn more.",
 					},
+					{
+						Title: "Gomponents",
+						Body:  "HTML components written in pure Go. They render to HTML 5, and make it easy for you to build reusable components. Visit <a href=\"https://gomponents.com/\">gomponents.com</a> to learn more.",
+					},
 				},
 			),
 		}

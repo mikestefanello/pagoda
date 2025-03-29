@@ -15,19 +15,18 @@ func AddTask(ctx echo.Context, form *forms.Task) error {
 	r.Title = "Create a task"
 	r.Metatags.Description = "Test creating a task to see how it works."
 
-	g := make(Group, 0)
-
-	if r.Htmx.Target != "task" {
-		g = append(g, components.Message(
-			"is-link",
-			"",
-			Group{
-				P(Raw("Submitting this form will create an <i>ExampleTask</i> in the task queue. After the specified delay, the message will be logged by the queue processor.")),
-				P(Text("See pkg/tasks and the README for more information.")),
-			}))
+	g := Group{
+		Iff(r.Htmx.Target != "task", func() Node {
+			return components.Message(
+				"is-link",
+				"",
+				Group{
+					P(Raw("Submitting this form will create an <i>ExampleTask</i> in the task queue. After the specified delay, the message will be logged by the queue processor.")),
+					P(Text("See pkg/tasks and the README for more information.")),
+				})
+		}),
+		form.Render(r),
 	}
-
-	g = append(g, form.Render(r))
 
 	return r.Render(layouts.Primary, g)
 }

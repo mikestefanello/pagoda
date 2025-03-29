@@ -27,17 +27,13 @@ func JS(r *ui.Request) Node {
 		})
 	`
 
-	var csrf Node
-
-	if len(r.CSRF) > 0 {
-		csrf = Script(Raw(fmt.Sprintf(htmxCSRF, r.CSRF)))
-	}
-
 	return Group{
 		Script(Src("https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js")),
 		Script(Src("https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"), Defer()),
 		Script(Raw(htmxErr)),
-		csrf,
+		Iff(len(r.CSRF) > 0, func() Node {
+			return Script(Raw(fmt.Sprintf(htmxCSRF, r.CSRF)))
+		}),
 	}
 }
 
