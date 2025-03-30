@@ -9,6 +9,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
 	"github.com/labstack/echo/v4"
@@ -70,8 +71,7 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 				return next(c)
 			case services.InvalidPasswordTokenError:
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
-				// TODO use the const for route name
-				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
+				return c.Redirect(http.StatusFound, c.Echo().Reverse(routenames.ForgotPassword))
 			default:
 				return echo.NewHTTPError(
 					http.StatusInternalServerError,

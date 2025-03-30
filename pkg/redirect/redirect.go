@@ -41,7 +41,7 @@ func (r *Redirect) Params(params ...any) *Redirect {
 	return r
 }
 
-// StatusCode sets the HTTP status code which defaults to http.StatusFound.
+// StatusCode sets the HTTP status code which defaults to http.StatusTemporaryRedirect.
 // Does not apply to HTMX redirects.
 func (r *Redirect) StatusCode(code int) *Redirect {
 	r.status = code
