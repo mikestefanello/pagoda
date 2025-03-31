@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/entc/gen"
+	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
@@ -45,7 +46,7 @@ func (h *Admin) Routes(g *echo.Group) {
 	entities := g.Group("/admin/content")
 
 	for _, p := range h.getEntityPlugins() {
-		pg := entities.Group(fmt.Sprintf("/%s", p.ID))
+		pg := entities.Group(fmt.Sprintf("/%s", strings.ToLower(p.ID)))
 		pg.GET("", h.EntityList(p)).Name = p.RouteNameList()
 		pg.POST("", h.EntityList(p)).Name = p.RouteNameListSubmit()
 		pg.GET("/add", h.EntityAdd(p)).Name = p.RouteNameAdd()
@@ -103,13 +104,19 @@ func (h *Admin) EntityList(p AdminEntityPlugin) echo.HandlerFunc {
 
 func (h *Admin) EntityAdd(p AdminEntityPlugin) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return nil
+		var schema *load.Schema
+		for _, s := range h.graph.Schemas {
+			if s.Name == p.ID {
+				schema = s
+			}
+		}
+		return pages.AdminEntityAdd(ctx, schema)
 	}
 }
 
 func (h *Admin) EntityAddSubmit(p AdminEntityPlugin) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return nil
+		return h.EntityAdd(p)(ctx)
 	}
 }
 
@@ -193,7 +200,7 @@ func (p *AdminEntityPlugin) RouteNameDeleteSubmit() string {
 func (h *Admin) getEntityPlugins() []AdminEntityPlugin {
 	return []AdminEntityPlugin{
 		{
-			ID:          "user",
+			ID:          "User",
 			Label:       "User",
 			LabelPlural: "Users",
 			Heading: []string{
@@ -238,7 +245,7 @@ func (h *Admin) getEntityPlugins() []AdminEntityPlugin {
 			},
 		},
 		{
-			ID:          "passwordtoken",
+			ID:          "PasswordToken",
 			Label:       "Password token",
 			LabelPlural: "Password tokens",
 			Heading: []string{

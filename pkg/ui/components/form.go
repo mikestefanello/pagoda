@@ -153,6 +153,8 @@ func FileField(name, label string) Node {
 
 func formFieldStatusClass(fm form.Form, formField string) string {
 	switch {
+	case fm == nil:
+		return ""
 	case !fm.IsSubmitted():
 		return ""
 	case fm.FieldHasErrors(formField):
@@ -163,6 +165,10 @@ func formFieldStatusClass(fm form.Form, formField string) string {
 }
 
 func formFieldErrors(fm form.Form, field string) Node {
+	if fm == nil {
+		return nil
+	}
+
 	errs := fm.GetFieldErrors(field)
 	if len(errs) == 0 {
 		return nil

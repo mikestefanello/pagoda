@@ -39,10 +39,10 @@ func (h *Auth) Init(c *services.Container) error {
 }
 
 func (h *Auth) Routes(g *echo.Group) {
-	g.GET("/logout", h.Logout, middleware.RequireAuthentication()).Name = routenames.Logout
+	g.GET("/logout", h.Logout, middleware.RequireAuthentication).Name = routenames.Logout
 	g.GET("/email/verify/:token", h.VerifyEmail).Name = routenames.VerifyEmail
 
-	noAuth := g.Group("/user", middleware.RequireNoAuthentication())
+	noAuth := g.Group("/user", middleware.RequireNoAuthentication)
 	noAuth.GET("/login", h.LoginPage).Name = routenames.Login
 	noAuth.POST("/login", h.LoginSubmit).Name = routenames.LoginSubmit
 	noAuth.GET("/register", h.RegisterPage).Name = routenames.Register

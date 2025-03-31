@@ -1,8 +1,11 @@
 package pages
 
 import (
+	"fmt"
 	"net/http"
 
+	"entgo.io/ent/entc/load"
+	"entgo.io/ent/schema/field"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/ui"
@@ -29,6 +32,52 @@ func AdminEntityDelete(ctx echo.Context) error {
 	)
 
 	return r.Render(layouts.Admin, form)
+}
+
+func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
+	r := ui.NewRequest(ctx)
+	r.Title = fmt.Sprintf("Add %s", "entity") // TODO
+
+	nodes := make(Group, 0)
+
+	for _, f := range schema.Fields {
+		switch f.Info.Type {
+		case field.TypeString:
+			nodes = append(nodes, InputField(InputFieldParams{
+				Name:      f.Name,
+				InputType: "text",
+				Label:     f.Name,
+			}))
+		case field.TypeTime:
+			nodes = append(nodes, InputField(InputFieldParams{
+				Name:      f.Name,
+				InputType: "datetime",
+				Label:     f.Name,
+			}))
+		case field.TypeBool:
+			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
+		default:
+			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
+		}
+	}
+
+	for _, e := range schema.Edges {
+		if e.Inverse {
+			continue
+		}
+		nodes = append(nodes, InputField(InputFieldParams{
+			Name:      e.Name,
+			InputType: "number",
+			Label:     e.Name,
+		}))
+	}
+
+	nodes = append(nodes, ControlGroup(
+		FormButton("is-primary", "Submit"),
+		ButtonLink("/", "is-secondary", "Cancel"),
+	), CSRF(r))
+
+	return r.Render(layouts.Admin, Form(Method(http.MethodPost), nodes))
 }
 
 type AdminEntityListParams struct {

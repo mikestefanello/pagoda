@@ -83,27 +83,23 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 }
 
 // RequireAuthentication requires that the user be authenticated in order to proceed
-func RequireAuthentication() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if u := c.Get(context.AuthenticatedUserKey); u == nil {
-				return echo.NewHTTPError(http.StatusUnauthorized)
-			}
-
-			return next(c)
+func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u == nil {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
+
+		return next(c)
 	}
 }
 
 // RequireNoAuthentication requires that the user not be authenticated in order to proceed
-func RequireNoAuthentication() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if u := c.Get(context.AuthenticatedUserKey); u != nil {
-				return echo.NewHTTPError(http.StatusForbidden)
-			}
-
-			return next(c)
+func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u != nil {
+			return echo.NewHTTPError(http.StatusForbidden)
 		}
+
+		return next(c)
 	}
 }
