@@ -41,6 +41,7 @@ func Auth(r *ui.Request, content Node) Node {
 						),
 					),
 				),
+				HtmxListeners(r),
 			),
 		),
 	)
