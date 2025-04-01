@@ -124,8 +124,20 @@ func (h *Admin) EntityAddSubmit(p AdminEntityPlugin) echo.HandlerFunc {
 		if err != nil {
 			return fail(err, fmt.Sprintf("failed to bind create password token request body"))
 		}
-		fmt.Printf("%+v", v)
-		return h.EntityAdd(p)(ctx)
+
+		res, err := h.ogent.CreatePasswordToken(ctx.Request().Context(), &v)
+		if err != nil {
+			msg.Danger(ctx, err.Error())
+			return h.EntityAdd(p)(ctx)
+		}
+		fmt.Printf("%+v\n", res)
+
+		msg.Success(ctx, fmt.Sprintf("Successfully added %s.", strings.ToLower(p.Label)))
+
+		return redirect.
+			New(ctx).
+			Route(p.RouteNameList()).
+			Go()
 	}
 }
 

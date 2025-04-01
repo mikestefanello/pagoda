@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/mikestefanello/pagoda/pkg/ui"
@@ -13,32 +12,6 @@ func JS(r *ui.Request) Node {
 	return Group{
 		Script(Src("https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js")),
 		Script(Src("https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"), Defer()),
-	}
-}
-
-func HtmxListeners(r *ui.Request) Node {
-	const htmxErr = `
-		document.body.addEventListener('htmx:beforeSwap', function(evt) {
-			if (evt.detail.xhr.status >= 400){
-				evt.detail.shouldSwap = true;
-				evt.detail.target = htmx.find("body");
-			}
-		});
-	`
-
-	const htmxCSRF = `
-		document.body.addEventListener('htmx:configRequest', function(evt)  {
-			if (evt.detail.verb !== "get") {
-				evt.detail.parameters['csrf'] = '%s';
-			}
-		})
-	`
-
-	return Group{
-		Script(Raw(htmxErr)),
-		Iff(len(r.CSRF) > 0, func() Node {
-			return Script(Raw(fmt.Sprintf(htmxCSRF, r.CSRF)))
-		}),
 	}
 }
 

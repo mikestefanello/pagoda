@@ -4,7 +4,6 @@ package ogent
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/go-faster/jx"
 	"github.com/mikestefanello/pagoda/ent"
@@ -38,23 +37,8 @@ func (h *OgentHandler) CreatePasswordToken(ctx context.Context, req *CreatePassw
 	// Persist to storage.
 	e, err := b.Save(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	// Reload the entity to attach all eager-loaded edges.
 	q := h.client.PasswordToken.Query().Where(passwordtoken.ID(e.ID))
@@ -71,23 +55,8 @@ func (h *OgentHandler) ReadPasswordToken(ctx context.Context, params ReadPasswor
 	q := h.client.PasswordToken.Query().Where(passwordtoken.IDEQ(params.ID))
 	e, err := q.Only(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	return NewPasswordTokenRead(e), nil
 }
@@ -109,23 +78,8 @@ func (h *OgentHandler) UpdatePasswordToken(ctx context.Context, req *UpdatePassw
 	// Persist to storage.
 	e, err := b.Save(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	// Reload the entity to attach all eager-loaded edges.
 	q := h.client.PasswordToken.Query().Where(passwordtoken.ID(e.ID))
@@ -141,23 +95,8 @@ func (h *OgentHandler) UpdatePasswordToken(ctx context.Context, req *UpdatePassw
 func (h *OgentHandler) DeletePasswordToken(ctx context.Context, params DeletePasswordTokenParams) (DeletePasswordTokenRes, error) {
 	err := h.client.PasswordToken.DeleteOneID(params.ID).Exec(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	return new(DeletePasswordTokenNoContent), nil
 
@@ -178,23 +117,8 @@ func (h *OgentHandler) ListPasswordToken(ctx context.Context, params ListPasswor
 
 	es, err := q.All(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	r := NewPasswordTokenLists(es)
 	return (*ListPasswordTokenOKApplicationJSON)(&r), nil
@@ -205,23 +129,8 @@ func (h *OgentHandler) ReadPasswordTokenUser(ctx context.Context, params ReadPas
 	q := h.client.PasswordToken.Query().Where(passwordtoken.IDEQ(params.ID)).QueryUser()
 	e, err := q.Only(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	return NewPasswordTokenUserRead(e), nil
 }
@@ -240,23 +149,8 @@ func (h *OgentHandler) CreateUser(ctx context.Context, req *CreateUserReq) (Crea
 	// Persist to storage.
 	e, err := b.Save(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	// Reload the entity to attach all eager-loaded edges.
 	q := h.client.User.Query().Where(user.ID(e.ID))
@@ -273,23 +167,8 @@ func (h *OgentHandler) ReadUser(ctx context.Context, params ReadUserParams) (Rea
 	q := h.client.User.Query().Where(user.IDEQ(params.ID))
 	e, err := q.Only(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	return NewUserRead(e), nil
 }
@@ -317,23 +196,8 @@ func (h *OgentHandler) UpdateUser(ctx context.Context, req *UpdateUserReq, param
 	// Persist to storage.
 	e, err := b.Save(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	// Reload the entity to attach all eager-loaded edges.
 	q := h.client.User.Query().Where(user.ID(e.ID))
@@ -349,23 +213,8 @@ func (h *OgentHandler) UpdateUser(ctx context.Context, req *UpdateUserReq, param
 func (h *OgentHandler) DeleteUser(ctx context.Context, params DeleteUserParams) (DeleteUserRes, error) {
 	err := h.client.User.DeleteOneID(params.ID).Exec(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsConstraintError(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	return new(DeleteUserNoContent), nil
 
@@ -386,23 +235,8 @@ func (h *OgentHandler) ListUser(ctx context.Context, params ListUserParams) (Lis
 
 	es, err := q.All(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	r := NewUserLists(es)
 	return (*ListUserOKApplicationJSON)(&r), nil
@@ -422,23 +256,8 @@ func (h *OgentHandler) ListUserOwner(ctx context.Context, params ListUserOwnerPa
 	q.Limit(itemsPerPage).Offset((page - 1) * itemsPerPage)
 	es, err := q.All(ctx)
 	if err != nil {
-		switch {
-		case ent.IsNotFound(err):
-			return &R404{
-				Code:   http.StatusNotFound,
-				Status: http.StatusText(http.StatusNotFound),
-				Errors: rawError(err),
-			}, nil
-		case ent.IsNotSingular(err):
-			return &R409{
-				Code:   http.StatusConflict,
-				Status: http.StatusText(http.StatusConflict),
-				Errors: rawError(err),
-			}, nil
-		default:
-			// Let the server handle the error.
-			return nil, err
-		}
+		// Let the server handle the error.
+		return nil, err
 	}
 	r := NewUserOwnerLists(es)
 	return (*ListUserOwnerOKApplicationJSON)(&r), nil

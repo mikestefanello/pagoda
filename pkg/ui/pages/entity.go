@@ -66,6 +66,7 @@ func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 				InputType: "text",
 				Label:     label(f.Name),
 				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
+				Value:     time.Now().Format(time.RFC3339),
 			}))
 		case field.TypeBool:
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
