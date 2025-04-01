@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/ogent"
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
 	"github.com/mikestefanello/pagoda/ent/user"
 	"github.com/mikestefanello/pagoda/pkg/msg"
@@ -29,6 +30,7 @@ const entityIDContextKey = "admin:entity_id"
 type Admin struct {
 	orm   *ent.Client
 	graph *gen.Graph
+	ogent *ogent.OgentHandler
 }
 
 func init() {
@@ -38,6 +40,7 @@ func init() {
 func (h *Admin) Init(c *services.Container) error {
 	h.graph = c.Graph
 	h.orm = c.ORM
+	h.ogent = ogent.NewOgentHandler(h.orm)
 	return nil
 }
 
@@ -116,6 +119,12 @@ func (h *Admin) EntityAdd(p AdminEntityPlugin) echo.HandlerFunc {
 
 func (h *Admin) EntityAddSubmit(p AdminEntityPlugin) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
+		var v ogent.CreatePasswordTokenReq // TODO type
+		err := ctx.Bind(&v)
+		if err != nil {
+			return fail(err, fmt.Sprintf("failed to bind create password token request body"))
+		}
+		fmt.Printf("%+v", v)
 		return h.EntityAdd(p)(ctx)
 	}
 }

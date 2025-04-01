@@ -3,6 +3,9 @@ package pages
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
+	"unicode"
 
 	"entgo.io/ent/entc/load"
 	"entgo.io/ent/schema/field"
@@ -40,19 +43,29 @@ func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 
 	nodes := make(Group, 0)
 
+	label := func(name string) string {
+		if len(name) == 0 {
+			return name
+		}
+		text := []rune(strings.ReplaceAll(name, "_", " "))
+		text[0] = unicode.ToUpper(text[0])
+		return string(text)
+	}
+
 	for _, f := range schema.Fields {
 		switch f.Info.Type {
 		case field.TypeString:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "text",
-				Label:     f.Name,
+				Label:     label(f.Name),
 			}))
 		case field.TypeTime:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
-				InputType: "datetime",
-				Label:     f.Name,
+				InputType: "text",
+				Label:     label(f.Name),
+				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
 			}))
 		case field.TypeBool:
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
@@ -68,16 +81,19 @@ func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 		nodes = append(nodes, InputField(InputFieldParams{
 			Name:      e.Name,
 			InputType: "number",
-			Label:     e.Name,
+			Label:     label(e.Name),
 		}))
 	}
 
 	nodes = append(nodes, ControlGroup(
 		FormButton("is-primary", "Submit"),
-		ButtonLink("/", "is-secondary", "Cancel"),
+		ButtonLink("/", "is-secondary", "Cancel"), // todo
 	), CSRF(r))
 
-	return r.Render(layouts.Admin, Form(Method(http.MethodPost), nodes))
+	return r.Render(layouts.Admin, Form(
+		Method(http.MethodPost),
+		nodes,
+	))
 }
 
 type AdminEntityListParams struct {

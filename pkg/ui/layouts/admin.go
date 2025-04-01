@@ -36,6 +36,7 @@ func Admin(r *ui.Request, content Node) Node {
 					),
 				),
 			),
+			HtmxListeners(r),
 		),
 	)
 }
