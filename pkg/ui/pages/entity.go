@@ -7,10 +7,13 @@ import (
 	"time"
 	"unicode"
 
+	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
 	"entgo.io/ent/schema/field"
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/pager"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
@@ -22,14 +25,14 @@ func Entity(ctx echo.Context) error {
 	return ui.NewRequest(ctx).Render(layouts.Admin, Div(Text("abc")))
 }
 
-func AdminEntityDelete(ctx echo.Context) error {
+func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	r := ui.NewRequest(ctx)
 	form := Form(
 		Method(http.MethodPost),
-		H2(Text("Are you sure you want to delete this entity?")),
+		H2(Textf("Are you sure you want to delete this %s?", entityTypeName)),
 		ControlGroup(
 			FormButton("is-link", "Delete"),
-			ButtonLink("/", "is-secondary", "Cancel"),
+			ButtonLink(r.Path(routenames.AdminEntityList(entityTypeName)), "is-secondary", "Cancel"),
 		),
 		CSRF(r),
 	)
@@ -39,7 +42,7 @@ func AdminEntityDelete(ctx echo.Context) error {
 
 func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 	r := ui.NewRequest(ctx)
-	r.Title = fmt.Sprintf("Add %s", "entity") // TODO
+	r.Title = fmt.Sprintf("Add %s", schema.Name) // TODO
 
 	nodes := make(Group, 0)
 
@@ -88,7 +91,7 @@ func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 
 	nodes = append(nodes, ControlGroup(
 		FormButton("is-primary", "Submit"),
-		ButtonLink("/", "is-secondary", "Cancel"), // todo
+		ButtonLink(r.Path(routenames.AdminEntityList(schema.Name)), "is-secondary", "Cancel"),
 	), CSRF(r))
 
 	return r.Render(layouts.Admin, Form(
@@ -98,12 +101,9 @@ func AdminEntityAdd(ctx echo.Context, schema *load.Schema) error {
 }
 
 type AdminEntityListParams struct {
-	Title       string
-	Headers     []string
-	Rows        []AdminEntityListRow
-	EditRoute   string
-	DeleteRoute string
-	Pager       pager.Pager
+	EntityType *gen.Type
+	EntityList *admin.EntityList
+	Pager      pager.Pager
 }
 
 type AdminEntityListRow struct {
@@ -113,37 +113,40 @@ type AdminEntityListRow struct {
 
 func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 	r := ui.NewRequest(ctx)
-	r.Title = params.Title
+	r.Title = params.EntityType.Name
 
 	genHeader := func() Node {
-		g := make(Group, 0, len(params.Headers)+2)
-		for _, h := range params.Headers {
+		g := make(Group, 0, len(params.EntityList.Columns)+3)
+		g = append(g, Th(Text("ID")))
+		for _, h := range params.EntityList.Columns {
 			g = append(g, Th(Text(h)))
 		}
 		g = append(g, Th(), Th())
 		return g
 	}
 
-	genRow := func(row AdminEntityListRow) Node {
-		g := make(Group, 0, len(row.Columns)+2)
-		for _, h := range row.Columns {
+	genRow := func(row admin.EntityValues) Node {
+		g := make(Group, 0, len(row.Values)+3)
+		g = append(g, Th(Text(fmt.Sprint(row.ID))))
+		for _, h := range row.Values {
 			g = append(g, Td(Text(h)))
 		}
 		g = append(g,
-			Td(A(Href(r.Path(params.EditRoute, row.ID)), Text("Edit"))),
-			Td(A(Href(r.Path(params.DeleteRoute, row.ID)), Text("Delete"))),
+			Td(A(Href(r.Path(routenames.AdminEntityEdit(params.EntityType.Name), row.ID)), Text("Edit"))),
+			Td(A(Href(r.Path(routenames.AdminEntityDelete(params.EntityType.Name), row.ID)), Text("Delete"))),
 		)
 		return g
 	}
 
 	genRows := func() Node {
-		g := make(Group, 0, len(params.Rows))
-		for _, row := range params.Rows {
+		g := make(Group, 0, len(params.EntityList.Entities))
+		for _, row := range params.EntityList.Entities {
 			g = append(g, Tr(genRow(row)))
 		}
 		return g
 	}
 
+	// TODO pager
 	return r.Render(layouts.Admin, Table(
 		Class("table"),
 		THead(

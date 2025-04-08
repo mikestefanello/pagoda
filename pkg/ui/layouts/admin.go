@@ -51,8 +51,8 @@ func adminMenu(r *ui.Request) Node {
 		),
 		Ul(
 			Class("menu-list"),
-			MenuLink(r, "Users", "admin:user_list"),
-			MenuLink(r, "Tokens", "admin:passwordtoken_list"),
+			MenuLink(r, "User", routenames.AdminEntityList("User")),
+			MenuLink(r, "PasswordToken", routenames.AdminEntityList("PasswordToken")),
 		),
 		P(
 			Class("menu-label"),

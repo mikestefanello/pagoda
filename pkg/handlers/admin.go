@@ -6,19 +6,16 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
-	"github.com/mikestefanello/pagoda/ent/ogent"
-	"github.com/mikestefanello/pagoda/ent/passwordtoken"
-	"github.com/mikestefanello/pagoda/ent/user"
+	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/redirect"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
@@ -28,9 +25,10 @@ const entityContextKey = "admin:entity"
 const entityIDContextKey = "admin:entity_id"
 
 type Admin struct {
-	orm   *ent.Client
-	graph *gen.Graph
-	ogent *ogent.OgentHandler
+	orm          *ent.Client
+	graph        *gen.Graph
+	admin        *admin.Handler
+	itemsPerPage int
 }
 
 func init() {
@@ -38,9 +36,10 @@ func init() {
 }
 
 func (h *Admin) Init(c *services.Container) error {
+	h.itemsPerPage = 25
 	h.graph = c.Graph
 	h.orm = c.ORM
-	h.ogent = ogent.NewOgentHandler(h.orm)
+	h.admin = admin.NewHandler(h.orm, h.itemsPerPage)
 	return nil
 }
 
@@ -48,21 +47,24 @@ func (h *Admin) Routes(g *echo.Group) {
 	// TODO admin user status middleware
 	entities := g.Group("/admin/content")
 
-	for _, p := range h.getEntityPlugins() {
-		pg := entities.Group(fmt.Sprintf("/%s", strings.ToLower(p.ID)))
-		pg.GET("", h.EntityList(p)).Name = p.RouteNameList()
-		pg.POST("", h.EntityList(p)).Name = p.RouteNameListSubmit()
-		pg.GET("/add", h.EntityAdd(p)).Name = p.RouteNameAdd()
-		pg.POST("/add", h.EntityAddSubmit(p)).Name = p.RouteNameAddSubmit()
-		pg.GET("/:id/edit", h.EntityEdit(p), h.entityPluginMiddleware(p)).Name = p.RouteNameEdit()
-		pg.POST("/:id/edit", h.EntityEditSubmit(p), h.entityPluginMiddleware(p)).Name = p.RouteNameEditSubmit()
-		pg.GET("/:id/delete", h.EntityDelete(p), h.entityPluginMiddleware(p)).Name = p.RouteNameDelete()
-		pg.POST("/:id/delete", h.EntityDeleteSubmit(p), h.entityPluginMiddleware(p)).Name = p.RouteNameDeleteSubmit()
+	// TODO: can we generate something we can loop instead?
+	for _, n := range h.graph.Nodes {
+		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
+		ng.GET("", h.EntityList(n)).Name = routenames.AdminEntityList(n.Name)
+		ng.POST("", h.EntityList(n)).Name = routenames.AdminEntityListSubmit(n.Name)
+		ng.GET("/add", h.EntityAdd(n)).Name = routenames.AdminEntityAdd(n.Name)
+		ng.POST("/add", h.EntityAddSubmit(n)).Name = routenames.AdminEntityAddSubmit(n.Name)
+		//ng.GET("/:id/edit", h.EntityEdit(n), h.entityPluginMiddleware(n.Name)).Name = RouteNameEdit(n.Name)
+		//ng.POST("/:id/edit", h.EntityEditSubmit(n), h.entityPluginMiddleware(n.Name)).Name = RouteNameEditSubmit(n.Name)
+		ng.GET("/:id/delete", h.EntityDelete(n), h.middlewareEntityLoad(n)).
+			Name = routenames.AdminEntityDelete(n.Name)
+		ng.POST("/:id/delete", h.EntityDeleteSubmit(n), h.middlewareEntityLoad(n)).
+			Name = routenames.AdminEntityDeleteSubmit(n.Name)
 	}
 }
 
 // TODO, maybe this can be used outside of admin stuff as well?
-func (h *Admin) entityPluginMiddleware(plugin AdminEntityPlugin) echo.MiddlewareFunc {
+func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			id, err := strconv.Atoi(ctx.Param("id"))
@@ -70,11 +72,11 @@ func (h *Admin) entityPluginMiddleware(plugin AdminEntityPlugin) echo.Middleware
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid entity ID")
 			}
 
-			entity, err := plugin.Load(ctx, h.orm, id)
+			err = h.admin.Get(ctx, n.Name, id)
 			switch {
 			case err == nil:
 				ctx.Set(entityIDContextKey, id)
-				ctx.Set(entityContextKey, entity)
+				//ctx.Set(entityContextKey, entity) // TODO
 				return next(ctx)
 			case errors.Is(err, new(ent.NotFoundError)):
 				return echo.NewHTTPError(http.StatusNotFound, "entity not found")
@@ -85,228 +87,85 @@ func (h *Admin) entityPluginMiddleware(plugin AdminEntityPlugin) echo.Middleware
 	}
 }
 
-func (h *Admin) EntityList(p AdminEntityPlugin) echo.HandlerFunc {
+func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		var err error
-		pgr := pager.NewPager(ctx, 25)
-		params := pages.AdminEntityListParams{
-			Title:       p.LabelPlural,
-			Headers:     p.Heading,
-			EditRoute:   p.RouteNameEdit(),   // todo remove, pass in plugin
-			DeleteRoute: p.RouteNameDelete(), // todo remove, pass in plugin
-			Pager:       pgr,
-		}
-		params.Rows, err = p.List(ctx, h.orm, pgr)
+		list, err := h.admin.List(ctx, n.Name)
 		if err != nil {
-			return fail(err, fmt.Sprintf("failed to query %s", p.ID))
+			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 
-		return pages.AdminEntityList(ctx, params)
+		return pages.AdminEntityList(ctx, pages.AdminEntityListParams{
+			EntityType: n,
+			EntityList: list,
+			Pager:      pager.NewPager(ctx, h.itemsPerPage),
+		})
 	}
 }
 
-func (h *Admin) EntityAdd(p AdminEntityPlugin) echo.HandlerFunc {
+func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		var schema *load.Schema
-		for _, s := range h.graph.Schemas {
-			if s.Name == p.ID {
-				schema = s
-			}
-		}
-		return pages.AdminEntityAdd(ctx, schema)
+		return pages.AdminEntityAdd(ctx, h.getEntitySchema(n))
 	}
 }
 
-func (h *Admin) EntityAddSubmit(p AdminEntityPlugin) echo.HandlerFunc {
+func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		var v ogent.CreatePasswordTokenReq // TODO type
-		err := ctx.Bind(&v)
-		if err != nil {
-			return fail(err, fmt.Sprintf("failed to bind create password token request body"))
-		}
-
-		res, err := h.ogent.CreatePasswordToken(ctx.Request().Context(), &v)
+		err := h.admin.Create(ctx, n.Name)
 		if err != nil {
 			msg.Danger(ctx, err.Error())
-			return h.EntityAdd(p)(ctx)
+			// TODO : hold state
+			return h.EntityAdd(n)(ctx)
 		}
-		fmt.Printf("%+v\n", res)
 
-		msg.Success(ctx, fmt.Sprintf("Successfully added %s.", strings.ToLower(p.Label)))
+		msg.Success(ctx, fmt.Sprintf("Successfully added %s.", n.Name))
 
 		return redirect.
 			New(ctx).
-			Route(p.RouteNameList()).
+			Route(routenames.AdminEntityList(n.Name)).
 			Go()
 	}
 }
 
-func (h *Admin) EntityEdit(p AdminEntityPlugin) echo.HandlerFunc {
+//
+//func (h *Admin) EntityEdit(p AdminEntityPlugin) echo.HandlerFunc {
+//	return func(ctx echo.Context) error {
+//		return nil
+//	}
+//}
+//
+//func (h *Admin) EntityEditSubmit(p AdminEntityPlugin) echo.HandlerFunc {
+//	return func(ctx echo.Context) error {
+//		return nil
+//	}
+//}
+//
+func (h *Admin) EntityDelete(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return nil
+		return pages.AdminEntityDelete(ctx, n.Name)
 	}
 }
 
-func (h *Admin) EntityEditSubmit(p AdminEntityPlugin) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		return nil
-	}
-}
-
-func (h *Admin) EntityDelete(p AdminEntityPlugin) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		return pages.AdminEntityDelete(ctx)
-	}
-}
-
-func (h *Admin) EntityDeleteSubmit(p AdminEntityPlugin) echo.HandlerFunc {
+func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(entityIDContextKey).(int)
-		if err := p.Delete(ctx, h.orm, id); err != nil {
-			return fail(err, fmt.Sprintf("failed to delete %s (ID: %d)", p.ID, id))
+		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
+			return fail(err, fmt.Sprintf("failed to delete %s (ID: %d)", n.Name, id))
 		}
 
-		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s.", strings.ToLower(p.Label)))
+		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s ID %d.", n.Name, id))
 
 		return redirect.
 			New(ctx).
-			Route(p.RouteNameList()).
+			Route(routenames.AdminEntityList(n.Name)).
 			Go()
 	}
 }
 
-// TODO inject orm? move to separate package?
-type AdminEntityPlugin struct {
-	ID          string
-	Label       string
-	LabelPlural string
-	Heading     []string
-	List        func(ctx echo.Context, orm *ent.Client, pgr pager.Pager) ([]pages.AdminEntityListRow, error)
-	Load        func(ctx echo.Context, orm *ent.Client, id int) (any, error)
-	Delete      func(ctx echo.Context, orm *ent.Client, id int) error
-}
-
-func (p *AdminEntityPlugin) RouteNameList() string {
-	return fmt.Sprintf("admin:%s_list", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameListSubmit() string {
-	return fmt.Sprintf("admin:%s_list.submit", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameAdd() string {
-	return fmt.Sprintf("admin:%s_add", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameEdit() string {
-	return fmt.Sprintf("admin:%s_edit", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameDelete() string {
-	return fmt.Sprintf("admin:%s_delete", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameAddSubmit() string {
-	return fmt.Sprintf("admin:%s_add.submit", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameEditSubmit() string {
-	return fmt.Sprintf("admin:%s_edit.submit", p.ID)
-}
-
-func (p *AdminEntityPlugin) RouteNameDeleteSubmit() string {
-	return fmt.Sprintf("admin:%s_delete.submit", p.ID)
-}
-
-func (h *Admin) getEntityPlugins() []AdminEntityPlugin {
-	return []AdminEntityPlugin{
-		{
-			ID:          "User",
-			Label:       "User",
-			LabelPlural: "Users",
-			Heading: []string{
-				"ID",
-				"Name",
-				"Email",
-				"Created at",
-			},
-			List: func(ctx echo.Context, client *ent.Client, pgr pager.Pager) ([]pages.AdminEntityListRow, error) {
-				users, err := client.User.
-					Query().
-					Limit(pgr.ItemsPerPage).
-					Offset(pgr.GetOffset()).
-					Order(user.ByCreatedAt(sql.OrderDesc())).
-					All(ctx.Request().Context())
-
-				if err != nil {
-					return nil, err
-				}
-
-				rows := make([]pages.AdminEntityListRow, 0, len(users))
-
-				for _, u := range users {
-					rows = append(rows, pages.AdminEntityListRow{
-						ID: u.ID,
-						Columns: []string{
-							fmt.Sprint(u.ID),
-							u.Name,
-							u.Email,
-							u.CreatedAt.Format(time.RFC822),
-						},
-					})
-				}
-
-				return rows, nil
-			},
-			Load: func(ctx echo.Context, orm *ent.Client, id int) (any, error) {
-				return orm.User.Get(ctx.Request().Context(), id)
-			},
-			Delete: func(ctx echo.Context, orm *ent.Client, id int) error {
-				return orm.User.DeleteOneID(id).Exec(ctx.Request().Context())
-			},
-		},
-		{
-			ID:          "PasswordToken",
-			Label:       "Password token",
-			LabelPlural: "Password tokens",
-			Heading: []string{
-				"ID",
-				"Hash",
-				"Created at",
-			},
-			List: func(ctx echo.Context, client *ent.Client, pgr pager.Pager) ([]pages.AdminEntityListRow, error) {
-				tokens, err := client.PasswordToken.
-					Query().
-					Limit(pgr.ItemsPerPage).
-					Offset(pgr.GetOffset()).
-					Order(passwordtoken.ByCreatedAt(sql.OrderDesc())).
-					All(ctx.Request().Context())
-
-				if err != nil {
-					return nil, err
-				}
-
-				rows := make([]pages.AdminEntityListRow, 0, len(tokens))
-
-				for _, t := range tokens {
-					rows = append(rows, pages.AdminEntityListRow{
-						ID: t.ID,
-						Columns: []string{
-							fmt.Sprint(t.ID),
-							t.Hash,
-							t.CreatedAt.Format(time.RFC822),
-						},
-					})
-				}
-
-				return rows, nil
-			},
-			Load: func(ctx echo.Context, orm *ent.Client, id int) (any, error) {
-				return orm.PasswordToken.Get(ctx.Request().Context(), id)
-			},
-			Delete: func(ctx echo.Context, orm *ent.Client, id int) error {
-				return orm.PasswordToken.DeleteOneID(id).Exec(ctx.Request().Context())
-			},
-		},
+func (h *Admin) getEntitySchema(n *gen.Type) *load.Schema {
+	for _, s := range h.graph.Schemas {
+		if s.Name == n.Name {
+			return s
+		}
 	}
+	return nil
 }
