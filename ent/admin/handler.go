@@ -140,7 +140,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 		HasNextPage: len(res) > h.itemsPerPage,
 	}
 
-	for i := 0; i < len(res)-1; i++ {
+	for i := 0; i <= len(res)-1; i++ {
 		list.Entities = append(list.Entities, EntityValues{
 			ID: res[i].ID,
 			Values: []string{
