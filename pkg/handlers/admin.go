@@ -104,7 +104,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 
 func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityAdd(ctx, h.getEntitySchema(n))
+		return pages.AdminEntityForm(ctx, h.getEntitySchema(n), nil)
 	}
 }
 
@@ -113,7 +113,6 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 		err := h.admin.Create(ctx, n.Name)
 		if err != nil {
 			msg.Danger(ctx, err.Error())
-			// TODO : hold state
 			return h.EntityAdd(n)(ctx)
 		}
 
