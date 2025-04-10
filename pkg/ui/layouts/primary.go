@@ -36,6 +36,7 @@ func Primary(r *ui.Request, content Node) Node {
 						),
 					),
 				),
+				HtmxListeners(r),
 			),
 		),
 	)
