@@ -27,6 +27,12 @@ func (ptc *PasswordTokenCreate) SetHash(s string) *PasswordTokenCreate {
 	return ptc
 }
 
+// SetUserID sets the "user_id" field.
+func (ptc *PasswordTokenCreate) SetUserID(i int) *PasswordTokenCreate {
+	ptc.mutation.SetUserID(i)
+	return ptc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (ptc *PasswordTokenCreate) SetCreatedAt(t time.Time) *PasswordTokenCreate {
 	ptc.mutation.SetCreatedAt(t)
@@ -38,12 +44,6 @@ func (ptc *PasswordTokenCreate) SetNillableCreatedAt(t *time.Time) *PasswordToke
 	if t != nil {
 		ptc.SetCreatedAt(*t)
 	}
-	return ptc
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ptc *PasswordTokenCreate) SetUserID(id int) *PasswordTokenCreate {
-	ptc.mutation.SetUserID(id)
 	return ptc
 }
 
@@ -103,6 +103,9 @@ func (ptc *PasswordTokenCreate) check() error {
 			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
 		}
 	}
+	if _, ok := ptc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PasswordToken.user_id"`)}
+	}
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PasswordToken.created_at"`)}
 	}
@@ -157,7 +160,7 @@ func (ptc *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.password_token_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

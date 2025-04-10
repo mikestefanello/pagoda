@@ -65,6 +65,7 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 
 	for _, f := range schema.Fields {
 		// TODO cardinality?
+		// TODO optional fields?
 		switch f.Info.Type {
 		case field.TypeString:
 			nodes = append(nodes, InputField(InputFieldParams{
@@ -74,11 +75,19 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeTime:
+			// todo make this easier
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "text",
 				Label:     label(f.Name),
 				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
+				Value:     getValue(f.Name),
+			}))
+		case field.TypeInt:
+			nodes = append(nodes, InputField(InputFieldParams{
+				Name:      f.Name,
+				InputType: "number",
+				Label:     label(f.Name),
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeBool:
@@ -93,17 +102,17 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 		}
 	}
 
-	for _, e := range schema.Edges {
-		if e.Inverse {
-			continue
-		}
-		nodes = append(nodes, InputField(InputFieldParams{
-			Name:      e.Name,
-			InputType: "number",
-			Label:     label(e.Name),
-			Value:     getValue(e.Name), // TODO load does not load this
-		}))
-	}
+	//for _, e := range schema.Edges {
+	//	if e.Inverse {
+	//		continue
+	//	}
+	//	nodes = append(nodes, InputField(InputFieldParams{
+	//		Name:      e.Name,
+	//		InputType: "number",
+	//		Label:     label(e.Name),
+	//		Value:     getValue(e.Name), // TODO load does not load this
+	//	}))
+	//}
 
 	nodes = append(nodes, ControlGroup(
 		FormButton("is-primary", "Submit"),
@@ -148,8 +157,19 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 			g = append(g, Td(Text(h)))
 		}
 		g = append(g,
-			Td(ButtonLink(r.Path(routenames.AdminEntityEdit(params.EntityType.Name), row.ID), "is-link", "Edit")),
-			Td(ButtonLink(r.Path(routenames.AdminEntityDelete(params.EntityType.Name), row.ID), "is-danger", "Delete")),
+			Td(
+				ButtonLink(
+					r.Path(routenames.AdminEntityEdit(params.EntityType.Name), row.ID),
+					"is-link",
+					"Edit",
+				),
+			),
+			Td(
+				ButtonLink(r.Path(routenames.AdminEntityDelete(params.EntityType.Name), row.ID),
+					"is-danger",
+					"Delete",
+				),
+			),
 		)
 		return g
 	}

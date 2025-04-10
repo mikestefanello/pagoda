@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "hash", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "password_token_user", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
 	}
 	// PasswordTokensTable holds the schema information for the "password_tokens" table.
 	PasswordTokensTable = &schema.Table{

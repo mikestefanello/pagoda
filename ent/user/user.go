@@ -35,7 +35,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "passwordtoken" package.
 	OwnerInverseTable = "password_tokens"
 	// OwnerColumn is the table column denoting the owner relation/edge.
-	OwnerColumn = "password_token_user"
+	OwnerColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.

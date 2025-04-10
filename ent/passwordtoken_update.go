@@ -43,6 +43,20 @@ func (ptu *PasswordTokenUpdate) SetNillableHash(s *string) *PasswordTokenUpdate 
 	return ptu
 }
 
+// SetUserID sets the "user_id" field.
+func (ptu *PasswordTokenUpdate) SetUserID(i int) *PasswordTokenUpdate {
+	ptu.mutation.SetUserID(i)
+	return ptu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ptu *PasswordTokenUpdate) SetNillableUserID(i *int) *PasswordTokenUpdate {
+	if i != nil {
+		ptu.SetUserID(*i)
+	}
+	return ptu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (ptu *PasswordTokenUpdate) SetCreatedAt(t time.Time) *PasswordTokenUpdate {
 	ptu.mutation.SetCreatedAt(t)
@@ -54,12 +68,6 @@ func (ptu *PasswordTokenUpdate) SetNillableCreatedAt(t *time.Time) *PasswordToke
 	if t != nil {
 		ptu.SetCreatedAt(*t)
 	}
-	return ptu
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ptu *PasswordTokenUpdate) SetUserID(id int) *PasswordTokenUpdate {
-	ptu.mutation.SetUserID(id)
 	return ptu
 }
 
@@ -200,6 +208,20 @@ func (ptuo *PasswordTokenUpdateOne) SetNillableHash(s *string) *PasswordTokenUpd
 	return ptuo
 }
 
+// SetUserID sets the "user_id" field.
+func (ptuo *PasswordTokenUpdateOne) SetUserID(i int) *PasswordTokenUpdateOne {
+	ptuo.mutation.SetUserID(i)
+	return ptuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (ptuo *PasswordTokenUpdateOne) SetNillableUserID(i *int) *PasswordTokenUpdateOne {
+	if i != nil {
+		ptuo.SetUserID(*i)
+	}
+	return ptuo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (ptuo *PasswordTokenUpdateOne) SetCreatedAt(t time.Time) *PasswordTokenUpdateOne {
 	ptuo.mutation.SetCreatedAt(t)
@@ -211,12 +233,6 @@ func (ptuo *PasswordTokenUpdateOne) SetNillableCreatedAt(t *time.Time) *Password
 	if t != nil {
 		ptuo.SetCreatedAt(*t)
 	}
-	return ptuo
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ptuo *PasswordTokenUpdateOne) SetUserID(id int) *PasswordTokenUpdateOne {
-	ptuo.mutation.SetUserID(id)
 	return ptuo
 }
 

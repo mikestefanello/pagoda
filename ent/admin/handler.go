@@ -89,8 +89,9 @@ func (h *Handler) PasswordTokenCreate(ctx echo.Context) error {
 
 	op := h.client.PasswordToken.Create()
 	op.SetHash(payload.Hash)
+	op.SetUserID(payload.UserID)
 	op.SetCreatedAt(payload.CreatedAt)
-	op.SetUserID(payload.User)
+	// op.SetUserID(payload.User)
 	_, err := op.Save(ctx.Request().Context())
 	return err
 }
@@ -108,8 +109,9 @@ func (h *Handler) PasswordTokenUpdate(ctx echo.Context, id int) error {
 
 	op := entity.Update()
 	op.SetHash(payload.Hash)
+	op.SetUserID(payload.UserID)
 	op.SetCreatedAt(payload.CreatedAt)
-	op.SetUserID(payload.User)
+	// op.SetUserID(payload.User)
 	_, err = op.Save(ctx.Request().Context())
 	return err
 }
@@ -133,6 +135,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 
 	list := &EntityList{
 		Columns: []string{
+			"User id",
 			"Created at",
 			// "User", ?
 		},
@@ -144,6 +147,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 		list.Entities = append(list.Entities, EntityValues{
 			ID: res[i].ID,
 			Values: []string{
+				fmt.Sprint(res[i].UserID),
 				fmt.Sprint(res[i].CreatedAt),
 				// TODO User ?
 			},

@@ -100,7 +100,7 @@
             {{- end }}
             {{- range $e := $n.Edges }}
                 {{- if not $e.Inverse}}
-                   op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
+                   // op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
                 {{- end }}
             {{- end }}
             _, err := op.Save(ctx.Request().Context())
@@ -126,7 +126,7 @@
             {{- end }}
             {{- range $e := $n.Edges }}
                 {{- if not $e.Inverse}}
-                    op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
+                    // op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
                 {{- end }}
             {{- end }}
             _, err = op.Save(ctx.Request().Context())

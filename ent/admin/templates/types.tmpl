@@ -14,7 +14,7 @@
             // Edges.
             {{- range $e := $n.Edges }}
                 {{- if not $e.Inverse}}
-                    {{ fieldName $e.Name }} int `form:"{{ $e.Name }}"`
+                    // {{ fieldName $e.Name }} int `form:"{{ $e.Name }}"`
                 {{- end }}
             {{- end }}
         }

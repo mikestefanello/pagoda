@@ -21,7 +21,7 @@ func init() {
 	// passwordtoken.HashValidator is a validator for the "hash" field. It is called by the builders before save.
 	passwordtoken.HashValidator = passwordtokenDescHash.Validators[0].(func(string) error)
 	// passwordtokenDescCreatedAt is the schema descriptor for created_at field.
-	passwordtokenDescCreatedAt := passwordtokenFields[1].Descriptor()
+	passwordtokenDescCreatedAt := passwordtokenFields[2].Descriptor()
 	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	passwordtoken.DefaultCreatedAt = passwordtokenDescCreatedAt.Default.(func() time.Time)
 	userHooks := schema.User{}.Hooks()

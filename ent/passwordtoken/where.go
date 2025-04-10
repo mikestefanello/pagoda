@@ -60,6 +60,11 @@ func Hash(v string) predicate.PasswordToken {
 	return predicate.PasswordToken(sql.FieldEQ(FieldHash, v))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v int) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldEQ(FieldUserID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.PasswordToken {
 	return predicate.PasswordToken(sql.FieldEQ(FieldCreatedAt, v))
@@ -128,6 +133,26 @@ func HashEqualFold(v string) predicate.PasswordToken {
 // HashContainsFold applies the ContainsFold predicate on the "hash" field.
 func HashContainsFold(v string) predicate.PasswordToken {
 	return predicate.PasswordToken(sql.FieldContainsFold(FieldHash, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v int) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v int) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...int) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...int) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

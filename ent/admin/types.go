@@ -6,9 +6,10 @@ import "time"
 type PasswordToken struct {
 	// Fields.
 	Hash      string    `form:"hash"`
+	UserID    int       `form:"user_id"`
 	CreatedAt time.Time `form:"created_at"`
 	// Edges.
-	User int `form:"user"`
+	// User int `form:"user"`
 }
 
 type User struct {

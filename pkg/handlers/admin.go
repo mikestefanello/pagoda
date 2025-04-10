@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -76,9 +75,9 @@ func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 			switch {
 			case err == nil:
 				ctx.Set(entityIDContextKey, id)
-				//ctx.Set(entityContextKey, entity) // TODO
+				//ctx.Set(entityContextKey, entityValues)
 				return next(ctx)
-			case errors.Is(err, new(ent.NotFoundError)):
+			case ent.IsNotFound(err):
 				return echo.NewHTTPError(http.StatusNotFound, "entity not found")
 			default:
 				return echo.NewHTTPError(http.StatusInternalServerError, err)
@@ -91,7 +90,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		list, err := h.admin.List(ctx, n.Name)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
 		return pages.AdminEntityList(ctx, pages.AdminEntityListParams{
@@ -125,12 +124,13 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 	}
 }
 
-//
-//func (h *Admin) EntityEdit(p AdminEntityPlugin) echo.HandlerFunc {
+//func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
 //	return func(ctx echo.Context) error {
-//		return nil
+//		v := ctx.Get(entityContextKey).(map[string][]string)
+//		return pages.AdminEntityForm(ctx, h.getEntitySchema(n), v)
 //	}
 //}
+
 //
 //func (h *Admin) EntityEditSubmit(p AdminEntityPlugin) echo.HandlerFunc {
 //	return func(ctx echo.Context) error {

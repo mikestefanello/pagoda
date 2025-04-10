@@ -20,13 +20,14 @@ type PasswordToken struct {
 	ID int `json:"id,omitempty"`
 	// Hash holds the value of the "hash" field.
 	Hash string `json:"-"`
+	// UserID holds the value of the "user_id" field.
+	UserID int `json:"user_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PasswordTokenQuery when eager-loading is set.
-	Edges               PasswordTokenEdges `json:"edges"`
-	password_token_user *int
-	selectValues        sql.SelectValues
+	Edges        PasswordTokenEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // PasswordTokenEdges holds the relations/edges for other nodes in the graph.
@@ -54,14 +55,12 @@ func (*PasswordToken) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case passwordtoken.FieldID:
+		case passwordtoken.FieldID, passwordtoken.FieldUserID:
 			values[i] = new(sql.NullInt64)
 		case passwordtoken.FieldHash:
 			values[i] = new(sql.NullString)
 		case passwordtoken.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case passwordtoken.ForeignKeys[0]: // password_token_user
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -89,18 +88,17 @@ func (pt *PasswordToken) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pt.Hash = value.String
 			}
+		case passwordtoken.FieldUserID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value.Valid {
+				pt.UserID = int(value.Int64)
+			}
 		case passwordtoken.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				pt.CreatedAt = value.Time
-			}
-		case passwordtoken.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field password_token_user", value)
-			} else if value.Valid {
-				pt.password_token_user = new(int)
-				*pt.password_token_user = int(value.Int64)
 			}
 		default:
 			pt.selectValues.Set(columns[i], values[i])
@@ -144,6 +142,9 @@ func (pt *PasswordToken) String() string {
 	builder.WriteString("PasswordToken(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pt.ID))
 	builder.WriteString("hash=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", pt.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pt.CreatedAt.Format(time.ANSIC))

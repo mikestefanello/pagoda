@@ -39,7 +39,11 @@ func fieldName(name string) string {
 
 	parts := strings.Split(name, "_")
 	for i := 0; i < len(parts); i++ {
-		parts[i] = upperFirst(parts[i])
+		if parts[i] == "id" {
+			parts[i] = "ID"
+		} else {
+			parts[i] = upperFirst(parts[i])
+		}
 	}
 
 	return strings.Join(parts, "")

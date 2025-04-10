@@ -19,6 +19,7 @@ func (PasswordToken) Fields() []ent.Field {
 		field.String("hash").
 			Sensitive().
 			NotEmpty(),
+		field.Int("user_id"),
 		field.Time("created_at").
 			Default(time.Now),
 	}
@@ -28,6 +29,7 @@ func (PasswordToken) Fields() []ent.Field {
 func (PasswordToken) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
+			Field("user_id").
 			Required().
 			Unique(),
 	}
