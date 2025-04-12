@@ -2,6 +2,7 @@ package schema
 
 import (
 	"context"
+	"net/mail"
 	"strings"
 	"time"
 
@@ -25,7 +26,11 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("email").
 			NotEmpty().
-			Unique(),
+			Unique().
+			Validate(func(s string) error {
+				_, err := mail.ParseAddress(s)
+				return err
+			}),
 		field.String("password").
 			Sensitive().
 			NotEmpty(),
