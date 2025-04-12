@@ -71,9 +71,13 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 		// TODO password?
 		switch f.Info.Type {
 		case field.TypeString:
+			inputType := "text"
+			if f.Sensitive {
+				inputType = "password"
+			}
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
-				InputType: "text",
+				InputType: inputType,
 				Label:     label(f.Name),
 				Value:     getValue(f.Name),
 			}))

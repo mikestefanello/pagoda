@@ -206,18 +206,12 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the password.
-	pwHash, err := h.auth.HashPassword(input.Password)
-	if err != nil {
-		return fail(err, "unable to hash password")
-	}
-
 	// Attempt creating the user.
 	u, err := h.orm.User.
 		Create().
 		SetName(input.Name).
 		SetEmail(input.Email).
-		SetPassword(pwHash).
+		SetPassword(input.Password).
 		Save(ctx.Request().Context())
 
 	switch err.(type) {
@@ -305,19 +299,13 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		return err
 	}
 
-	// Hash the new password.
-	hash, err := h.auth.HashPassword(input.Password)
-	if err != nil {
-		return fail(err, "unable to hash password")
-	}
-
 	// Get the requesting user.
 	usr := ctx.Get(context.UserKey).(*ent.User)
 
 	// Update the user.
 	_, err = usr.
 		Update().
-		SetPassword(hash).
+		SetPassword(input.Password).
 		Save(ctx.Request().Context())
 
 	if err != nil {

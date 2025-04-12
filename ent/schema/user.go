@@ -8,6 +8,7 @@ import (
 
 	ge "github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/hook"
+	"golang.org/x/crypto/bcrypt"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -58,6 +59,14 @@ func (User) Hooks() []ent.Hook {
 				return hook.UserFunc(func(ctx context.Context, m *ge.UserMutation) (ent.Value, error) {
 					if v, exists := m.Email(); exists {
 						m.SetEmail(strings.ToLower(v))
+					}
+
+					if v, exists := m.Password(); exists {
+						hash, err := bcrypt.GenerateFromPassword([]byte(v), bcrypt.DefaultCost)
+						if err != nil {
+							return "", err
+						}
+						m.SetPassword(string(hash))
 					}
 					return next.Mutate(ctx, m)
 				})
