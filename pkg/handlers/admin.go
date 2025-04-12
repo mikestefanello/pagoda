@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
@@ -24,10 +25,9 @@ const entityContextKey = "admin:entity"
 const entityIDContextKey = "admin:entity_id"
 
 type Admin struct {
-	orm          *ent.Client
-	graph        *gen.Graph
-	admin        *admin.Handler
-	itemsPerPage int
+	orm   *ent.Client
+	graph *gen.Graph
+	admin *admin.Handler
 }
 
 func init() {
@@ -35,10 +35,13 @@ func init() {
 }
 
 func (h *Admin) Init(c *services.Container) error {
-	h.itemsPerPage = 25
 	h.graph = c.Graph
 	h.orm = c.ORM
-	h.admin = admin.NewHandler(h.orm, h.itemsPerPage)
+	h.admin = admin.NewHandler(h.orm, admin.HandlerConfig{
+		ItemsPerPage: 25,
+		PageQueryKey: pager.QueryKey,
+		TimeFormat:   time.DateTime,
+	})
 	return nil
 }
 
@@ -96,7 +99,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 		return pages.AdminEntityList(ctx, pages.AdminEntityListParams{
 			EntityType: n,
 			EntityList: list,
-			Pager:      pager.NewPager(ctx, h.itemsPerPage),
+			Pager:      pager.NewPager(ctx, h.admin.Config.ItemsPerPage),
 		})
 	}
 }
