@@ -4,22 +4,17 @@ package admin
 import "time"
 
 type PasswordToken struct {
-	// Fields.
 	Hash      string    `form:"hash"`
 	UserID    int       `form:"user_id"`
 	CreatedAt time.Time `form:"created_at"`
-	// Edges.
-	// User int `form:"user"`
 }
 
 type User struct {
-	// Fields.
 	Name      string    `form:"name"`
 	Email     string    `form:"email"`
 	Password  string    `form:"password"`
 	Verified  bool      `form:"verified"`
 	CreatedAt time.Time `form:"created_at"`
-	// Edges.
 }
 
 type EntityList struct {
@@ -31,4 +26,10 @@ type EntityList struct {
 type EntityValues struct {
 	ID     int
 	Values []string
+}
+
+type HandlerConfig struct {
+	ItemsPerPage int
+	PageQueryKey string
+	TimeFormat   string
 }

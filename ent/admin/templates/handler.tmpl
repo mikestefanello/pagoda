@@ -21,13 +21,13 @@
 
     type Handler struct {
         client *{{ $pkg }}.Client
-        itemsPerPage int
+        Config HandlerConfig
     }
 
-    func NewHandler(client *{{ $pkg }}.Client, itemsPerPage int) *Handler {
+    func NewHandler(client *{{ $pkg }}.Client, cfg HandlerConfig) *Handler {
         return &Handler{
             client: client,
-            itemsPerPage: itemsPerPage,
+            Config: cfg,
         }
     }
 
@@ -141,7 +141,7 @@
         func (h *Handler) {{ $n.Name }}List(ctx echo.Context) (*EntityList, error) {
             res, err := h.client.{{ $n.Name }}.
                 Query().
-                Limit(h.itemsPerPage+1).
+                Limit(h.Config.ItemsPerPage+1).
                 Offset(h.getOffset(ctx)).
                 Order({{ $n.Package }}.ByID(sql.OrderDesc())).
                 All(ctx.Request().Context())
@@ -157,14 +157,9 @@
                             "{{ fieldLabel $f.Name }}",
                         {{- end }}
                     {{- end }}
-                    {{- range $e := $n.Edges }}
-                        {{- if not $e.Inverse}}
-                            // "{{ fieldLabel $e.Name }}", ?
-                        {{- end }}
-                    {{- end }}
                 },
                 Entities: make([]EntityValues, 0, len(res)),
-                HasNextPage: len(res) > h.itemsPerPage,
+                HasNextPage: len(res) > h.Config.ItemsPerPage,
             }
 
             for i := 0; i <= len(res)-1; i++ {
@@ -175,14 +170,11 @@
                         {{- if not $f.Sensitive }}
                             {{- if eq $f.Type.String "string" }}
                                 res[i].{{ fieldName $f.Name }},
+                            {{- else if eq $f.Type.String "time.Time" }}
+                                res[i].{{ fieldName $f.Name }}.Format(h.Config.TimeFormat),
                             {{- else }}
                                 fmt.Sprint(res[i].{{ fieldName $f.Name }}),
                             {{- end }}
-                        {{- end }}
-                    {{- end }}
-                    {{- range $e := $n.Edges }}
-                        {{- if not $e.Inverse}}
-                            // TODO {{ fieldName $e.Name }} ?
                         {{- end }}
                     {{- end }}
                     },
@@ -204,9 +196,9 @@
     {{ end }}
 
     func (h *Handler) getOffset(ctx echo.Context) int {
-        if page, err := strconv.Atoi(ctx.QueryParam("page")); err == nil {
+        if page, err := strconv.Atoi(ctx.QueryParam(h.Config.PageQueryKey)); err == nil {
             if page > 1 {
-                return (page-1) * h.itemsPerPage
+                return (page-1) * h.Config.ItemsPerPage
             }
         }
         return 0

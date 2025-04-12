@@ -7,15 +7,8 @@
 
     {{ range $n := $.Nodes }}
         type {{ $n.Name }} struct {
-            // Fields.
             {{- range $f := $n.Fields }}
             {{ fieldName $f.Name }} {{ $f.Type }} `form:"{{ $f.Name }}"`
-            {{- end }}
-            // Edges.
-            {{- range $e := $n.Edges }}
-                {{- if not $e.Inverse}}
-                    // {{ fieldName $e.Name }} int `form:"{{ $e.Name }}"`
-                {{- end }}
             {{- end }}
         }
     {{ end }}
@@ -29,6 +22,12 @@
     type EntityValues struct {
         ID int
         Values []string
+    }
+
+    type HandlerConfig struct {
+    	ItemsPerPage   int
+    	PageQueryKey string
+    	TimeFormat     string
     }
 
 {{ end }}

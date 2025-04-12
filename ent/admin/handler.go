@@ -14,14 +14,14 @@ import (
 )
 
 type Handler struct {
-	client       *ent.Client
-	itemsPerPage int
+	client *ent.Client
+	Config HandlerConfig
 }
 
-func NewHandler(client *ent.Client, itemsPerPage int) *Handler {
+func NewHandler(client *ent.Client, cfg HandlerConfig) *Handler {
 	return &Handler{
-		client:       client,
-		itemsPerPage: itemsPerPage,
+		client: client,
+		Config: cfg,
 	}
 }
 
@@ -124,7 +124,7 @@ func (h *Handler) PasswordTokenDelete(ctx echo.Context, id int) error {
 func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 	res, err := h.client.PasswordToken.
 		Query().
-		Limit(h.itemsPerPage + 1).
+		Limit(h.Config.ItemsPerPage + 1).
 		Offset(h.getOffset(ctx)).
 		Order(passwordtoken.ByID(sql.OrderDesc())).
 		All(ctx.Request().Context())
@@ -137,10 +137,9 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 		Columns: []string{
 			"User id",
 			"Created at",
-			// "User", ?
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
-		HasNextPage: len(res) > h.itemsPerPage,
+		HasNextPage: len(res) > h.Config.ItemsPerPage,
 	}
 
 	for i := 0; i <= len(res)-1; i++ {
@@ -148,8 +147,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 			ID: res[i].ID,
 			Values: []string{
 				fmt.Sprint(res[i].UserID),
-				fmt.Sprint(res[i].CreatedAt),
-				// TODO User ?
+				res[i].CreatedAt.Format(h.Config.TimeFormat),
 			},
 		})
 	}
@@ -211,7 +209,7 @@ func (h *Handler) UserDelete(ctx echo.Context, id int) error {
 func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 	res, err := h.client.User.
 		Query().
-		Limit(h.itemsPerPage + 1).
+		Limit(h.Config.ItemsPerPage + 1).
 		Offset(h.getOffset(ctx)).
 		Order(user.ByID(sql.OrderDesc())).
 		All(ctx.Request().Context())
@@ -228,7 +226,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 			"Created at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
-		HasNextPage: len(res) > h.itemsPerPage,
+		HasNextPage: len(res) > h.Config.ItemsPerPage,
 	}
 
 	for i := 0; i <= len(res)-1; i++ {
@@ -238,7 +236,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				res[i].Name,
 				res[i].Email,
 				fmt.Sprint(res[i].Verified),
-				fmt.Sprint(res[i].CreatedAt),
+				res[i].CreatedAt.Format(h.Config.TimeFormat),
 			},
 		})
 	}
@@ -257,9 +255,9 @@ func (h *Handler) UserGet(ctx echo.Context, id int) error {
 }
 
 func (h *Handler) getOffset(ctx echo.Context) int {
-	if page, err := strconv.Atoi(ctx.QueryParam("page")); err == nil {
+	if page, err := strconv.Atoi(ctx.QueryParam(h.Config.PageQueryKey)); err == nil {
 		if page > 1 {
-			return (page - 1) * h.itemsPerPage
+			return (page - 1) * h.Config.ItemsPerPage
 		}
 	}
 	return 0
