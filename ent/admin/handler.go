@@ -83,7 +83,7 @@ func (h *Handler) List(ctx echo.Context, entityType string) (*EntityList, error)
 
 func (h *Handler) PasswordTokenCreate(ctx echo.Context) error {
 	var payload PasswordToken
-	if err := ctx.Bind(&payload); err != nil {
+	if err := h.bind(ctx, &payload); err != nil {
 		return err
 	}
 
@@ -103,7 +103,7 @@ func (h *Handler) PasswordTokenUpdate(ctx echo.Context, id int) error {
 	}
 
 	var payload PasswordToken
-	if err = ctx.Bind(&payload); err != nil {
+	if err = h.bind(ctx, &payload); err != nil {
 		return err
 	}
 
@@ -167,7 +167,7 @@ func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) error {
 
 func (h *Handler) UserCreate(ctx echo.Context) error {
 	var payload User
-	if err := ctx.Bind(&payload); err != nil {
+	if err := h.bind(ctx, &payload); err != nil {
 		return err
 	}
 
@@ -188,7 +188,7 @@ func (h *Handler) UserUpdate(ctx echo.Context, id int) error {
 	}
 
 	var payload User
-	if err = ctx.Bind(&payload); err != nil {
+	if err = h.bind(ctx, &payload); err != nil {
 		return err
 	}
 
@@ -261,4 +261,15 @@ func (h *Handler) getOffset(ctx echo.Context) int {
 		}
 	}
 	return 0
+}
+
+func (h *Handler) bind(ctx echo.Context, entity any) error {
+	// Remove empty field values so Echo's bind does to fail when trying to parse things like
+	// times, etc.
+	for k, v := range ctx.Request().Form {
+		if len(v) == 1 && len(v[0]) == 0 {
+			delete(ctx.Request().Form, k)
+		}
+	}
+	return ctx.Bind(entity)
 }

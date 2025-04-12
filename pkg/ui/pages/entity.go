@@ -68,6 +68,7 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 	for _, f := range schema.Fields {
 		// TODO cardinality?
 		// TODO optional fields?
+		// TODO password?
 		switch f.Info.Type {
 		case field.TypeString:
 			nodes = append(nodes, InputField(InputFieldParams{
@@ -85,8 +86,8 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
 				Value:     getValue(f.Name),
 			}))
-		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32,
-			field.TypeInt64, field.TypeFloat32, field.TypeFloat64:
+		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32, field.TypeInt64,
+			field.TypeFloat32, field.TypeFloat64:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "number",
@@ -95,8 +96,9 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 			}))
 		case field.TypeBool:
 			nodes = append(nodes, Checkbox(CheckboxParams{
-				Name:  f.Name,
-				Label: label(f.Name),
+				Name:    f.Name,
+				Label:   label(f.Name),
+				Checked: getValue(f.Name) != "",
 			}))
 		case field.TypeEnum:
 			// TODO

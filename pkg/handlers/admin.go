@@ -151,10 +151,11 @@ func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(entityIDContextKey).(int)
 		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
-			return fail(err, fmt.Sprintf("failed to delete %s (ID: %d)", n.Name, id))
+			msg.Danger(ctx, err.Error())
+			return h.EntityDelete(n)(ctx)
 		}
 
-		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s ID %d.", n.Name, id))
+		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s (ID %d).", n.Name, id))
 
 		return redirect.
 			New(ctx).

@@ -90,7 +90,7 @@
     {{ range $n := $.Nodes }}
         func (h *Handler) {{ $n.Name }}Create(ctx echo.Context) error {
             var payload {{ $n.Name }}
-            if err := ctx.Bind(&payload); err != nil {
+            if err := h.bind(ctx, &payload); err != nil {
                 return err
             }
 
@@ -114,7 +114,7 @@
             }
 
             var payload {{ $n.Name }}
-            if err = ctx.Bind(&payload); err != nil {
+            if err = h.bind(ctx, &payload); err != nil {
                 return err
             }
 
@@ -202,6 +202,17 @@
             }
         }
         return 0
+    }
+
+    func (h *Handler) bind(ctx echo.Context, entity any) error {
+        // Remove empty field values so Echo's bind does to fail when trying to parse things like
+        // times, etc.
+        for k, v := range ctx.Request().Form {
+			if len(v) == 1 && len(v[0]) == 0 {
+				delete(ctx.Request().Form, k)
+			}
+		}
+		return ctx.Bind(entity)
     }
 
 {{ end }}

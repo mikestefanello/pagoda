@@ -8,7 +8,7 @@
     {{ range $n := $.Nodes }}
         type {{ $n.Name }} struct {
             {{- range $f := $n.Fields }}
-            {{ fieldName $f.Name }} {{ $f.Type }} `form:"{{ $f.Name }}"`
+                {{ fieldName $f.Name }} {{ $f.Type }} `form:"{{ $f.Name }}"`
             {{- end }}
         }
     {{ end }}
