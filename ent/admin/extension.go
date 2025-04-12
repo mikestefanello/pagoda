@@ -65,7 +65,8 @@ func fieldIsPointer(f *gen.Field) bool {
 	case f.Type.Type == field.TypeBool:
 		return false
 	case f.Optional,
-		f.Default:
+		f.Default,
+		f.Nillable:
 		return true
 	}
 	return false
@@ -79,9 +80,3 @@ func upperFirst(s string) string {
 	out[0] = unicode.ToUpper(out[0])
 	return string(out)
 }
-
-/*
-TODO:
-1) How to handle fields like password that need to be transformed or omitted, etc?
-2) Should we use the HTML datetime format and string fields rather than time.Time?
-*/

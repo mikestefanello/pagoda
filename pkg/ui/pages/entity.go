@@ -67,8 +67,6 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 
 	for _, f := range schema.Fields {
 		// TODO cardinality?
-		// TODO optional fields?
-		// TODO password?
 		switch f.Info.Type {
 		case field.TypeString:
 			inputType := "text"
