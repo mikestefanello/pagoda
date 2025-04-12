@@ -96,11 +96,12 @@
 
             op := h.client.{{ $n.Name }}.Create()
             {{- range $f := $n.Fields }}
-                op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
-            {{- end }}
-            {{- range $e := $n.Edges }}
-                {{- if not $e.Inverse}}
-                   // op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
+                {{- if (fieldIsPointer $f) }}
+                    if payload.{{ fieldName $f.Name }} != nil {
+                        op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                    }
+                {{- else }}
+                    op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
                 {{- end }}
             {{- end }}
             _, err := op.Save(ctx.Request().Context())
@@ -121,12 +122,13 @@
             op := entity.Update()
             {{- range $f := $n.Fields }}
                 {{- if not $f.Immutable }}
-                    op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
-                {{- end }}
-            {{- end }}
-            {{- range $e := $n.Edges }}
-                {{- if not $e.Inverse}}
-                    // op.Set{{ fieldName $e.Name }}ID(payload.{{ fieldName $e.Name }})
+                    {{- if (fieldIsPointer $f) }}
+                        if payload.{{ fieldName $f.Name }} != nil {
+                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                        }
+                    {{- else }}
+                        op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
+                    {{- end }}
                 {{- end }}
             {{- end }}
             _, err = op.Save(ctx.Request().Context())

@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
+	"entgo.io/ent/schema/field"
 )
 
 var (
@@ -24,8 +25,9 @@ func (*Extension) Templates() []*gen.Template {
 		gen.MustParse(
 			gen.NewTemplate("admin").
 				Funcs(template.FuncMap{
-					"fieldName":  fieldName,
-					"fieldLabel": fieldLabel,
+					"fieldName":      fieldName,
+					"fieldLabel":     fieldLabel,
+					"fieldIsPointer": fieldIsPointer,
 				}).
 				ParseFS(templateDir, "templates/*tmpl"),
 		),
@@ -56,6 +58,17 @@ func fieldLabel(name string) string {
 
 	out := strings.ReplaceAll(name, "_", " ")
 	return upperFirst(out)
+}
+
+func fieldIsPointer(f *gen.Field) bool {
+	switch {
+	case f.Type.Type == field.TypeBool:
+		return false
+	case f.Optional,
+		f.Default:
+		return true
+	}
+	return false
 }
 
 func upperFirst(s string) string {
