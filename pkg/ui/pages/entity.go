@@ -24,6 +24,8 @@ import (
 
 func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	r := ui.NewRequest(ctx)
+	r.Title = fmt.Sprintf("Delete %s", entityTypeName)
+
 	form := Form(
 		Method(http.MethodPost),
 		H2(Textf("Are you sure you want to delete this %s?", entityTypeName)),
@@ -39,7 +41,7 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 
 func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) error {
 	r := ui.NewRequest(ctx)
-	r.Title = fmt.Sprintf("Add %s", schema.Name) // TODO
+	r.Title = fmt.Sprintf("Add %s", schema.Name)
 	nodes := make(Group, 0)
 
 	label := func(name string) string {
@@ -83,7 +85,8 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
 				Value:     getValue(f.Name),
 			}))
-		case field.TypeInt:
+		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32,
+			field.TypeInt64, field.TypeFloat32, field.TypeFloat64:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "number",
@@ -91,28 +94,17 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeBool:
-			// TODO
-			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
+			nodes = append(nodes, Checkbox(CheckboxParams{
+				Name:  f.Name,
+				Label: label(f.Name),
+			}))
 		case field.TypeEnum:
 			// TODO
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
-		// case numeric TODO
 		default:
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
 		}
 	}
-
-	//for _, e := range schema.Edges {
-	//	if e.Inverse {
-	//		continue
-	//	}
-	//	nodes = append(nodes, InputField(InputFieldParams{
-	//		Name:      e.Name,
-	//		InputType: "number",
-	//		Label:     label(e.Name),
-	//		Value:     getValue(e.Name), // TODO load does not load this
-	//	}))
-	//}
 
 	nodes = append(nodes, ControlGroup(
 		FormButton("is-primary", "Submit"),
@@ -129,11 +121,6 @@ type AdminEntityListParams struct {
 	EntityType *gen.Type
 	EntityList *admin.EntityList
 	Pager      pager.Pager
-}
-
-type AdminEntityListRow struct {
-	ID      int
-	Columns []string
 }
 
 func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
@@ -183,11 +170,18 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 	}
 
 	// TODO pager
-	return r.Render(layouts.Admin, Table(
-		Class("table"),
-		THead(
-			Tr(genHeader()),
+	return r.Render(layouts.Admin, Group{
+		ButtonLink(
+			r.Path(routenames.AdminEntityAdd(params.EntityType.Name)),
+			"is-link",
+			fmt.Sprintf("Add %s", params.EntityType.Name),
 		),
-		TBody(genRows()),
-	))
+		Table(
+			Class("table"),
+			THead(
+				Tr(genHeader()),
+			),
+			TBody(genRows()),
+		),
+	})
 }

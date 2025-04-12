@@ -41,6 +41,14 @@ type (
 		Value     string
 		Help      string
 	}
+
+	CheckboxParams struct {
+		Form      form.Form
+		FormField string
+		Name      string
+		Label     string
+		Checked   bool
+	}
 )
 
 func ControlGroup(controls ...Node) Node {
@@ -101,6 +109,26 @@ func Radios(el RadiosParams) Node {
 		Div(
 			Class("radios"),
 			buttons,
+		),
+		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func Checkbox(el CheckboxParams) Node {
+	return Div(
+		Class("field"),
+		Div(
+			Class("control"),
+			Label(
+				Class("checkbox"),
+				Input(
+					Type("checkbox"),
+					Name(el.Name),
+					If(el.Checked, Checked()),
+					Value("true"),
+				),
+				Text(" "+el.Label),
+			),
 		),
 		formFieldErrors(el.Form, el.FormField),
 	)
