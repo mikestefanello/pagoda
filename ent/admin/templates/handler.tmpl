@@ -8,6 +8,7 @@
 
     import (
         "fmt"
+        "net/url"
         "strconv"
 
         "entgo.io/ent/dialect/sql"
@@ -42,15 +43,14 @@
         }
     }
 
-    func (h *Handler) Get(ctx echo.Context, entityType string, id int) error {
-        // TODO
+    func (h *Handler) Get(ctx echo.Context, entityType string, id int) (url.Values, error) {
         switch entityType {
         {{- range $n := $.Nodes }}
         case "{{ $n.Name }}":
             return h.{{ $n.Name }}Get(ctx, id)
         {{- end }}
         default:
-            return fmt.Errorf("unsupported entity type: %s", entityType)
+            return nil, fmt.Errorf("unsupported entity type: %s", entityType)
         }
     }
 
@@ -186,14 +186,25 @@
             return list, err
         }
 
-        func (h *Handler) {{ $n.Name }}Get(ctx echo.Context, id int) error {
-            _, err := h.client.{{ $n.Name }}.Get(ctx.Request().Context(), id)
+        func (h *Handler) {{ $n.Name }}Get(ctx echo.Context, id int) (url.Values, error) {
+            entity, err := h.client.{{ $n.Name }}.Get(ctx.Request().Context(), id)
             if err != nil {
-                return err
+                return nil, err
             }
 
-            // TODO
-            return nil
+            v := url.Values{}
+            {{- range $f := $n.Fields }}
+                {{- if and (not $f.Sensitive) (not $f.Immutable) }}
+                    {{- if eq $f.Type.String "string" }}
+                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }})
+                    {{- else if eq $f.Type.String "time.Time" }}
+                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }}.Format(time.RFC3339))
+                    {{- else }}
+                        v.Set("{{ $f.Name }}", fmt.Sprint(entity.{{ fieldName $f.Name }}))
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+            return v, err
         }
     {{ end }}
 

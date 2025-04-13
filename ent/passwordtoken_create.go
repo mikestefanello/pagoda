@@ -59,7 +59,9 @@ func (ptc *PasswordTokenCreate) Mutation() *PasswordTokenMutation {
 
 // Save creates the PasswordToken in the database.
 func (ptc *PasswordTokenCreate) Save(ctx context.Context) (*PasswordToken, error) {
-	ptc.defaults()
+	if err := ptc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ptc.sqlSave, ptc.mutation, ptc.hooks)
 }
 
@@ -86,11 +88,15 @@ func (ptc *PasswordTokenCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ptc *PasswordTokenCreate) defaults() {
+func (ptc *PasswordTokenCreate) defaults() error {
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
+		if passwordtoken.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized passwordtoken.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := passwordtoken.DefaultCreatedAt()
 		ptc.mutation.SetCreatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

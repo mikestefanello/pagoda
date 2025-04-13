@@ -3,7 +3,9 @@ package admin
 
 import (
 	"fmt"
+	"net/url"
 	"strconv"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/labstack/echo/v4"
@@ -36,15 +38,14 @@ func (h *Handler) Create(ctx echo.Context, entityType string) error {
 	}
 }
 
-func (h *Handler) Get(ctx echo.Context, entityType string, id int) error {
-	// TODO
+func (h *Handler) Get(ctx echo.Context, entityType string, id int) (url.Values, error) {
 	switch entityType {
 	case "PasswordToken":
 		return h.PasswordTokenGet(ctx, id)
 	case "User":
 		return h.UserGet(ctx, id)
 	default:
-		return fmt.Errorf("unsupported entity type: %s", entityType)
+		return nil, fmt.Errorf("unsupported entity type: %s", entityType)
 	}
 }
 
@@ -157,14 +158,16 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 	return list, err
 }
 
-func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) error {
-	_, err := h.client.PasswordToken.Get(ctx.Request().Context(), id)
+func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) (url.Values, error) {
+	entity, err := h.client.PasswordToken.Get(ctx.Request().Context(), id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// TODO
-	return nil
+	v := url.Values{}
+	v.Set("user_id", fmt.Sprint(entity.UserID))
+	v.Set("created_at", entity.CreatedAt.Format(time.RFC3339))
+	return v, err
 }
 
 func (h *Handler) UserCreate(ctx echo.Context) error {
@@ -248,14 +251,17 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 	return list, err
 }
 
-func (h *Handler) UserGet(ctx echo.Context, id int) error {
-	_, err := h.client.User.Get(ctx.Request().Context(), id)
+func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
+	entity, err := h.client.User.Get(ctx.Request().Context(), id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// TODO
-	return nil
+	v := url.Values{}
+	v.Set("name", entity.Name)
+	v.Set("email", entity.Email)
+	v.Set("verified", fmt.Sprint(entity.Verified))
+	return v, err
 }
 
 func (h *Handler) getOffset(ctx echo.Context) int {

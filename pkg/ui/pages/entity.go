@@ -39,9 +39,14 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	return r.Render(layouts.Admin, form)
 }
 
-func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) error {
+func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values url.Values) error {
 	r := ui.NewRequest(ctx)
-	r.Title = fmt.Sprintf("Add %s", schema.Name)
+	if isNew {
+		r.Title = fmt.Sprintf("Add %s", schema.Name)
+	} else {
+		r.Title = fmt.Sprintf("Edit %s", schema.Name)
+	}
+
 	nodes := make(Group, 0)
 
 	label := func(name string) string {
@@ -67,6 +72,10 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 
 	for _, f := range schema.Fields {
 		// TODO cardinality?
+		if !isNew && f.Immutable {
+			continue
+		}
+		// TODO sensitive edits
 		switch f.Info.Type {
 		case field.TypeString:
 			inputType := "text"
@@ -100,7 +109,7 @@ func AdminEntityForm(ctx echo.Context, schema *load.Schema, values url.Values) e
 			nodes = append(nodes, Checkbox(CheckboxParams{
 				Name:    f.Name,
 				Label:   label(f.Name),
-				Checked: getValue(f.Name) != "",
+				Checked: getValue(f.Name) == "true",
 			}))
 		case field.TypeEnum:
 			// TODO

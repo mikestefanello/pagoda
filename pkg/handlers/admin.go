@@ -52,12 +52,18 @@ func (h *Admin) Routes(g *echo.Group) {
 	// TODO: can we generate something we can loop instead?
 	for _, n := range h.graph.Nodes {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
-		ng.GET("", h.EntityList(n)).Name = routenames.AdminEntityList(n.Name)
-		ng.POST("", h.EntityList(n)).Name = routenames.AdminEntityListSubmit(n.Name)
-		ng.GET("/add", h.EntityAdd(n)).Name = routenames.AdminEntityAdd(n.Name)
-		ng.POST("/add", h.EntityAddSubmit(n)).Name = routenames.AdminEntityAddSubmit(n.Name)
-		//ng.GET("/:id/edit", h.EntityEdit(n), h.entityPluginMiddleware(n.Name)).Name = RouteNameEdit(n.Name)
-		//ng.POST("/:id/edit", h.EntityEditSubmit(n), h.entityPluginMiddleware(n.Name)).Name = RouteNameEditSubmit(n.Name)
+		ng.GET("", h.EntityList(n)).
+			Name = routenames.AdminEntityList(n.Name)
+		ng.POST("", h.EntityList(n)).
+			Name = routenames.AdminEntityListSubmit(n.Name)
+		ng.GET("/add", h.EntityAdd(n)).
+			Name = routenames.AdminEntityAdd(n.Name)
+		ng.POST("/add", h.EntityAddSubmit(n)).
+			Name = routenames.AdminEntityAddSubmit(n.Name)
+		ng.GET("/:id/edit", h.EntityEdit(n), h.middlewareEntityLoad(n)).
+			Name = routenames.AdminEntityEdit(n.Name)
+		ng.POST("/:id/edit", h.EntityEditSubmit(n), h.middlewareEntityLoad(n)).
+			Name = routenames.AdminEntityEditSubmit(n.Name)
 		ng.GET("/:id/delete", h.EntityDelete(n), h.middlewareEntityLoad(n)).
 			Name = routenames.AdminEntityDelete(n.Name)
 		ng.POST("/:id/delete", h.EntityDeleteSubmit(n), h.middlewareEntityLoad(n)).
@@ -74,11 +80,11 @@ func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid entity ID")
 			}
 
-			err = h.admin.Get(ctx, n.Name, id)
+			entity, err := h.admin.Get(ctx, n.Name, id)
 			switch {
 			case err == nil:
 				ctx.Set(entityIDContextKey, id)
-				//ctx.Set(entityContextKey, entityValues)
+				ctx.Set(entityContextKey, map[string][]string(entity))
 				return next(ctx)
 			case ent.IsNotFound(err):
 				return echo.NewHTTPError(http.StatusNotFound, "entity not found")
@@ -106,7 +112,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 
 func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityForm(ctx, h.getEntitySchema(n), nil)
+		return pages.AdminEntityForm(ctx, true, h.getEntitySchema(n), nil)
 	}
 }
 
@@ -127,20 +133,31 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 	}
 }
 
-//func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
-//	return func(ctx echo.Context) error {
-//		v := ctx.Get(entityContextKey).(map[string][]string)
-//		return pages.AdminEntityForm(ctx, h.getEntitySchema(n), v)
-//	}
-//}
+func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		v := ctx.Get(entityContextKey).(map[string][]string)
+		return pages.AdminEntityForm(ctx, false, h.getEntitySchema(n), v)
+	}
+}
 
-//
-//func (h *Admin) EntityEditSubmit(p AdminEntityPlugin) echo.HandlerFunc {
-//	return func(ctx echo.Context) error {
-//		return nil
-//	}
-//}
-//
+func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		id := ctx.Get(entityIDContextKey).(int)
+		err := h.admin.Update(ctx, n.Name, id)
+		if err != nil {
+			msg.Danger(ctx, err.Error())
+			return h.EntityEdit(n)(ctx)
+		}
+
+		msg.Success(ctx, fmt.Sprintf("Updated %s.", n.Name))
+
+		return redirect.
+			New(ctx).
+			Route(routenames.AdminEntityList(n.Name)).
+			Go()
+	}
+}
+
 func (h *Admin) EntityDelete(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		return pages.AdminEntityDelete(ctx, n.Name)

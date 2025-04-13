@@ -14,6 +14,8 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	passwordtokenHooks := schema.PasswordToken{}.Hooks()
+	passwordtoken.Hooks[0] = passwordtokenHooks[0]
 	passwordtokenFields := schema.PasswordToken{}.Fields()
 	_ = passwordtokenFields
 	// passwordtokenDescHash is the schema descriptor for hash field.
