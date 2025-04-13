@@ -26,7 +26,7 @@ func (*Extension) Templates() []*gen.Template {
 			gen.NewTemplate("admin").
 				Funcs(template.FuncMap{
 					"fieldName":      fieldName,
-					"fieldLabel":     fieldLabel,
+					"fieldLabel":     FieldLabel,
 					"fieldIsPointer": fieldIsPointer,
 				}).
 				ParseFS(templateDir, "templates/*tmpl"),
@@ -51,13 +51,14 @@ func fieldName(name string) string {
 	return strings.Join(parts, "")
 }
 
-func fieldLabel(name string) string {
+func FieldLabel(name string) string {
 	if len(name) == 0 {
 		return name
 	}
 
-	out := strings.ReplaceAll(name, "_", " ")
-	return upperFirst(out)
+	name = strings.ReplaceAll(name, "_id", "_ID")
+	name = strings.ReplaceAll(name, "_", " ")
+	return upperFirst(name)
 }
 
 func fieldIsPointer(f *gen.Field) bool {

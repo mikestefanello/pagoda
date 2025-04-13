@@ -129,6 +129,7 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 		return redirect.
 			New(ctx).
 			Route(routenames.AdminEntityList(n.Name)).
+			StatusCode(http.StatusFound).
 			Go()
 	}
 }
@@ -154,6 +155,7 @@ func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
 		return redirect.
 			New(ctx).
 			Route(routenames.AdminEntityList(n.Name)).
+			StatusCode(http.StatusFound).
 			Go()
 	}
 }
@@ -177,6 +179,7 @@ func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 		return redirect.
 			New(ctx).
 			Route(routenames.AdminEntityList(n.Name)).
+			StatusCode(http.StatusFound).
 			Go()
 	}
 }

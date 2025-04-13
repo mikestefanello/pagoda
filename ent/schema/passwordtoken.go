@@ -20,6 +20,7 @@ type PasswordToken struct {
 // Fields of the PasswordToken.
 func (PasswordToken) Fields() []ent.Field {
 	return []ent.Field{
+		// TODO rename to Token
 		field.String("hash").
 			Sensitive().
 			NotEmpty(),

@@ -138,7 +138,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 
 	list := &EntityList{
 		Columns: []string{
-			"User id",
+			"User ID",
 			"Created at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),

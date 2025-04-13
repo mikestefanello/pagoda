@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
-	"unicode"
 
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
@@ -49,15 +47,6 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 
 	nodes := make(Group, 0)
 
-	label := func(name string) string {
-		if len(name) == 0 {
-			return name
-		}
-		text := []rune(strings.ReplaceAll(name, "_", " "))
-		text[0] = unicode.ToUpper(text[0])
-		return string(text)
-	}
-
 	getValue := func(name string) string {
 		if value := ctx.FormValue(name); value != "" {
 			return value
@@ -78,22 +67,27 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 		// TODO sensitive edits
 		switch f.Info.Type {
 		case field.TypeString:
-			inputType := "text"
-			if f.Sensitive {
-				inputType = "password"
-			}
-			nodes = append(nodes, InputField(InputFieldParams{
+			p := InputFieldParams{
 				Name:      f.Name,
-				InputType: inputType,
-				Label:     label(f.Name),
+				InputType: "text",
+				Label:     admin.FieldLabel(f.Name),
 				Value:     getValue(f.Name),
-			}))
+			}
+
+			if f.Sensitive {
+				p.InputType = "password"
+				if !isNew {
+					p.Placeholder = "*****"
+					p.Help = "SENSITIVE: This field will only be updated if a value is provided."
+				}
+			}
+			nodes = append(nodes, InputField(p))
 		case field.TypeTime:
 			// todo make this easier
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "text",
-				Label:     label(f.Name),
+				Label:     admin.FieldLabel(f.Name),
 				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
 				Value:     getValue(f.Name),
 			}))
@@ -102,13 +96,13 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
 				InputType: "number",
-				Label:     label(f.Name),
+				Label:     admin.FieldLabel(f.Name),
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeBool:
 			nodes = append(nodes, Checkbox(CheckboxParams{
 				Name:    f.Name,
-				Label:   label(f.Name),
+				Label:   admin.FieldLabel(f.Name),
 				Checked: getValue(f.Name) == "true",
 			}))
 		case field.TypeEnum:
