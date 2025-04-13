@@ -89,7 +89,9 @@ func (h *Handler) PasswordTokenCreate(ctx echo.Context) error {
 	}
 
 	op := h.client.PasswordToken.Create()
-	op.SetHash(payload.Hash)
+	if payload.Hash != nil {
+		op.SetHash(*payload.Hash)
+	}
 	op.SetUserID(payload.UserID)
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
@@ -110,9 +112,14 @@ func (h *Handler) PasswordTokenUpdate(ctx echo.Context, id int) error {
 	}
 
 	op := entity.Update()
-	op.SetHash(payload.Hash)
+	if payload.Hash != nil {
+		op.SetHash(*payload.Hash)
+	}
 	op.SetUserID(payload.UserID)
-	if payload.CreatedAt != nil {
+	if payload.CreatedAt == nil {
+		var empty time.Time
+		op.SetCreatedAt(empty)
+	} else {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
 	_, err = op.Save(ctx.Request().Context())
@@ -179,7 +186,9 @@ func (h *Handler) UserCreate(ctx echo.Context) error {
 	op := h.client.User.Create()
 	op.SetName(payload.Name)
 	op.SetEmail(payload.Email)
-	op.SetPassword(payload.Password)
+	if payload.Password != nil {
+		op.SetPassword(*payload.Password)
+	}
 	op.SetVerified(payload.Verified)
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
@@ -202,7 +211,9 @@ func (h *Handler) UserUpdate(ctx echo.Context, id int) error {
 	op := entity.Update()
 	op.SetName(payload.Name)
 	op.SetEmail(payload.Email)
-	op.SetPassword(payload.Password)
+	if payload.Password != nil {
+		op.SetPassword(*payload.Password)
+	}
 	op.SetVerified(payload.Verified)
 	_, err = op.Save(ctx.Request().Context())
 	return err

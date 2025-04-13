@@ -56,9 +56,17 @@ func FieldLabel(name string) string {
 		return name
 	}
 
-	name = strings.ReplaceAll(name, "_id", "_ID")
-	name = strings.ReplaceAll(name, "_", " ")
-	return upperFirst(name)
+	parts := strings.Split(name, "_")
+	for i := 0; i < len(parts); i++ {
+		if parts[i] == "id" {
+			parts[i] = "ID"
+		}
+		if i == 0 {
+			parts[i] = upperFirst(parts[i])
+		}
+	}
+
+	return strings.Join(parts, " ")
 }
 
 func fieldIsPointer(f *gen.Field) bool {
@@ -67,6 +75,7 @@ func fieldIsPointer(f *gen.Field) bool {
 		return false
 	case f.Optional,
 		f.Default,
+		f.Sensitive(),
 		f.Nillable:
 		return true
 	}

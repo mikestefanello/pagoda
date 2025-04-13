@@ -122,8 +122,20 @@
             op := entity.Update()
             {{- range $f := $n.Fields }}
                 {{- if not $f.Immutable }}
-                    {{- if (fieldIsPointer $f) }}
+                    {{- if $f.Sensitive }}
                         if payload.{{ fieldName $f.Name }} != nil {
+                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                        }
+                    {{- else if $f.Nillable }}
+                        op.SetNillable{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
+                        if payload.{{ fieldName $f.Name }} != nil {
+                            op.Clear{{ fieldName $f.Name }}()
+                        }
+                    {{- else if (fieldIsPointer $f) }}
+                        if payload.{{ fieldName $f.Name }} == nil {
+                            var empty {{ $f.Type }}
+                            op.Set{{ fieldName $f.Name }}(empty)
+                        } else {
                             op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
                         }
                     {{- else }}
