@@ -96,9 +96,6 @@ func (h *Handler) PasswordTokenCreate(ctx echo.Context) error {
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
-	if payload.Abc != nil {
-		op.SetAbc(*payload.Abc)
-	}
 	_, err := op.Save(ctx.Request().Context())
 	return err
 }
@@ -125,11 +122,6 @@ func (h *Handler) PasswordTokenUpdate(ctx echo.Context, id int) error {
 	} else {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
-	if payload.Abc == nil {
-		op.ClearAbc()
-	} else {
-		op.SetAbc(*payload.Abc)
-	}
 	_, err = op.Save(ctx.Request().Context())
 	return err
 }
@@ -155,7 +147,6 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 		Columns: []string{
 			"User ID",
 			"Created at",
-			"Abc",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
 		HasNextPage: len(res) > h.Config.ItemsPerPage,
@@ -167,7 +158,6 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 			Values: []string{
 				fmt.Sprint(res[i].UserID),
 				res[i].CreatedAt.Format(h.Config.TimeFormat),
-				fmt.Sprint(res[i].Abc),
 			},
 		})
 	}
@@ -184,7 +174,6 @@ func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) (url.Values, error)
 	v := url.Values{}
 	v.Set("user_id", fmt.Sprint(entity.UserID))
 	v.Set("created_at", entity.CreatedAt.Format(time.RFC3339))
-	v.Set("abc", fmt.Sprint(entity.Abc))
 	return v, err
 }
 
