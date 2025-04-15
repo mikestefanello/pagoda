@@ -112,7 +112,7 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 			}))
 		case field.TypeEnum:
 			options := make([]Choice, 0, len(f.Enums)+1)
-			if f.Nillable {
+			if f.Optional {
 				options = append(options, Choice{
 					Label: "-",
 					Value: "",

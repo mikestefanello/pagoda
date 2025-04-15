@@ -128,8 +128,11 @@
                         }
                     {{- else if $f.Nillable }}
                         op.SetNillable{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
-                        if payload.{{ fieldName $f.Name }} != nil {
-                            // TODO this is not available op.Clear{{ fieldName $f.Name }}()
+                    {{- else if $f.Optional }}
+                        if payload.{{ fieldName $f.Name }} == nil {
+                            op.Clear{{ fieldName $f.Name }}()
+                        } else {
+                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
                         }
                     {{- else if (fieldIsPointer $f) }}
                         if payload.{{ fieldName $f.Name }} == nil {
@@ -230,7 +233,7 @@
     }
 
     func (h *Handler) bind(ctx echo.Context, entity any) error {
-        // Remove empty field values so Echo's bind does to fail when trying to parse things like
+        // Remove empty field values so Echo's bind does not fail when trying to parse things like
         // times, etc.
         for k, v := range ctx.Request().Form {
 			if len(v) == 1 && len(v[0]) == 0 {
