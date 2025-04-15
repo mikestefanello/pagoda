@@ -19,16 +19,16 @@ type (
 		Help        string
 	}
 
-	RadiosParams struct {
+	OptionsParams struct {
 		Form      form.Form
 		FormField string
 		Name      string
 		Label     string
 		Value     string
-		Options   []Radio
+		Options   []Choice
 	}
 
-	Radio struct {
+	Choice struct {
 		Value string
 		Label string
 	}
@@ -88,7 +88,7 @@ func TextareaField(el TextareaFieldParams) Node {
 	)
 }
 
-func Radios(el RadiosParams) Node {
+func Radios(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
 	for i, opt := range el.Options {
 		buttons[i] = Label(
@@ -109,6 +109,30 @@ func Radios(el RadiosParams) Node {
 		Div(
 			Class("radios"),
 			buttons,
+		),
+		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func SelectList(el OptionsParams) Node {
+	buttons := make(Group, len(el.Options))
+	for i, opt := range el.Options {
+		buttons[i] = Option(
+			Text(opt.Label),
+			Value(opt.Value),
+			If(opt.Value == el.Value, Attr("selected")),
+		)
+	}
+
+	return Div(
+		Class("control field"),
+		Label(Class("label"), Text(el.Label)),
+		Div(
+			Class("select"),
+			Select(
+				Name(el.Name),
+				buttons,
+			),
 		),
 		formFieldErrors(el.Form, el.FormField),
 	)

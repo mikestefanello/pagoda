@@ -29,7 +29,11 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 		H2(Textf("Are you sure you want to delete this %s?", entityTypeName)),
 		ControlGroup(
 			FormButton("is-link", "Delete"),
-			ButtonLink(r.Path(routenames.AdminEntityList(entityTypeName)), "is-secondary", "Cancel"),
+			ButtonLink(
+				r.Path(routenames.AdminEntityList(entityTypeName)),
+				"is-secondary",
+				"Cancel",
+			),
 		),
 		CSRF(r),
 	)
@@ -44,7 +48,7 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 	} else {
 		r.Title = fmt.Sprintf("Edit %s", schema.Name)
 	}
-
+	// TODO inline validation?
 	nodes := make(Group, 0)
 
 	getValue := func(name string) string {
@@ -64,7 +68,7 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 		if !isNew && f.Immutable {
 			continue
 		}
-		// TODO sensitive edits
+
 		switch f.Info.Type {
 		case field.TypeString:
 			p := InputFieldParams{
@@ -92,6 +96,7 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32, field.TypeInt64,
+			field.TypeUint, field.TypeUint8, field.TypeUint16, field.TypeUint32, field.TypeUint64,
 			field.TypeFloat32, field.TypeFloat64:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
@@ -106,8 +111,25 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 				Checked: getValue(f.Name) == "true",
 			}))
 		case field.TypeEnum:
-			// TODO
-			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
+			options := make([]Choice, 0, len(f.Enums)+1)
+			if f.Nillable {
+				options = append(options, Choice{
+					Label: "-",
+					Value: "",
+				})
+			}
+			for _, enum := range f.Enums {
+				options = append(options, Choice{
+					Label: enum.V,
+					Value: enum.V,
+				})
+			}
+			nodes = append(nodes, SelectList(OptionsParams{
+				Name:    f.Name,
+				Label:   admin.FieldLabel(f.Name),
+				Value:   getValue(f.Name),
+				Options: options,
+			}))
 		default:
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
 		}

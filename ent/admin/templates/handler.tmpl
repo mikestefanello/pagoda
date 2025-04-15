@@ -129,7 +129,7 @@
                     {{- else if $f.Nillable }}
                         op.SetNillable{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
                         if payload.{{ fieldName $f.Name }} != nil {
-                            op.Clear{{ fieldName $f.Name }}()
+                            // TODO this is not available op.Clear{{ fieldName $f.Name }}()
                         }
                     {{- else if (fieldIsPointer $f) }}
                         if payload.{{ fieldName $f.Name }} == nil {

@@ -31,13 +31,13 @@ func (f *Contact) Render(r *ui.Request) Node {
 			Label:     "Email address",
 			Value:     f.Email,
 		}),
-		Radios(RadiosParams{
+		Radios(OptionsParams{
 			Form:      f,
 			FormField: "Department",
 			Name:      "department",
 			Label:     "Department",
 			Value:     f.Department,
-			Options: []Radio{
+			Options: []Choice{
 				{Value: "sales", Label: "Sales"},
 				{Value: "marketing", Label: "Marketing"},
 				{Value: "hr", Label: "HR"},
