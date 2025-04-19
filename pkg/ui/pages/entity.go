@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
@@ -88,12 +87,10 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 			}
 			nodes = append(nodes, InputField(p))
 		case field.TypeTime:
-			// todo make this easier
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
-				InputType: "text",
+				InputType: "datetime-local",
 				Label:     admin.FieldLabel(f.Name),
-				Help:      fmt.Sprintf("Use the following format: %s", time.Now().Format(time.RFC3339)),
 				Value:     getValue(f.Name),
 			}))
 		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32, field.TypeInt64,
@@ -179,7 +176,7 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 					r.Path(routenames.AdminEntityEdit(params.EntityType.Name), row.ID),
 					"is-link",
 					"Edit",
-				),
+				), // todo make this easier
 			),
 			Td(
 				ButtonLink(r.Path(routenames.AdminEntityDelete(params.EntityType.Name), row.ID),
@@ -210,7 +207,7 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 	return r.Render(layouts.Admin, Group{
 		ButtonLink(
 			r.Path(routenames.AdminEntityAdd(params.EntityType.Name)),
-			"is-link",
+			"is-primary",
 			fmt.Sprintf("Add %s", params.EntityType.Name),
 		),
 		Table(

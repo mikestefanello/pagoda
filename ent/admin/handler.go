@@ -15,6 +15,8 @@ import (
 	"github.com/mikestefanello/pagoda/ent/user"
 )
 
+const dateTimeFormat = "2006-01-02T15:04:05"
+
 type Handler struct {
 	client *ent.Client
 	Config HandlerConfig
@@ -175,7 +177,7 @@ func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) (url.Values, error)
 
 	v := url.Values{}
 	v.Set("user_id", fmt.Sprint(entity.UserID))
-	v.Set("created_at", entity.CreatedAt.Format(time.RFC3339))
+	v.Set("created_at", entity.CreatedAt.Format(dateTimeFormat))
 	return v, err
 }
 
@@ -289,11 +291,19 @@ func (h *Handler) getPageAndOffset(ctx echo.Context) (int, int) {
 }
 
 func (h *Handler) bind(ctx echo.Context, entity any) error {
-	// Remove empty field values so Echo's bind does not fail when trying to parse things like
-	// times, etc.
+	// Echo requires some pre-processing of form values to avoid problems.
 	for k, v := range ctx.Request().Form {
+		// Remove empty field values so Echo's bind does not fail when trying to parse things like
+		// times, etc.
 		if len(v) == 1 && len(v[0]) == 0 {
 			delete(ctx.Request().Form, k)
+			continue
+		}
+
+		// Echo expects datetime values to be in a certain format but that does not align with the datetime-local
+		// HTML form element format, so we will attempt to convert it here.
+		if t, err := time.Parse(dateTimeFormat, v[0]); err == nil {
+			ctx.Request().Form[k][0] = t.Format(time.RFC3339)
 		}
 	}
 	return ctx.Bind(entity)

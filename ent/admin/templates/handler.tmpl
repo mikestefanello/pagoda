@@ -20,6 +20,8 @@
         {{- end }}
     )
 
+    const dateTimeFormat = "2006-01-02T15:04:05"
+
     type Handler struct {
         client *{{ $pkg }}.Client
         Config HandlerConfig
@@ -215,7 +217,7 @@
                     {{- if eq $f.Type.String "string" }}
                         v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }})
                     {{- else if eq $f.Type.String "time.Time" }}
-                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }}.Format(time.RFC3339))
+                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }}.Format(dateTimeFormat))
                     {{- else }}
                         v.Set("{{ $f.Name }}", fmt.Sprint(entity.{{ fieldName $f.Name }}))
                     {{- end }}
@@ -235,12 +237,20 @@
     }
 
     func (h *Handler) bind(ctx echo.Context, entity any) error {
-        // Remove empty field values so Echo's bind does not fail when trying to parse things like
-        // times, etc.
+        // Echo requires some pre-processing of form values to avoid problems.
         for k, v := range ctx.Request().Form {
+            // Remove empty field values so Echo's bind does not fail when trying to parse things like
+            // times, etc.
 			if len(v) == 1 && len(v[0]) == 0 {
 				delete(ctx.Request().Form, k)
+				continue
 			}
+
+			// Echo expects datetime values to be in a certain format but that does not align with the datetime-local
+			// HTML form element format, so we will attempt to convert it here.
+			if t, err := time.Parse(dateTimeFormat, v[0]); err == nil {
+                ctx.Request().Form[k][0] = t.Format(time.RFC3339)
+            }
 		}
 		return ctx.Bind(entity)
     }
