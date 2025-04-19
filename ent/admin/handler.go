@@ -132,10 +132,11 @@ func (h *Handler) PasswordTokenDelete(ctx echo.Context, id int) error {
 }
 
 func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
+	page, offset := h.getPageAndOffset(ctx)
 	res, err := h.client.PasswordToken.
 		Query().
 		Limit(h.Config.ItemsPerPage + 1).
-		Offset(h.getOffset(ctx)).
+		Offset(offset).
 		Order(passwordtoken.ByID(sql.OrderDesc())).
 		All(ctx.Request().Context())
 
@@ -149,6 +150,7 @@ func (h *Handler) PasswordTokenList(ctx echo.Context) (*EntityList, error) {
 			"Created at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
+		Page:        page,
 		HasNextPage: len(res) > h.Config.ItemsPerPage,
 	}
 
@@ -225,10 +227,11 @@ func (h *Handler) UserDelete(ctx echo.Context, id int) error {
 }
 
 func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
+	page, offset := h.getPageAndOffset(ctx)
 	res, err := h.client.User.
 		Query().
 		Limit(h.Config.ItemsPerPage + 1).
-		Offset(h.getOffset(ctx)).
+		Offset(offset).
 		Order(user.ByID(sql.OrderDesc())).
 		All(ctx.Request().Context())
 
@@ -244,6 +247,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 			"Created at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
+		Page:        page,
 		HasNextPage: len(res) > h.Config.ItemsPerPage,
 	}
 
@@ -275,13 +279,13 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	return v, err
 }
 
-func (h *Handler) getOffset(ctx echo.Context) int {
+func (h *Handler) getPageAndOffset(ctx echo.Context) (int, int) {
 	if page, err := strconv.Atoi(ctx.QueryParam(h.Config.PageQueryKey)); err == nil {
 		if page > 1 {
-			return (page - 1) * h.Config.ItemsPerPage
+			return page, (page - 1) * h.Config.ItemsPerPage
 		}
 	}
-	return 0
+	return 1, 0
 }
 
 func (h *Handler) bind(ctx echo.Context, entity any) error {

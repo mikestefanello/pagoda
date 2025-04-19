@@ -49,7 +49,6 @@ func (h *Admin) Routes(g *echo.Group) {
 	// TODO admin user status middleware
 	entities := g.Group("/admin/content")
 
-	// TODO: can we generate something we can loop instead?
 	for _, n := range h.graph.Nodes {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
 		ng.GET("", h.EntityList(n)).
@@ -71,7 +70,6 @@ func (h *Admin) Routes(g *echo.Group) {
 	}
 }
 
-// TODO, maybe this can be used outside of admin stuff as well?
 func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {

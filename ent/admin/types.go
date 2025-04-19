@@ -20,6 +20,7 @@ type User struct {
 type EntityList struct {
 	Columns     []string
 	Entities    []EntityValues
+	Page        int
 	HasNextPage bool
 }
 
@@ -32,4 +33,11 @@ type HandlerConfig struct {
 	ItemsPerPage int
 	PageQueryKey string
 	TimeFormat   string
+}
+
+func GetEntityTypeNames() []string {
+	return []string{
+		"PasswordToken",
+		"User",
+	}
 }

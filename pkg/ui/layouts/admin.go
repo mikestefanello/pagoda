@@ -1,6 +1,7 @@
 package layouts
 
 import (
+	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
@@ -42,17 +43,22 @@ func Admin(r *ui.Request, content Node) Node {
 }
 
 func adminMenu(r *ui.Request) Node {
+	entityTypeNames := admin.GetEntityTypeNames()
+	entityTypeLinks := make(Group, len(entityTypeNames))
+	for _, n := range entityTypeNames {
+		entityTypeLinks = append(entityTypeLinks, MenuLink(r, n, routenames.AdminEntityList(n)))
+	}
+
 	return Aside(
 		Class("menu"),
 		HxBoost(),
 		P(
 			Class("menu-label"),
-			Text("Content"),
+			Text("Entities"),
 		),
 		Ul(
 			Class("menu-list"),
-			MenuLink(r, "User", routenames.AdminEntityList("User")),
-			MenuLink(r, "PasswordToken", routenames.AdminEntityList("PasswordToken")),
+			entityTypeLinks,
 		),
 		P(
 			Class("menu-label"),
