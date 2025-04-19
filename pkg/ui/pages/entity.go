@@ -17,6 +17,7 @@ import (
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -198,7 +199,14 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 		return g
 	}
 
-	// TODO pager
+	pagedHref := func(page int) string {
+		return fmt.Sprintf("%s?%s=%d",
+			r.Path(routenames.AdminEntityList(params.EntityType.Name)),
+			pager.QueryKey,
+			page,
+		)
+	}
+
 	return r.Render(layouts.Admin, Group{
 		ButtonLink(
 			r.Path(routenames.AdminEntityAdd(params.EntityType.Name)),
@@ -211,6 +219,25 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 				Tr(genHeader()),
 			),
 			TBody(genRows()),
+		),
+		Nav(
+			Class("pagination"),
+			A(
+				Classes{
+					"pagination-previous": true,
+					"is-disabled":         params.EntityList.Page == 1,
+				},
+				If(params.EntityList.Page != 1, Href(pagedHref(params.EntityList.Page-1))),
+				Text("Previous page"),
+			),
+			A(
+				Classes{
+					"pagination-previous": true,
+					"is-disabled":         !params.EntityList.HasNextPage,
+				},
+				If(params.EntityList.HasNextPage, Href(pagedHref(params.EntityList.Page+1))),
+				Text("Next page"),
+			),
 		),
 	})
 }
