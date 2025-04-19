@@ -14,6 +14,7 @@ func Primary(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
+			Data("theme", "light"),
 			Head(
 				Metatags(r),
 				CSS(),
@@ -31,9 +32,12 @@ func Primary(r *ui.Request, content Node) Node {
 						),
 						Div(
 							Class("column is-10"),
-							If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
-							FlashMessages(r),
-							content,
+							Div(
+								Class("box"),
+								If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
+								FlashMessages(r),
+								content,
+							),
 						),
 					),
 				),

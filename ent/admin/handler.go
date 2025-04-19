@@ -16,6 +16,7 @@ import (
 )
 
 const dateTimeFormat = "2006-01-02T15:04:05"
+const dateTimeFormatNoSeconds = "2006-01-02T15:04"
 
 type Handler struct {
 	client *ent.Client
@@ -307,8 +308,11 @@ func (h *Handler) bind(ctx echo.Context, entity any) error {
 
 		// Echo expects datetime values to be in a certain format but that does not align with the datetime-local
 		// HTML form element format, so we will attempt to convert it here.
-		if t, err := time.Parse(dateTimeFormat, v[0]); err == nil {
-			ctx.Request().Form[k][0] = t.Format(time.RFC3339)
+		for _, format := range []string{dateTimeFormatNoSeconds, dateTimeFormat} {
+			if t, err := time.Parse(format, v[0]); err == nil {
+				ctx.Request().Form[k][0] = t.Format(time.RFC3339)
+				break
+			}
 		}
 	}
 	return ctx.Bind(entity)
