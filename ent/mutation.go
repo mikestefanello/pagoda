@@ -35,7 +35,7 @@ type PasswordTokenMutation struct {
 	op            Op
 	typ           string
 	id            *int
-	hash          *string
+	token         *string
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	user          *int
@@ -143,40 +143,40 @@ func (m *PasswordTokenMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetHash sets the "hash" field.
-func (m *PasswordTokenMutation) SetHash(s string) {
-	m.hash = &s
+// SetToken sets the "token" field.
+func (m *PasswordTokenMutation) SetToken(s string) {
+	m.token = &s
 }
 
-// Hash returns the value of the "hash" field in the mutation.
-func (m *PasswordTokenMutation) Hash() (r string, exists bool) {
-	v := m.hash
+// Token returns the value of the "token" field in the mutation.
+func (m *PasswordTokenMutation) Token() (r string, exists bool) {
+	v := m.token
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldHash returns the old "hash" field's value of the PasswordToken entity.
+// OldToken returns the old "token" field's value of the PasswordToken entity.
 // If the PasswordToken object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PasswordTokenMutation) OldHash(ctx context.Context) (v string, err error) {
+func (m *PasswordTokenMutation) OldToken(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHash is only allowed on UpdateOne operations")
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHash requires an ID field in the mutation")
+		return v, errors.New("OldToken requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHash: %w", err)
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
 	}
-	return oldValue.Hash, nil
+	return oldValue.Token, nil
 }
 
-// ResetHash resets all changes to the "hash" field.
-func (m *PasswordTokenMutation) ResetHash() {
-	m.hash = nil
+// ResetToken resets all changes to the "token" field.
+func (m *PasswordTokenMutation) ResetToken() {
+	m.token = nil
 }
 
 // SetUserID sets the "user_id" field.
@@ -313,8 +313,8 @@ func (m *PasswordTokenMutation) Type() string {
 // AddedFields().
 func (m *PasswordTokenMutation) Fields() []string {
 	fields := make([]string, 0, 3)
-	if m.hash != nil {
-		fields = append(fields, passwordtoken.FieldHash)
+	if m.token != nil {
+		fields = append(fields, passwordtoken.FieldToken)
 	}
 	if m.user != nil {
 		fields = append(fields, passwordtoken.FieldUserID)
@@ -330,8 +330,8 @@ func (m *PasswordTokenMutation) Fields() []string {
 // schema.
 func (m *PasswordTokenMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case passwordtoken.FieldHash:
-		return m.Hash()
+	case passwordtoken.FieldToken:
+		return m.Token()
 	case passwordtoken.FieldUserID:
 		return m.UserID()
 	case passwordtoken.FieldCreatedAt:
@@ -345,8 +345,8 @@ func (m *PasswordTokenMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PasswordTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case passwordtoken.FieldHash:
-		return m.OldHash(ctx)
+	case passwordtoken.FieldToken:
+		return m.OldToken(ctx)
 	case passwordtoken.FieldUserID:
 		return m.OldUserID(ctx)
 	case passwordtoken.FieldCreatedAt:
@@ -360,12 +360,12 @@ func (m *PasswordTokenMutation) OldField(ctx context.Context, name string) (ent.
 // type.
 func (m *PasswordTokenMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case passwordtoken.FieldHash:
+	case passwordtoken.FieldToken:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetHash(v)
+		m.SetToken(v)
 		return nil
 	case passwordtoken.FieldUserID:
 		v, ok := value.(int)
@@ -433,8 +433,8 @@ func (m *PasswordTokenMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PasswordTokenMutation) ResetField(name string) error {
 	switch name {
-	case passwordtoken.FieldHash:
-		m.ResetHash()
+	case passwordtoken.FieldToken:
+		m.ResetToken()
 		return nil
 	case passwordtoken.FieldUserID:
 		m.ResetUserID()

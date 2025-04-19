@@ -18,8 +18,8 @@ type PasswordToken struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// Hash holds the value of the "hash" field.
-	Hash string `json:"-"`
+	// Token holds the value of the "token" field.
+	Token string `json:"-"`
 	// UserID holds the value of the "user_id" field.
 	UserID int `json:"user_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -57,7 +57,7 @@ func (*PasswordToken) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case passwordtoken.FieldID, passwordtoken.FieldUserID:
 			values[i] = new(sql.NullInt64)
-		case passwordtoken.FieldHash:
+		case passwordtoken.FieldToken:
 			values[i] = new(sql.NullString)
 		case passwordtoken.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -82,11 +82,11 @@ func (pt *PasswordToken) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			pt.ID = int(value.Int64)
-		case passwordtoken.FieldHash:
+		case passwordtoken.FieldToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field hash", values[i])
+				return fmt.Errorf("unexpected type %T for field token", values[i])
 			} else if value.Valid {
-				pt.Hash = value.String
+				pt.Token = value.String
 			}
 		case passwordtoken.FieldUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -141,7 +141,7 @@ func (pt *PasswordToken) String() string {
 	var builder strings.Builder
 	builder.WriteString("PasswordToken(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pt.ID))
-	builder.WriteString("hash=<sensitive>")
+	builder.WriteString("token=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", pt.UserID))

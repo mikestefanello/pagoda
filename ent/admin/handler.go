@@ -91,8 +91,8 @@ func (h *Handler) PasswordTokenCreate(ctx echo.Context) error {
 	}
 
 	op := h.client.PasswordToken.Create()
-	if payload.Hash != nil {
-		op.SetHash(*payload.Hash)
+	if payload.Token != nil {
+		op.SetToken(*payload.Token)
 	}
 	op.SetUserID(payload.UserID)
 	if payload.CreatedAt != nil {
@@ -114,8 +114,8 @@ func (h *Handler) PasswordTokenUpdate(ctx echo.Context, id int) error {
 	}
 
 	op := entity.Update()
-	if payload.Hash != nil {
-		op.SetHash(*payload.Hash)
+	if payload.Token != nil {
+		op.SetToken(*payload.Token)
 	}
 	op.SetUserID(payload.UserID)
 	if payload.CreatedAt == nil {

@@ -55,9 +55,9 @@ func IDLTE(id int) predicate.PasswordToken {
 	return predicate.PasswordToken(sql.FieldLTE(FieldID, id))
 }
 
-// Hash applies equality check predicate on the "hash" field. It's identical to HashEQ.
-func Hash(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldEQ(FieldHash, v))
+// Token applies equality check predicate on the "token" field. It's identical to TokenEQ.
+func Token(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldEQ(FieldToken, v))
 }
 
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
@@ -70,69 +70,69 @@ func CreatedAt(v time.Time) predicate.PasswordToken {
 	return predicate.PasswordToken(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// HashEQ applies the EQ predicate on the "hash" field.
-func HashEQ(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldEQ(FieldHash, v))
+// TokenEQ applies the EQ predicate on the "token" field.
+func TokenEQ(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldEQ(FieldToken, v))
 }
 
-// HashNEQ applies the NEQ predicate on the "hash" field.
-func HashNEQ(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldNEQ(FieldHash, v))
+// TokenNEQ applies the NEQ predicate on the "token" field.
+func TokenNEQ(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldNEQ(FieldToken, v))
 }
 
-// HashIn applies the In predicate on the "hash" field.
-func HashIn(vs ...string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldIn(FieldHash, vs...))
+// TokenIn applies the In predicate on the "token" field.
+func TokenIn(vs ...string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldIn(FieldToken, vs...))
 }
 
-// HashNotIn applies the NotIn predicate on the "hash" field.
-func HashNotIn(vs ...string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldNotIn(FieldHash, vs...))
+// TokenNotIn applies the NotIn predicate on the "token" field.
+func TokenNotIn(vs ...string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldNotIn(FieldToken, vs...))
 }
 
-// HashGT applies the GT predicate on the "hash" field.
-func HashGT(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldGT(FieldHash, v))
+// TokenGT applies the GT predicate on the "token" field.
+func TokenGT(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldGT(FieldToken, v))
 }
 
-// HashGTE applies the GTE predicate on the "hash" field.
-func HashGTE(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldGTE(FieldHash, v))
+// TokenGTE applies the GTE predicate on the "token" field.
+func TokenGTE(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldGTE(FieldToken, v))
 }
 
-// HashLT applies the LT predicate on the "hash" field.
-func HashLT(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldLT(FieldHash, v))
+// TokenLT applies the LT predicate on the "token" field.
+func TokenLT(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldLT(FieldToken, v))
 }
 
-// HashLTE applies the LTE predicate on the "hash" field.
-func HashLTE(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldLTE(FieldHash, v))
+// TokenLTE applies the LTE predicate on the "token" field.
+func TokenLTE(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldLTE(FieldToken, v))
 }
 
-// HashContains applies the Contains predicate on the "hash" field.
-func HashContains(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldContains(FieldHash, v))
+// TokenContains applies the Contains predicate on the "token" field.
+func TokenContains(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldContains(FieldToken, v))
 }
 
-// HashHasPrefix applies the HasPrefix predicate on the "hash" field.
-func HashHasPrefix(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldHasPrefix(FieldHash, v))
+// TokenHasPrefix applies the HasPrefix predicate on the "token" field.
+func TokenHasPrefix(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldHasPrefix(FieldToken, v))
 }
 
-// HashHasSuffix applies the HasSuffix predicate on the "hash" field.
-func HashHasSuffix(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldHasSuffix(FieldHash, v))
+// TokenHasSuffix applies the HasSuffix predicate on the "token" field.
+func TokenHasSuffix(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldHasSuffix(FieldToken, v))
 }
 
-// HashEqualFold applies the EqualFold predicate on the "hash" field.
-func HashEqualFold(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldEqualFold(FieldHash, v))
+// TokenEqualFold applies the EqualFold predicate on the "token" field.
+func TokenEqualFold(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldEqualFold(FieldToken, v))
 }
 
-// HashContainsFold applies the ContainsFold predicate on the "hash" field.
-func HashContainsFold(v string) predicate.PasswordToken {
-	return predicate.PasswordToken(sql.FieldContainsFold(FieldHash, v))
+// TokenContainsFold applies the ContainsFold predicate on the "token" field.
+func TokenContainsFold(v string) predicate.PasswordToken {
+	return predicate.PasswordToken(sql.FieldContainsFold(FieldToken, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.

@@ -125,7 +125,7 @@ func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (s
 	// Create and save the password reset token
 	pt, err := c.orm.PasswordToken.
 		Create().
-		SetHash(token).
+		SetToken(token).
 		SetUserID(userID).
 		Save(ctx.Request().Context())
 
@@ -151,7 +151,7 @@ func (c *AuthClient) GetValidPasswordToken(ctx echo.Context, userID, tokenID int
 	case *ent.NotFoundError:
 	case nil:
 		// Check the token for a hash match
-		if err := c.CheckPassword(token, pt.Hash); err == nil {
+		if err := c.CheckPassword(token, pt.Token); err == nil {
 			return pt, nil
 		}
 	default:

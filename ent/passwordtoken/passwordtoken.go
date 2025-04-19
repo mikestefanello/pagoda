@@ -15,8 +15,8 @@ const (
 	Label = "password_token"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldHash holds the string denoting the hash field in the database.
-	FieldHash = "hash"
+	// FieldToken holds the string denoting the token field in the database.
+	FieldToken = "token"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -37,7 +37,7 @@ const (
 // Columns holds all SQL columns for passwordtoken fields.
 var Columns = []string{
 	FieldID,
-	FieldHash,
+	FieldToken,
 	FieldUserID,
 	FieldCreatedAt,
 }
@@ -59,8 +59,8 @@ func ValidColumn(column string) bool {
 //	import _ "github.com/mikestefanello/pagoda/ent/runtime"
 var (
 	Hooks [1]ent.Hook
-	// HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	HashValidator func(string) error
+	// TokenValidator is a validator for the "token" field. It is called by the builders before save.
+	TokenValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -73,9 +73,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByHash orders the results by the hash field.
-func ByHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldHash, opts...).ToFunc()
+// ByToken orders the results by the token field.
+func ByToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldToken, opts...).ToFunc()
 }
 
 // ByUserID orders the results by the user_id field.

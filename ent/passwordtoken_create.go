@@ -21,9 +21,9 @@ type PasswordTokenCreate struct {
 	hooks    []Hook
 }
 
-// SetHash sets the "hash" field.
-func (ptc *PasswordTokenCreate) SetHash(s string) *PasswordTokenCreate {
-	ptc.mutation.SetHash(s)
+// SetToken sets the "token" field.
+func (ptc *PasswordTokenCreate) SetToken(s string) *PasswordTokenCreate {
+	ptc.mutation.SetToken(s)
 	return ptc
 }
 
@@ -101,12 +101,12 @@ func (ptc *PasswordTokenCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ptc *PasswordTokenCreate) check() error {
-	if _, ok := ptc.mutation.Hash(); !ok {
-		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "PasswordToken.hash"`)}
+	if _, ok := ptc.mutation.Token(); !ok {
+		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "PasswordToken.token"`)}
 	}
-	if v, ok := ptc.mutation.Hash(); ok {
-		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
+	if v, ok := ptc.mutation.Token(); ok {
+		if err := passwordtoken.TokenValidator(v); err != nil {
+			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
 	if _, ok := ptc.mutation.UserID(); !ok {
@@ -144,9 +144,9 @@ func (ptc *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSp
 		_node = &PasswordToken{config: ptc.config}
 		_spec = sqlgraph.NewCreateSpec(passwordtoken.Table, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
 	)
-	if value, ok := ptc.mutation.Hash(); ok {
-		_spec.SetField(passwordtoken.FieldHash, field.TypeString, value)
-		_node.Hash = value
+	if value, ok := ptc.mutation.Token(); ok {
+		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
+		_node.Token = value
 	}
 	if value, ok := ptc.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)

@@ -29,16 +29,16 @@ func (ptu *PasswordTokenUpdate) Where(ps ...predicate.PasswordToken) *PasswordTo
 	return ptu
 }
 
-// SetHash sets the "hash" field.
-func (ptu *PasswordTokenUpdate) SetHash(s string) *PasswordTokenUpdate {
-	ptu.mutation.SetHash(s)
+// SetToken sets the "token" field.
+func (ptu *PasswordTokenUpdate) SetToken(s string) *PasswordTokenUpdate {
+	ptu.mutation.SetToken(s)
 	return ptu
 }
 
-// SetNillableHash sets the "hash" field if the given value is not nil.
-func (ptu *PasswordTokenUpdate) SetNillableHash(s *string) *PasswordTokenUpdate {
+// SetNillableToken sets the "token" field if the given value is not nil.
+func (ptu *PasswordTokenUpdate) SetNillableToken(s *string) *PasswordTokenUpdate {
 	if s != nil {
-		ptu.SetHash(*s)
+		ptu.SetToken(*s)
 	}
 	return ptu
 }
@@ -116,9 +116,9 @@ func (ptu *PasswordTokenUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ptu *PasswordTokenUpdate) check() error {
-	if v, ok := ptu.mutation.Hash(); ok {
-		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
+	if v, ok := ptu.mutation.Token(); ok {
+		if err := passwordtoken.TokenValidator(v); err != nil {
+			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
 	if ptu.mutation.UserCleared() && len(ptu.mutation.UserIDs()) > 0 {
@@ -139,8 +139,8 @@ func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			}
 		}
 	}
-	if value, ok := ptu.mutation.Hash(); ok {
-		_spec.SetField(passwordtoken.FieldHash, field.TypeString, value)
+	if value, ok := ptu.mutation.Token(); ok {
+		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
 	}
 	if value, ok := ptu.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)
@@ -194,16 +194,16 @@ type PasswordTokenUpdateOne struct {
 	mutation *PasswordTokenMutation
 }
 
-// SetHash sets the "hash" field.
-func (ptuo *PasswordTokenUpdateOne) SetHash(s string) *PasswordTokenUpdateOne {
-	ptuo.mutation.SetHash(s)
+// SetToken sets the "token" field.
+func (ptuo *PasswordTokenUpdateOne) SetToken(s string) *PasswordTokenUpdateOne {
+	ptuo.mutation.SetToken(s)
 	return ptuo
 }
 
-// SetNillableHash sets the "hash" field if the given value is not nil.
-func (ptuo *PasswordTokenUpdateOne) SetNillableHash(s *string) *PasswordTokenUpdateOne {
+// SetNillableToken sets the "token" field if the given value is not nil.
+func (ptuo *PasswordTokenUpdateOne) SetNillableToken(s *string) *PasswordTokenUpdateOne {
 	if s != nil {
-		ptuo.SetHash(*s)
+		ptuo.SetToken(*s)
 	}
 	return ptuo
 }
@@ -294,9 +294,9 @@ func (ptuo *PasswordTokenUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ptuo *PasswordTokenUpdateOne) check() error {
-	if v, ok := ptuo.mutation.Hash(); ok {
-		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
+	if v, ok := ptuo.mutation.Token(); ok {
+		if err := passwordtoken.TokenValidator(v); err != nil {
+			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
 	if ptuo.mutation.UserCleared() && len(ptuo.mutation.UserIDs()) > 0 {
@@ -334,8 +334,8 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 			}
 		}
 	}
-	if value, ok := ptuo.mutation.Hash(); ok {
-		_spec.SetField(passwordtoken.FieldHash, field.TypeString, value)
+	if value, ok := ptuo.mutation.Token(); ok {
+		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
 	}
 	if value, ok := ptuo.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)

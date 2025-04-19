@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent/admin"
-	"github.com/mikestefanello/pagoda/pkg/pager"
+	"github.com/mikestefanello/pagoda/pkg/pager" // todo make this easier
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"

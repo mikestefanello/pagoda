@@ -4,7 +4,7 @@ package admin
 import "time"
 
 type PasswordToken struct {
-	Hash      *string    `form:"hash"`
+	Token     *string    `form:"token"`
 	UserID    int        `form:"user_id"`
 	CreatedAt *time.Time `form:"created_at"`
 }

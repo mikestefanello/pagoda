@@ -20,8 +20,7 @@ type PasswordToken struct {
 // Fields of the PasswordToken.
 func (PasswordToken) Fields() []ent.Field {
 	return []ent.Field{
-		// TODO rename to Token
-		field.String("hash").
+		field.String("token").
 			Sensitive().
 			NotEmpty(),
 		field.Int("user_id"),
@@ -46,12 +45,12 @@ func (PasswordToken) Hooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return hook.PasswordTokenFunc(func(ctx context.Context, m *ge.PasswordTokenMutation) (ent.Value, error) {
-					if v, exists := m.Hash(); exists {
+					if v, exists := m.Token(); exists {
 						hash, err := bcrypt.GenerateFromPassword([]byte(v), bcrypt.DefaultCost)
 						if err != nil {
 							return "", err
 						}
-						m.SetHash(string(hash))
+						m.SetToken(string(hash))
 					}
 					return next.Mutate(ctx, m)
 				})

@@ -298,12 +298,12 @@ func (ptq *PasswordTokenQuery) WithUser(opts ...func(*UserQuery)) *PasswordToken
 // Example:
 //
 //	var v []struct {
-//		Hash string `json:"hash,omitempty"`
+//		Token string `json:"token,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.PasswordToken.Query().
-//		GroupBy(passwordtoken.FieldHash).
+//		GroupBy(passwordtoken.FieldToken).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ptq *PasswordTokenQuery) GroupBy(field string, fields ...string) *PasswordTokenGroupBy {
@@ -321,11 +321,11 @@ func (ptq *PasswordTokenQuery) GroupBy(field string, fields ...string) *Password
 // Example:
 //
 //	var v []struct {
-//		Hash string `json:"hash,omitempty"`
+//		Token string `json:"token,omitempty"`
 //	}
 //
 //	client.PasswordToken.Query().
-//		Select(passwordtoken.FieldHash).
+//		Select(passwordtoken.FieldToken).
 //		Scan(ctx, &v)
 func (ptq *PasswordTokenQuery) Select(fields ...string) *PasswordTokenSelect {
 	ptq.ctx.Fields = append(ptq.ctx.Fields, fields...)

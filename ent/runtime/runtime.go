@@ -18,10 +18,10 @@ func init() {
 	passwordtoken.Hooks[0] = passwordtokenHooks[0]
 	passwordtokenFields := schema.PasswordToken{}.Fields()
 	_ = passwordtokenFields
-	// passwordtokenDescHash is the schema descriptor for hash field.
-	passwordtokenDescHash := passwordtokenFields[0].Descriptor()
-	// passwordtoken.HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	passwordtoken.HashValidator = passwordtokenDescHash.Validators[0].(func(string) error)
+	// passwordtokenDescToken is the schema descriptor for token field.
+	passwordtokenDescToken := passwordtokenFields[0].Descriptor()
+	// passwordtoken.TokenValidator is a validator for the "token" field. It is called by the builders before save.
+	passwordtoken.TokenValidator = passwordtokenDescToken.Validators[0].(func(string) error)
 	// passwordtokenDescCreatedAt is the schema descriptor for created_at field.
 	passwordtokenDescCreatedAt := passwordtokenFields[2].Descriptor()
 	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
