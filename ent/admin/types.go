@@ -14,6 +14,7 @@ type User struct {
 	Email     string     `form:"email"`
 	Password  *string    `form:"password"`
 	Verified  bool       `form:"verified"`
+	Admin     bool       `form:"admin"`
 	CreatedAt *time.Time `form:"created_at"`
 }
 

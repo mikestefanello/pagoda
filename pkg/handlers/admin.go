@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/admin"
+	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/redirect"
@@ -46,8 +47,7 @@ func (h *Admin) Init(c *services.Container) error {
 }
 
 func (h *Admin) Routes(g *echo.Group) {
-	// TODO admin user status middleware
-	entities := g.Group("/admin/content")
+	entities := g.Group("/admin/content", middleware.RequireAdmin)
 
 	for _, n := range h.graph.Nodes {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))

@@ -37,6 +37,8 @@ func (User) Fields() []ent.Field {
 			NotEmpty(),
 		field.Bool("verified").
 			Default(false),
+		field.Bool("admin").
+			Default(false),
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable(),

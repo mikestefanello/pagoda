@@ -530,6 +530,7 @@ type UserMutation struct {
 	email         *string
 	password      *string
 	verified      *bool
+	admin         *bool
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	owner         map[int]struct{}
@@ -782,6 +783,42 @@ func (m *UserMutation) ResetVerified() {
 	m.verified = nil
 }
 
+// SetAdmin sets the "admin" field.
+func (m *UserMutation) SetAdmin(b bool) {
+	m.admin = &b
+}
+
+// Admin returns the value of the "admin" field in the mutation.
+func (m *UserMutation) Admin() (r bool, exists bool) {
+	v := m.admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdmin returns the old "admin" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAdmin: %w", err)
+	}
+	return oldValue.Admin, nil
+}
+
+// ResetAdmin resets all changes to the "admin" field.
+func (m *UserMutation) ResetAdmin() {
+	m.admin = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -906,7 +943,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
@@ -918,6 +955,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.verified != nil {
 		fields = append(fields, user.FieldVerified)
+	}
+	if m.admin != nil {
+		fields = append(fields, user.FieldAdmin)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -938,6 +978,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Password()
 	case user.FieldVerified:
 		return m.Verified()
+	case user.FieldAdmin:
+		return m.Admin()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -957,6 +999,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPassword(ctx)
 	case user.FieldVerified:
 		return m.OldVerified(ctx)
+	case user.FieldAdmin:
+		return m.OldAdmin(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -995,6 +1039,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVerified(v)
+		return nil
+	case user.FieldAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAdmin(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1063,6 +1114,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldVerified:
 		m.ResetVerified()
+		return nil
+	case user.FieldAdmin:
+		m.ResetAdmin()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

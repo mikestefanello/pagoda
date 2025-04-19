@@ -25,6 +25,8 @@ type User struct {
 	Password string `json:"-"`
 	// Verified holds the value of the "verified" field.
 	Verified bool `json:"verified,omitempty"`
+	// Admin holds the value of the "admin" field.
+	Admin bool `json:"admin,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -56,7 +58,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldVerified:
+		case user.FieldVerified, user.FieldAdmin:
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
@@ -108,6 +110,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field verified", values[i])
 			} else if value.Valid {
 				u.Verified = value.Bool
+			}
+		case user.FieldAdmin:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field admin", values[i])
+			} else if value.Valid {
+				u.Admin = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -166,6 +174,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("verified=")
 	builder.WriteString(fmt.Sprintf("%v", u.Verified))
+	builder.WriteString(", ")
+	builder.WriteString("admin=")
+	builder.WriteString(fmt.Sprintf("%v", u.Admin))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

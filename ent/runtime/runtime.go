@@ -60,8 +60,12 @@ func init() {
 	userDescVerified := userFields[3].Descriptor()
 	// user.DefaultVerified holds the default value on creation for the verified field.
 	user.DefaultVerified = userDescVerified.Default.(bool)
+	// userDescAdmin is the schema descriptor for admin field.
+	userDescAdmin := userFields[4].Descriptor()
+	// user.DefaultAdmin holds the default value on creation for the admin field.
+	user.DefaultAdmin = userDescAdmin.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[4].Descriptor()
+	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }

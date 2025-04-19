@@ -194,6 +194,7 @@ func (h *Handler) UserCreate(ctx echo.Context) error {
 		op.SetPassword(*payload.Password)
 	}
 	op.SetVerified(payload.Verified)
+	op.SetAdmin(payload.Admin)
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
@@ -219,6 +220,7 @@ func (h *Handler) UserUpdate(ctx echo.Context, id int) error {
 		op.SetPassword(*payload.Password)
 	}
 	op.SetVerified(payload.Verified)
+	op.SetAdmin(payload.Admin)
 	_, err = op.Save(ctx.Request().Context())
 	return err
 }
@@ -246,6 +248,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 			"Name",
 			"Email",
 			"Verified",
+			"Admin",
 			"Created at",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
@@ -260,6 +263,7 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				res[i].Name,
 				res[i].Email,
 				fmt.Sprint(res[i].Verified),
+				fmt.Sprint(res[i].Admin),
 				res[i].CreatedAt.Format(h.Config.TimeFormat),
 			},
 		})
@@ -278,6 +282,7 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	v.Set("name", entity.Name)
 	v.Set("email", entity.Email)
 	v.Set("verified", fmt.Sprint(entity.Verified))
+	v.Set("admin", fmt.Sprint(entity.Admin))
 	return v, err
 }
 

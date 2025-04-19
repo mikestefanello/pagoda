@@ -103,3 +103,19 @@ func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(c)
 	}
 }
+
+// RequireAdmin requires that the user be an admin in order to proceed.
+func RequireAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u != nil {
+			if user, ok := u.(*ent.User); ok {
+				if user.Admin {
+					// TODO tests
+					return next(c)
+				}
+			}
+		}
+
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+}
