@@ -38,7 +38,7 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 		CSRF(r),
 	)
 
-	return r.Render(layouts.Admin, form)
+	return r.Render(layouts.Primary, form)
 }
 
 func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values url.Values) error {
@@ -138,7 +138,7 @@ func AdminEntityForm(ctx echo.Context, isNew bool, schema *load.Schema, values u
 		ButtonLink(r.Path(routenames.AdminEntityList(schema.Name)), "is-secondary", "Cancel"),
 	), CSRF(r))
 
-	return r.Render(layouts.Admin, Form(
+	return r.Render(layouts.Primary, Form(
 		Method(http.MethodPost),
 		nodes,
 	))
@@ -204,7 +204,7 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 		)
 	}
 
-	return r.Render(layouts.Admin, Group{
+	return r.Render(layouts.Primary, Group{
 		ButtonLink(
 			r.Path(routenames.AdminEntityAdd(params.EntityType.Name)),
 			"is-primary",
