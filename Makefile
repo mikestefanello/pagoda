@@ -16,7 +16,11 @@ ent-gen: ## Generate Ent code
 
 .PHONY: ent-new
 ent-new: ## Create a new Ent entity (ie, make ent-new NAME=MyEntity)
-	go run entgo.io/ent/cmd/ent new $(name)
+	go run entgo.io/ent/cmd/ent new $(NAME)
+
+.PHONY: admin
+admin: ## Create a new admin (ie, make admin EMAIL=myemail@web.com)
+	go run cmd/admin/main.go --email=$(EMAIL)
 
 .PHONY: run
 run: ## Run the application

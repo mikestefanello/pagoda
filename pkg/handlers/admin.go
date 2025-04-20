@@ -47,7 +47,7 @@ func (h *Admin) Init(c *services.Container) error {
 }
 
 func (h *Admin) Routes(g *echo.Group) {
-	entities := g.Group("/admin/content", middleware.RequireAdmin)
+	entities := g.Group("/admin/entity", middleware.RequireAdmin)
 
 	for _, n := range h.graph.Nodes {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))

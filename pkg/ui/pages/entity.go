@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent/admin"
-	"github.com/mikestefanello/pagoda/pkg/pager" // todo make this easier
+	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
@@ -26,7 +26,7 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 
 	form := Form(
 		Method(http.MethodPost),
-		H2(Textf("Are you sure you want to delete this %s?", entityTypeName)),
+		P(Class("subtitle"), Textf("Are you sure you want to delete this %s?", entityTypeName)),
 		ControlGroup(
 			FormButton("is-link", "Delete"),
 			ButtonLink(
@@ -176,7 +176,7 @@ func AdminEntityList(ctx echo.Context, params AdminEntityListParams) error {
 					r.Path(routenames.AdminEntityEdit(params.EntityType.Name), row.ID),
 					"is-link",
 					"Edit",
-				), // todo make this easier
+				),
 			),
 			Td(
 				ButtonLink(r.Path(routenames.AdminEntityDelete(params.EntityType.Name), row.ID),
