@@ -133,15 +133,23 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 
 #### Inline form validation
 
-<img src="https://user-images.githubusercontent.com/552328/147838632-570a3116-1e74-428f-8bfc-523ed309ef06.png" alt="Inline validation"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/inline-validation.png" alt="Inline validation"/>
 
 #### Switch layout templates, user registration
 
-<img src="https://user-images.githubusercontent.com/552328/147838633-c1b3e4f6-bbfd-44e1-b0be-884d1a83f8f4.png" alt="Registration"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/register.png" alt="Registration"/>
 
 #### Alpine.js modal, HTMX AJAX request
 
-<img src="https://user-images.githubusercontent.com/552328/147838634-4b84c5d5-dc3b-4280-ac12-247ab22184a3.png" alt="Alpine and HTMX"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/modal.png" alt="Alpine and HTMX"/>
+
+#### User entity list (admin panel)
+
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/admin-user_list.png" alt="User entity list"/>
+
+#### User entity edit (admin panel)
+
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/admin-user_edit.png" alt="User entity edit"/>
 
 ## Getting started
 
@@ -196,7 +204,7 @@ A new container can be created and initialized via `services.NewContainer()`. It
 
 ### Dependency injection
 
-The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route [handlers](#handlers) so that the handlers have full, easy access to all services.
+The container exists to facilitate easy dependency-injection both for services within the container and areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route [handlers](#handlers) so that the handlers have full, easy access to all services.
 
 ### Test dependencies
 
@@ -267,7 +275,7 @@ When this project was using Postgres, it would automatically drop and recreate t
 
 ## ORM
 
-As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can be swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
 
 An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
 
@@ -835,6 +843,18 @@ Methods include:
 There is currently no generic component to easily render a pager, but the homepage does have an example.
 
 ## Admin panel
+
+// TODO
+
+### Code generation
+
+// TODO
+
+### Access
+
+// TODO
+
+### Considerations
 
 // TODO
 
