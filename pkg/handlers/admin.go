@@ -96,17 +96,15 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
-		return pages.AdminEntityList(ctx, pages.AdminEntityListParams{
-			EntityType: n,
-			EntityList: list,
-			Pager:      pager.NewPager(ctx, h.admin.Config.ItemsPerPage),
-		})
+		pgr := pager.NewPager(ctx, h.admin.Config.ItemsPerPage)
+
+		return pages.AdminEntityList(ctx, n.Name, list, pgr)
 	}
 }
 
 func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityForm(ctx, true, h.getEntitySchema(n), nil)
+		return pages.AdminEntityInput(ctx, true, h.getEntitySchema(n), nil)
 	}
 }
 
@@ -131,7 +129,7 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
-		return pages.AdminEntityForm(ctx, false, h.getEntitySchema(n), v)
+		return pages.AdminEntityInput(ctx, false, h.getEntitySchema(n), v)
 	}
 }
 
