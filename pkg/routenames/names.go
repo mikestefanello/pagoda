@@ -32,10 +32,6 @@ func AdminEntityList(entityTypeName string) string {
 	return fmt.Sprintf("admin:%s_list", entityTypeName)
 }
 
-func AdminEntityListSubmit(entityTypeName string) string {
-	return fmt.Sprintf("admin:%s_list.submit", entityTypeName)
-}
-
 func AdminEntityAdd(entityTypeName string) string {
 	return fmt.Sprintf("admin:%s_add", entityTypeName)
 }

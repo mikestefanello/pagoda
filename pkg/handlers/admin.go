@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/admin"
+	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/pager"
@@ -20,10 +21,6 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/services"
 	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
-
-// TODO plugins should create keys dynamically
-const entityContextKey = "admin:entity"
-const entityIDContextKey = "admin:entity_id"
 
 type Admin struct {
 	orm   *ent.Client
@@ -53,8 +50,6 @@ func (h *Admin) Routes(g *echo.Group) {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
 		ng.GET("", h.EntityList(n)).
 			Name = routenames.AdminEntityList(n.Name)
-		ng.POST("", h.EntityList(n)).
-			Name = routenames.AdminEntityListSubmit(n.Name)
 		ng.GET("/add", h.EntityAdd(n)).
 			Name = routenames.AdminEntityAdd(n.Name)
 		ng.POST("/add", h.EntityAddSubmit(n)).
@@ -70,6 +65,7 @@ func (h *Admin) Routes(g *echo.Group) {
 	}
 }
 
+// middlewareEntityLoad is middleware to extract the entity ID and attempt to load the given entity.
 func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
@@ -81,8 +77,8 @@ func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 			entity, err := h.admin.Get(ctx, n.Name, id)
 			switch {
 			case err == nil:
-				ctx.Set(entityIDContextKey, id)
-				ctx.Set(entityContextKey, map[string][]string(entity))
+				ctx.Set(context.AdminEntityIDKey, id)
+				ctx.Set(context.AdminEntityKey, map[string][]string(entity))
 				return next(ctx)
 			case ent.IsNotFound(err):
 				return echo.NewHTTPError(http.StatusNotFound, "entity not found")
@@ -134,14 +130,14 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 
 func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		v := ctx.Get(entityContextKey).(map[string][]string)
+		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
 		return pages.AdminEntityForm(ctx, false, h.getEntitySchema(n), v)
 	}
 }
 
 func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		id := ctx.Get(entityIDContextKey).(int)
+		id := ctx.Get(context.AdminEntityIDKey).(int)
 		err := h.admin.Update(ctx, n.Name, id)
 		if err != nil {
 			msg.Danger(ctx, err.Error())
@@ -166,7 +162,7 @@ func (h *Admin) EntityDelete(n *gen.Type) echo.HandlerFunc {
 
 func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		id := ctx.Get(entityIDContextKey).(int)
+		id := ctx.Get(context.AdminEntityIDKey).(int)
 		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
 			msg.Danger(ctx, err.Error())
 			return h.EntityDelete(n)(ctx)

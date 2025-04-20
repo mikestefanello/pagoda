@@ -35,6 +35,7 @@ func main() {
 		invalid("failed to generate a random password")
 	}
 
+	// Create the admin user.
 	err = c.ORM.User.
 		Create().
 		SetEmail(email).

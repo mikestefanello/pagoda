@@ -15,7 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// LoadAuthenticatedUser loads the authenticated user, if one, and stores in context
+// LoadAuthenticatedUser loads the authenticated user, if one, and stores in context.
 func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -41,7 +41,7 @@ func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc 
 // LoadValidPasswordToken loads a valid password token entity that matches the user and token
 // provided in path parameters
 // If the token is invalid, the user will be redirected to the forgot password route
-// This requires that the user owning the token is loaded in to context
+// This requires that the user owning the token is loaded in to context.
 func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -51,13 +51,13 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 			}
 			usr := c.Get(context.UserKey).(*ent.User)
 
-			// Extract the token ID
+			// Extract the token ID.
 			tokenID, err := strconv.Atoi(c.Param("password_token"))
 			if err != nil {
 				return echo.NewHTTPError(http.StatusNotFound)
 			}
 
-			// Attempt to load a valid password token
+			// Attempt to load a valid password token.
 			token, err := authClient.GetValidPasswordToken(
 				c,
 				usr.ID,
@@ -82,7 +82,7 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 	}
 }
 
-// RequireAuthentication requires that the user be authenticated in order to proceed
+// RequireAuthentication requires that the user be authenticated in order to proceed.
 func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if u := c.Get(context.AuthenticatedUserKey); u == nil {
@@ -93,7 +93,7 @@ func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// RequireNoAuthentication requires that the user not be authenticated in order to proceed
+// RequireNoAuthentication requires that the user not be authenticated in order to proceed.
 func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if u := c.Get(context.AuthenticatedUserKey); u != nil {
@@ -104,13 +104,12 @@ func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// RequireAdmin requires that the user be an admin in order to proceed.
+// RequireAdmin requires that the authenticated user be an admin in order to proceed.
 func RequireAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if u := c.Get(context.AuthenticatedUserKey); u != nil {
 			if user, ok := u.(*ent.User); ok {
 				if user.Admin {
-					// TODO tests
 					return next(c)
 				}
 			}

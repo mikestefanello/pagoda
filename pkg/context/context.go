@@ -34,6 +34,12 @@ const (
 
 	// ConfigKey is the key used to store the configuration in context.
 	ConfigKey = "config"
+
+	// AdminEntityKey is the key used to store the entity being operated on in the admin panel.
+	AdminEntityKey = "admin:entity"
+
+	// AdminEntityIDKey is the key used to store the ID of the entity being operated on in the admin panel.
+	AdminEntityIDKey = "admin:entity_id"
 )
 
 // IsCanceledError determines if an error is due to a context cancellation.

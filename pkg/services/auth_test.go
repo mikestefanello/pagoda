@@ -55,7 +55,7 @@ func TestAuthClient_GeneratePasswordResetToken(t *testing.T) {
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
 	assert.Len(t, token, c.Config.App.PasswordToken.Length)
-	assert.NoError(t, c.Auth.CheckPassword(token, pt.Hash))
+	assert.NoError(t, c.Auth.CheckPassword(token, pt.Token))
 }
 
 func TestAuthClient_GetValidPasswordToken(t *testing.T) {

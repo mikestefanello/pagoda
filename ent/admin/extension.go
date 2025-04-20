@@ -16,6 +16,7 @@ var (
 	templateDir embed.FS
 )
 
+// Extension is the Ent extension that generates code to support the entity admin panel.
 type Extension struct {
 	entc.DefaultExtension
 }
@@ -34,6 +35,7 @@ func (*Extension) Templates() []*gen.Template {
 	}
 }
 
+// fieldName provides a struct field name from an entity field name (ie, user_id -> UserID).
 func fieldName(name string) string {
 	if len(name) == 0 {
 		return name
@@ -51,6 +53,7 @@ func fieldName(name string) string {
 	return strings.Join(parts, "")
 }
 
+// FieldLabel provides a label for an entity field name (ie, user_id -> User ID).
 func FieldLabel(name string) string {
 	if len(name) == 0 {
 		return name
@@ -69,6 +72,7 @@ func FieldLabel(name string) string {
 	return strings.Join(parts, " ")
 }
 
+// fieldIsPointer determines if a given entity field should be a pointer on the struct.
 func fieldIsPointer(f *gen.Field) bool {
 	switch {
 	case f.Type.Type == field.TypeBool:
@@ -82,6 +86,7 @@ func fieldIsPointer(f *gen.Field) bool {
 	return false
 }
 
+// upperFirst uppercases the first character of a given string.
 func upperFirst(s string) string {
 	if len(s) == 0 {
 		return s
