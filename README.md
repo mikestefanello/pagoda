@@ -19,6 +19,8 @@
     * [Screenshots](#screenshots)
 * [Getting started](#getting-started)
   * [Dependencies](#dependencies)
+  * [Getting the code](#getting-the-code)
+  * [Create an admin account](#create-an-admin-account)
   * [Start the application](#start-the-application)
   * [Live reloading](#live-reloading)
 * [Service container](#service-container)
@@ -39,6 +41,7 @@
   * [Login / Logout](#login--logout)
   * [Forgot password](#forgot-password)
   * [Registration](#registration)
+  * [Admins](#admins)
   * [Authenticated user](#authenticated-user)
     * [Middleware](#middleware)
   * [Email verification](#email-verification)
@@ -72,6 +75,7 @@
   * [Node caching](#node-caching)
   * [Flash messaging](#flash-messaging)
 * [Pager](#pager)
+* [Admin panel](#admin-panel)
 * [Cache](#cache)
   * [Set data](#set-data)
   * [Get data](#get-data)
@@ -145,17 +149,24 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 
 Ensure that [Go](https://go.dev/) is installed on your system.
 
-### Start the application
+### Getting the code
 
-After checking out the repository, from within the root, simply run `make run`:
+Start by checking out the repository. Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
 
 ```
 git clone git@github.com:mikestefanello/pagoda.git
 cd pagoda
-make run
 ```
 
-Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
+### Create an admin account
+
+In order to access the [admin panel](#admin-panel), you must log in with an admin user and in order to create your first admin user account, you must use the command-line. Execute `make admin EMAIL=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
+
+Once you have one admin account, you can use that account to manage other users and admins from within the UI.
+
+### Start the application
+
+From within the root of the codebase, simply run `make run`.
 
 By default, you should be able to access the application in your browser at `localhost:8000`. Your data will be stored within the `dbs` directory. If you ever want to quickly delete all data, just remove this directory.
 
@@ -174,6 +185,7 @@ The container is located at `pkg/services/container.go` and is meant to house al
 - Configuration
 - Database
 - Files
+- Graph
 - Mail
 - ORM
 - Tasks
@@ -343,6 +355,11 @@ The actual registration of a user is not handled within the `AuthClient` but rat
 
 A route is provided for the user to register at `user/register`.
 
+
+### Admins
+
+A checkbox field has been added to the `User` entity type to indicate if the user has admin access. If your app requires a more robust authorization system, such as roles and permissions, you could easily replace this field and adjust all usage of it accordingly. If a user has this field checked, they will be able to access the [admin panel](#admin-panel). [Middleware](#middleware) is provided to easily restrict access to routes based on admin status.
+
 ### Authenticated user
 
 The `AuthClient` has two methods available to get either the `User` entity or the ID of the user currently logged in for a given request. Those methods are `GetAuthenticatedUser()` and `GetAuthenticatedUserID()`.
@@ -352,6 +369,8 @@ The `AuthClient` has two methods available to get either the `User` entity or th
 Registered for all routes is middleware that will load the currently logged in user entity and store it within the request context. The middleware is located at `middleware.LoadAuthenticatedUser()` and, if authenticated, the `User` entity is stored within the context using the key `context.AuthenticatedUserKey`.
 
 If you wish to require either authentication or non-authentication for a given route, you can use either `middleware.RequireAuthentication()` or `middleware.RequireNoAuthentication()`.
+
+If you wish to restrict a route to admins only, you can use `middleware.RequireAdmin`.
 
 ### Email verification
 
@@ -814,6 +833,10 @@ Methods include:
 - `GetOffset()`: Get the offset which can be useful in constructing a paged database query
 
 There is currently no generic component to easily render a pager, but the homepage does have an example.
+
+## Admin panel
+
+// TODO
 
 ## Cache
 
