@@ -104,7 +104,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 
 func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityInput(ctx, true, h.getEntitySchema(n), nil)
+		return pages.AdminEntityInput(ctx, h.getEntitySchema(n), nil)
 	}
 }
 
@@ -129,7 +129,7 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
-		return pages.AdminEntityInput(ctx, false, h.getEntitySchema(n), v)
+		return pages.AdminEntityInput(ctx, h.getEntitySchema(n), v)
 	}
 }
 

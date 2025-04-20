@@ -14,22 +14,26 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntity(r *ui.Request, isNew bool, schema *load.Schema, values url.Values) Node {
+func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 	// TODO inline validation?
+	isNew := values == nil
 	nodes := make(Group, 0)
 
 	getValue := func(name string) string {
+		// Values in the submitted form take precedence.
 		if value := r.Context.FormValue(name); value != "" {
 			return value
 		}
 
+		// Fallback to the entity's values, if being edited.
 		if values != nil && len(values[name]) > 0 {
-			return values[name][0] // TODO cardinality
+			return values[name][0]
 		}
 
 		return ""
 	}
 
+	// Attempt to add form elements for all editable entity fields.
 	for _, f := range schema.Fields {
 		// TODO cardinality?
 		if !isNew && f.Immutable {
@@ -53,6 +57,7 @@ func AdminEntity(r *ui.Request, isNew bool, schema *load.Schema, values url.Valu
 				}
 			}
 			nodes = append(nodes, InputField(p))
+
 		case field.TypeTime:
 			nodes = append(nodes, InputField(InputFieldParams{
 				Name:      f.Name,
@@ -60,6 +65,7 @@ func AdminEntity(r *ui.Request, isNew bool, schema *load.Schema, values url.Valu
 				Label:     admin.FieldLabel(f.Name),
 				Value:     getValue(f.Name),
 			}))
+
 		case field.TypeInt, field.TypeInt8, field.TypeInt16, field.TypeInt32, field.TypeInt64,
 			field.TypeUint, field.TypeUint8, field.TypeUint16, field.TypeUint32, field.TypeUint64,
 			field.TypeFloat32, field.TypeFloat64:
@@ -69,12 +75,14 @@ func AdminEntity(r *ui.Request, isNew bool, schema *load.Schema, values url.Valu
 				Label:     admin.FieldLabel(f.Name),
 				Value:     getValue(f.Name),
 			}))
+
 		case field.TypeBool:
 			nodes = append(nodes, Checkbox(CheckboxParams{
 				Name:    f.Name,
 				Label:   admin.FieldLabel(f.Name),
 				Checked: getValue(f.Name) == "true",
 			}))
+
 		case field.TypeEnum:
 			options := make([]Choice, 0, len(f.Enums)+1)
 			if f.Optional {
@@ -95,18 +103,23 @@ func AdminEntity(r *ui.Request, isNew bool, schema *load.Schema, values url.Valu
 				Value:   getValue(f.Name),
 				Options: options,
 			}))
+
 		default:
 			nodes = append(nodes, P(Textf("%s not supported", f.Name)))
 		}
 	}
 
-	nodes = append(nodes, ControlGroup(
-		FormButton("is-primary", "Submit"),
-		ButtonLink(r.Path(routenames.AdminEntityList(schema.Name)), "is-secondary", "Cancel"),
-	), CSRF(r))
-
 	return Form(
 		Method(http.MethodPost),
 		nodes,
+		ControlGroup(
+			FormButton("is-primary", "Submit"),
+			ButtonLink(
+				r.Path(routenames.AdminEntityList(schema.Name)),
+				"is-secondary",
+				"Cancel",
+			),
+		),
+		CSRF(r),
 	)
 }

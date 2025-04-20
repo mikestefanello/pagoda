@@ -28,9 +28,9 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	)
 }
 
-func AdminEntityInput(ctx echo.Context, isNew bool, schema *load.Schema, values url.Values) error {
+func AdminEntityInput(ctx echo.Context, schema *load.Schema, values url.Values) error {
 	r := ui.NewRequest(ctx)
-	if isNew {
+	if values == nil {
 		r.Title = fmt.Sprintf("Add %s", schema.Name)
 	} else {
 		r.Title = fmt.Sprintf("Edit %s", schema.Name)
@@ -38,7 +38,7 @@ func AdminEntityInput(ctx echo.Context, isNew bool, schema *load.Schema, values 
 
 	return r.Render(
 		layouts.Primary,
-		forms.AdminEntity(r, isNew, schema, values),
+		forms.AdminEntity(r, schema, values),
 	)
 }
 
