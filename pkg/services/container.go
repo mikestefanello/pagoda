@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -241,17 +242,21 @@ func (c *Container) initTasks() {
 
 // openDB opens a database connection.
 func openDB(driver, connection string) (*sql.DB, error) {
-	// Helper to automatically create the directories that the specified sqlite file
-	// should reside in, if one.
 	if driver == "sqlite3" {
+		// Helper to automatically create the directories that the specified sqlite file
+		// should reside in, if one.
 		d := strings.Split(connection, "/")
-
 		if len(d) > 1 {
-			path := strings.Join(d[:len(d)-1], "/")
+			dirpath := strings.Join(d[:len(d)-1], "/")
 
-			if err := os.MkdirAll(path, 0755); err != nil {
+			if err := os.MkdirAll(dirpath, 0755); err != nil {
 				return nil, err
 			}
+		}
+
+		// Check if a random value is required, which is often used for in-memory test databases.
+		if strings.Contains(connection, "$RAND") {
+			connection = strings.Replace(connection, "$RAND", fmt.Sprint(rand.Int()), 1)
 		}
 	}
 

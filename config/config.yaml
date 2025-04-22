@@ -32,7 +32,10 @@ cache:
 database:
   driver: "sqlite3"
   connection: "dbs/main.db?_journal=WAL&_timeout=5000&_fk=true"
-  testConnection: ":memory:?_journal=WAL&_timeout=5000&_fk=true"
+  # $RAND will be automatically replaced with a random value.
+  # memdb is more robust for an in-memory database rather than :memory: because the latter has the potential
+  # retain data even after you close and re-open the connection.
+  testConnection: "file:/$RAND?vfs=memdb&_timeout=1000&_fk=true"
 
 files:
   directory: "uploads"
