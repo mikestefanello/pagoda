@@ -425,10 +425,13 @@ Since the generated code is completely dynamic, all entity functionality related
 
 ### Roadmap
 
+* Determine which tests should be included and provide them.
+* Inline validation.
 * Either exposed sorting, or allow the _handler_ to be configured with sort criteria for each type.
 * Exposed filters.
 * Support all field types (types such as _JSON_ as currently not supported).
-* More features than just entity management.
+* Control which fields appear in the entity list table.
+* More features than just entity management (ie, including the [Backlite](https://github.com/mikestefanello/backlite#screenshots) UI).
 
 ## Routes
 
