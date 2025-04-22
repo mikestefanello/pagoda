@@ -45,6 +45,7 @@
   * [Authenticated user](#authenticated-user)
     * [Middleware](#middleware)
   * [Email verification](#email-verification)
+* [Admin panel](#admin-panel)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
   * [Handlers](#handlers)
@@ -75,7 +76,6 @@
   * [Node caching](#node-caching)
   * [Flash messaging](#flash-messaging)
 * [Pager](#pager)
-* [Admin panel](#admin-panel)
 * [Cache](#cache)
   * [Set data](#set-data)
   * [Get data](#get-data)
@@ -92,7 +92,6 @@
 * [Email](#email)
 * [HTTPS](#https)
 * [Logging](#logging)
-* [Roadmap](#roadmap)
 * [Credits](#credits)
 
 ## Introduction
@@ -275,11 +274,11 @@ When this project was using Postgres, it would automatically drop and recreate t
 
 ## ORM
 
-As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can be swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can be swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you decide to remove Ent, you will lose the dynamic [admin panel](#admin-panel) which allows you to administer all entity types from within the UI. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
 
 An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
 
-Ent relies on code-generation for the entities you create to provide robust, type-safe data operations. Everything within the `ent` package in this repository is generated code for the two entity types listed below with the exception of the schema declaration.
+Ent relies on code-generation for the entities you create to provide robust, type-safe data operations. Everything within the `ent` directory in this repository is generated code for the two entity types listed below except the [schema declaration](#https://github.com/mikestefanello/pagoda/tree/main/ent/schema) and [custom extension](https://github.com/mikestefanello/pagoda/tree/main/ent/admin) to generate code for the [admin panel](#admin-panel).
 
 ### Entity types
 
@@ -393,6 +392,38 @@ By default, verification tokens expire 12 hours after they are issued. This can 
 Be sure to review the [email](#email) section since actual email sending is not fully implemented.
 
 To generate a new verification token, the `AuthClient` has a method `GenerateEmailVerificationToken()` which creates a token for a given email address. To verify the token, pass it in to `ValidateEmailVerificationToken()` which will return the email address associated with the token and an error if the token is invalid.
+
+## Admin panel
+
+The admin panel functionality is considered in _beta_ and remains under active development, though all features described here are expected to be fully-functional. Please use caution when using these features and be sure to report any issues you encounter.
+
+What is currently included in the _admin panel_ is a completely dynamic UI to manage all entities defined by _Ent_ (see [screenshots](#screenshots)). There are no separate templates or interfaces for the admin section.
+
+Users with admin [access](#access) will see additional links on the default sidebar for each defined entity type. As with all default UI components, you can easily move these pages and links to a dedicated section, layout, etc. Clicking on the link for any given entity type will provide a pageable table of entities and the ability to add/edit/delete.
+
+### Code generation
+
+In order to automatically and dynamically provide admin functionality for entities, code generation is used by means of leveraging Ent's [extension API](https://entgo.io/docs/extensions) which makes generating code using the Ent graph schema very easy. A [custom extension](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/extension.go) is provided to generate code that provides flat entity type structs and handler code that work directly with Echo. So, both of those are required in order for any of this to work. Whenever you modify one of your entity types or generate a new one, the admin code will also automatically generate.
+
+Without going in to too much detail here, the generated code provides a [handler](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/handler.go) that is then used by a provided [web handler](https://github.com/mikestefanello/pagoda/blob/master/pkg/handlers/admin.go) to power all the routes used in the admin UI. While the rest of the related code should be simple enough to follow, it's worth calling attention to the highly-dynamic [entity form](https://github.com/mikestefanello/pagoda/blob/master/pkg/ui/forms/admin_entity.go) that is constructed using the _Ent_ graph data structure.
+
+### Access
+
+Only admin users can access the admin panel. The details are outlined in the [admins](#admins) and [middleware](#middleware) sections. If you haven't yet generated an admin user, follow [these instructions](#create-an-admin-account).
+
+### Considerations
+
+Since the generated code is completely dynamic, all entity functionality related to creating and editing must be defined within your _Ent_ schema. Refer to the [User](https://github.com/mikestefanello/pagoda/blob/master/ent/schema/user.go) entity schema as an example.
+- Field validation must be defined within each entity field (ie, validating an email address in a _string_ field).
+- Pre-processing must be defined within entity hooks (ie, hashing the user's password).
+- _Sensitive_ fields will be omitted from the UI, and only modified if a value is provided during creation or editing.
+
+### Roadmap
+
+* Either exposed sorting, or allow the _handler_ to be configured with sort criteria for each type.
+* Exposed filters.
+* Support all field types (types such as _JSON_ as currently not supported).
+* More features than just entity management.
 
 ## Routes
 
@@ -842,22 +873,6 @@ Methods include:
 
 There is currently no generic component to easily render a pager, but the homepage does have an example.
 
-## Admin panel
-
-// TODO
-
-### Code generation
-
-// TODO
-
-### Access
-
-// TODO
-
-### Considerations
-
-// TODO
-
 ## Cache
 
 As previously mentioned, the default cache implementation is a simple in-memory store, backed by [otter](https://github.com/maypok86/otter), a lockless cache that uses [S3-FIFO](https://s3fifo.com/) eviction. The `Container` houses a `CacheClient` which is a useful wrapper to interact with the cache (see examples below). Within the `CacheClient` is the underlying store interface `CacheStore`. If you wish to use a different store, such as Redis, and want to keep using the `CacheClient`, simply implement the `CacheStore` interface with a Redis library and adjust the `Container` initialization to use that.
@@ -1093,14 +1108,6 @@ The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware 
 ```
 2024/06/15 09:07:11 INFO GET /contact request_id=gNblvugTKcyLnBYPMPTwMPEqDOioVLKp ip=::1 host=localhost:8000 referer="" status=200 bytes_in=0 bytes_out=5925 latency=107.527803ms
 ```
-
-## Roadmap
-
-Future work includes but is not limited to:
-
-- Admin section
-- OAuth
-- Flexible pager templates
 
 ## Credits
 

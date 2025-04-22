@@ -96,9 +96,7 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
-		pgr := pager.NewPager(ctx, h.admin.Config.ItemsPerPage)
-
-		return pages.AdminEntityList(ctx, n.Name, list, pgr)
+		return pages.AdminEntityList(ctx, n.Name, list)
 	}
 }
 

@@ -46,7 +46,6 @@ func AdminEntityList(
 	ctx echo.Context,
 	entityTypeName string,
 	entityList *admin.EntityList,
-	pgr pager.Pager,
 ) error {
 	r := ui.NewRequest(ctx)
 	r.Title = entityTypeName
