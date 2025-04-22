@@ -171,7 +171,7 @@ cd pagoda
 
 ### Create an admin account
 
-In order to access the [admin panel](#admin-panel), you must log in with an admin user and in order to create your first admin user account, you must use the command-line. Execute `make admin EMAIL=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
+In order to access the [admin panel](#admin-panel), you must log in with an admin user and in order to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
 
 Once you have one admin account, you can use that account to manage other users and admins from within the UI.
 
@@ -421,6 +421,7 @@ Since the generated code is completely dynamic, all entity functionality related
 - Field validation must be defined within each entity field (ie, validating an email address in a _string_ field).
 - Pre-processing must be defined within entity hooks (ie, hashing the user's password).
 - _Sensitive_ fields will be omitted from the UI, and only modified if a value is provided during creation or editing.
+- _Edges_ must be bound to an [edge field](https://entgo.io/docs/schema-edges#edge-field) if you want them visible and editable.
 
 ### Roadmap
 
