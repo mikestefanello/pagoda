@@ -46,6 +46,10 @@
     * [Middleware](#middleware)
   * [Email verification](#email-verification)
 * [Admin panel](#admin-panel)
+  * [Code generation](#code-generation)
+  * [Access](#access)
+  * [Considerations](#considerations)
+  * [Roadmap](#roadmap)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
   * [Handlers](#handlers)
@@ -395,7 +399,7 @@ To generate a new verification token, the `AuthClient` has a method `GenerateEma
 
 ## Admin panel
 
-The admin panel functionality is considered in _beta_ and remains under active development, though all features described here are expected to be fully-functional. Please use caution when using these features and be sure to report any issues you encounter.
+The admin panel functionality is considered to be in _beta_ and remains under active development, though all features described here are expected to be fully-functional. Please use caution when using these features and be sure to report any issues you encounter.
 
 What is currently included in the _admin panel_ is a completely dynamic UI to manage all entities defined by _Ent_ (see [screenshots](#screenshots)). There are no separate templates or interfaces for the admin section.
 
