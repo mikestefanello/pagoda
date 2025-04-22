@@ -14,14 +14,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	passwordtokenHooks := schema.PasswordToken{}.Hooks()
+	passwordtoken.Hooks[0] = passwordtokenHooks[0]
 	passwordtokenFields := schema.PasswordToken{}.Fields()
 	_ = passwordtokenFields
-	// passwordtokenDescHash is the schema descriptor for hash field.
-	passwordtokenDescHash := passwordtokenFields[0].Descriptor()
-	// passwordtoken.HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	passwordtoken.HashValidator = passwordtokenDescHash.Validators[0].(func(string) error)
+	// passwordtokenDescToken is the schema descriptor for token field.
+	passwordtokenDescToken := passwordtokenFields[0].Descriptor()
+	// passwordtoken.TokenValidator is a validator for the "token" field. It is called by the builders before save.
+	passwordtoken.TokenValidator = passwordtokenDescToken.Validators[0].(func(string) error)
 	// passwordtokenDescCreatedAt is the schema descriptor for created_at field.
-	passwordtokenDescCreatedAt := passwordtokenFields[1].Descriptor()
+	passwordtokenDescCreatedAt := passwordtokenFields[2].Descriptor()
 	// passwordtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
 	passwordtoken.DefaultCreatedAt = passwordtokenDescCreatedAt.Default.(func() time.Time)
 	userHooks := schema.User{}.Hooks()
@@ -35,7 +37,21 @@ func init() {
 	// userDescEmail is the schema descriptor for email field.
 	userDescEmail := userFields[1].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
+	user.EmailValidator = func() func(string) error {
+		validators := userDescEmail.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(email string) error {
+			for _, fn := range fns {
+				if err := fn(email); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// userDescPassword is the schema descriptor for password field.
 	userDescPassword := userFields[2].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
@@ -44,13 +60,17 @@ func init() {
 	userDescVerified := userFields[3].Descriptor()
 	// user.DefaultVerified holds the default value on creation for the verified field.
 	user.DefaultVerified = userDescVerified.Default.(bool)
+	// userDescAdmin is the schema descriptor for admin field.
+	userDescAdmin := userFields[4].Descriptor()
+	// user.DefaultAdmin holds the default value on creation for the admin field.
+	user.DefaultAdmin = userDescAdmin.Default.(bool)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[4].Descriptor()
+	userDescCreatedAt := userFields[5].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 }
 
 const (
-	Version = "v0.14.2"                                         // Version of ent codegen.
-	Sum     = "h1:ywld/j2Rx4EmnIKs8eZ29cbFA1zpB+DA9TLL5l3rlq0=" // Sum of ent codegen.
+	Version = "v0.14.4"                                         // Version of ent codegen.
+	Sum     = "h1:/DhDraSLXIkBhyiVoJeSshr4ZYi7femzhj6/TckzZuI=" // Sum of ent codegen.
 )

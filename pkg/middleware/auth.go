@@ -9,12 +9,13 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/mikestefanello/pagoda/pkg/msg"
+	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
 
 	"github.com/labstack/echo/v4"
 )
 
-// LoadAuthenticatedUser loads the authenticated user, if one, and stores in context
+// LoadAuthenticatedUser loads the authenticated user, if one, and stores in context.
 func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -40,7 +41,7 @@ func LoadAuthenticatedUser(authClient *services.AuthClient) echo.MiddlewareFunc 
 // LoadValidPasswordToken loads a valid password token entity that matches the user and token
 // provided in path parameters
 // If the token is invalid, the user will be redirected to the forgot password route
-// This requires that the user owning the token is loaded in to context
+// This requires that the user owning the token is loaded in to context.
 func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -50,13 +51,13 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 			}
 			usr := c.Get(context.UserKey).(*ent.User)
 
-			// Extract the token ID
+			// Extract the token ID.
 			tokenID, err := strconv.Atoi(c.Param("password_token"))
 			if err != nil {
 				return echo.NewHTTPError(http.StatusNotFound)
 			}
 
-			// Attempt to load a valid password token
+			// Attempt to load a valid password token.
 			token, err := authClient.GetValidPasswordToken(
 				c,
 				usr.ID,
@@ -70,8 +71,7 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 				return next(c)
 			case services.InvalidPasswordTokenError:
 				msg.Warning(c, "The link is either invalid or has expired. Please request a new one.")
-				// TODO use the const for route name
-				return c.Redirect(http.StatusFound, c.Echo().Reverse("forgot_password"))
+				return c.Redirect(http.StatusFound, c.Echo().Reverse(routenames.ForgotPassword))
 			default:
 				return echo.NewHTTPError(
 					http.StatusInternalServerError,
@@ -82,28 +82,39 @@ func LoadValidPasswordToken(authClient *services.AuthClient) echo.MiddlewareFunc
 	}
 }
 
-// RequireAuthentication requires that the user be authenticated in order to proceed
-func RequireAuthentication() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if u := c.Get(context.AuthenticatedUserKey); u == nil {
-				return echo.NewHTTPError(http.StatusUnauthorized)
-			}
-
-			return next(c)
+// RequireAuthentication requires that the user be authenticated in order to proceed.
+func RequireAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u == nil {
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
+
+		return next(c)
 	}
 }
 
-// RequireNoAuthentication requires that the user not be authenticated in order to proceed
-func RequireNoAuthentication() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if u := c.Get(context.AuthenticatedUserKey); u != nil {
-				return echo.NewHTTPError(http.StatusForbidden)
-			}
-
-			return next(c)
+// RequireNoAuthentication requires that the user not be authenticated in order to proceed.
+func RequireNoAuthentication(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u != nil {
+			return echo.NewHTTPError(http.StatusForbidden)
 		}
+
+		return next(c)
+	}
+}
+
+// RequireAdmin requires that the authenticated user be an admin in order to proceed.
+func RequireAdmin(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if u := c.Get(context.AuthenticatedUserKey); u != nil {
+			if user, ok := u.(*ent.User); ok {
+				if user.Admin {
+					return next(c)
+				}
+			}
+		}
+
+		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 }

@@ -11,9 +11,9 @@ var (
 	// PasswordTokensColumns holds the columns for the "password_tokens" table.
 	PasswordTokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "hash", Type: field.TypeString},
+		{Name: "token", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "password_token_user", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
 	}
 	// PasswordTokensTable holds the schema information for the "password_tokens" table.
 	PasswordTokensTable = &schema.Table{
@@ -36,6 +36,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "verified", Type: field.TypeBool, Default: false},
+		{Name: "admin", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.

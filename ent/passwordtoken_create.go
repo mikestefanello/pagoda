@@ -21,9 +21,15 @@ type PasswordTokenCreate struct {
 	hooks    []Hook
 }
 
-// SetHash sets the "hash" field.
-func (ptc *PasswordTokenCreate) SetHash(s string) *PasswordTokenCreate {
-	ptc.mutation.SetHash(s)
+// SetToken sets the "token" field.
+func (ptc *PasswordTokenCreate) SetToken(s string) *PasswordTokenCreate {
+	ptc.mutation.SetToken(s)
+	return ptc
+}
+
+// SetUserID sets the "user_id" field.
+func (ptc *PasswordTokenCreate) SetUserID(i int) *PasswordTokenCreate {
+	ptc.mutation.SetUserID(i)
 	return ptc
 }
 
@@ -41,12 +47,6 @@ func (ptc *PasswordTokenCreate) SetNillableCreatedAt(t *time.Time) *PasswordToke
 	return ptc
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ptc *PasswordTokenCreate) SetUserID(id int) *PasswordTokenCreate {
-	ptc.mutation.SetUserID(id)
-	return ptc
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (ptc *PasswordTokenCreate) SetUser(u *User) *PasswordTokenCreate {
 	return ptc.SetUserID(u.ID)
@@ -59,7 +59,9 @@ func (ptc *PasswordTokenCreate) Mutation() *PasswordTokenMutation {
 
 // Save creates the PasswordToken in the database.
 func (ptc *PasswordTokenCreate) Save(ctx context.Context) (*PasswordToken, error) {
-	ptc.defaults()
+	if err := ptc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ptc.sqlSave, ptc.mutation, ptc.hooks)
 }
 
@@ -86,22 +88,29 @@ func (ptc *PasswordTokenCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ptc *PasswordTokenCreate) defaults() {
+func (ptc *PasswordTokenCreate) defaults() error {
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
+		if passwordtoken.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized passwordtoken.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := passwordtoken.DefaultCreatedAt()
 		ptc.mutation.SetCreatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (ptc *PasswordTokenCreate) check() error {
-	if _, ok := ptc.mutation.Hash(); !ok {
-		return &ValidationError{Name: "hash", err: errors.New(`ent: missing required field "PasswordToken.hash"`)}
+	if _, ok := ptc.mutation.Token(); !ok {
+		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "PasswordToken.token"`)}
 	}
-	if v, ok := ptc.mutation.Hash(); ok {
-		if err := passwordtoken.HashValidator(v); err != nil {
-			return &ValidationError{Name: "hash", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.hash": %w`, err)}
+	if v, ok := ptc.mutation.Token(); ok {
+		if err := passwordtoken.TokenValidator(v); err != nil {
+			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
+	}
+	if _, ok := ptc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PasswordToken.user_id"`)}
 	}
 	if _, ok := ptc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PasswordToken.created_at"`)}
@@ -135,9 +144,9 @@ func (ptc *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSp
 		_node = &PasswordToken{config: ptc.config}
 		_spec = sqlgraph.NewCreateSpec(passwordtoken.Table, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
 	)
-	if value, ok := ptc.mutation.Hash(); ok {
-		_spec.SetField(passwordtoken.FieldHash, field.TypeString, value)
-		_node.Hash = value
+	if value, ok := ptc.mutation.Token(); ok {
+		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
+		_node.Token = value
 	}
 	if value, ok := ptc.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)
@@ -157,7 +166,7 @@ func (ptc *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.password_token_user = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -23,6 +23,8 @@ const (
 	FieldPassword = "password"
 	// FieldVerified holds the string denoting the verified field in the database.
 	FieldVerified = "verified"
+	// FieldAdmin holds the string denoting the admin field in the database.
+	FieldAdmin = "admin"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeOwner holds the string denoting the owner edge name in mutations.
@@ -35,7 +37,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "passwordtoken" package.
 	OwnerInverseTable = "password_tokens"
 	// OwnerColumn is the table column denoting the owner relation/edge.
-	OwnerColumn = "password_token_user"
+	OwnerColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -45,6 +47,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPassword,
 	FieldVerified,
+	FieldAdmin,
 	FieldCreatedAt,
 }
 
@@ -73,6 +76,8 @@ var (
 	PasswordValidator func(string) error
 	// DefaultVerified holds the default value on creation for the "verified" field.
 	DefaultVerified bool
+	// DefaultAdmin holds the default value on creation for the "admin" field.
+	DefaultAdmin bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -103,6 +108,11 @@ func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 // ByVerified orders the results by the verified field.
 func ByVerified(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldVerified, opts...).ToFunc()
+}
+
+// ByAdmin orders the results by the admin field.
+func ByAdmin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAdmin, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

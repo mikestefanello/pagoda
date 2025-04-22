@@ -19,6 +19,8 @@
     * [Screenshots](#screenshots)
 * [Getting started](#getting-started)
   * [Dependencies](#dependencies)
+  * [Getting the code](#getting-the-code)
+  * [Create an admin account](#create-an-admin-account)
   * [Start the application](#start-the-application)
   * [Live reloading](#live-reloading)
 * [Service container](#service-container)
@@ -39,9 +41,15 @@
   * [Login / Logout](#login--logout)
   * [Forgot password](#forgot-password)
   * [Registration](#registration)
+  * [Admins](#admins)
   * [Authenticated user](#authenticated-user)
     * [Middleware](#middleware)
   * [Email verification](#email-verification)
+* [Admin panel](#admin-panel)
+  * [Code generation](#code-generation)
+  * [Access](#access)
+  * [Considerations](#considerations)
+  * [Roadmap](#roadmap)
 * [Routes](#routes)
   * [Custom middleware](#custom-middleware)
   * [Handlers](#handlers)
@@ -88,7 +96,6 @@
 * [Email](#email)
 * [HTTPS](#https)
 * [Logging](#logging)
-* [Roadmap](#roadmap)
 * [Credits](#credits)
 
 ## Introduction
@@ -129,15 +136,23 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 
 #### Inline form validation
 
-<img src="https://user-images.githubusercontent.com/552328/147838632-570a3116-1e74-428f-8bfc-523ed309ef06.png" alt="Inline validation"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/inline-validation.png" alt="Inline validation"/>
 
 #### Switch layout templates, user registration
 
-<img src="https://user-images.githubusercontent.com/552328/147838633-c1b3e4f6-bbfd-44e1-b0be-884d1a83f8f4.png" alt="Registration"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/register.png" alt="Registration"/>
 
 #### Alpine.js modal, HTMX AJAX request
 
-<img src="https://user-images.githubusercontent.com/552328/147838634-4b84c5d5-dc3b-4280-ac12-247ab22184a3.png" alt="Alpine and HTMX"/>
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/modal.png" alt="Alpine and HTMX"/>
+
+#### User entity list (admin panel)
+
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/admin-user_list.png" alt="User entity list"/>
+
+#### User entity edit (admin panel)
+
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/admin-user_edit.png" alt="User entity edit"/>
 
 ## Getting started
 
@@ -145,17 +160,24 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 
 Ensure that [Go](https://go.dev/) is installed on your system.
 
-### Start the application
+### Getting the code
 
-After checking out the repository, from within the root, simply run `make run`:
+Start by checking out the repository. Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
 
 ```
 git clone git@github.com:mikestefanello/pagoda.git
 cd pagoda
-make run
 ```
 
-Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
+### Create an admin account
+
+In order to access the [admin panel](#admin-panel), you must log in with an admin user and in order to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
+
+Once you have one admin account, you can use that account to manage other users and admins from within the UI.
+
+### Start the application
+
+From within the root of the codebase, simply run `make run`.
 
 By default, you should be able to access the application in your browser at `localhost:8000`. Your data will be stored within the `dbs` directory. If you ever want to quickly delete all data, just remove this directory.
 
@@ -174,6 +196,7 @@ The container is located at `pkg/services/container.go` and is meant to house al
 - Configuration
 - Database
 - Files
+- Graph
 - Mail
 - ORM
 - Tasks
@@ -184,7 +207,7 @@ A new container can be created and initialized via `services.NewContainer()`. It
 
 ### Dependency injection
 
-The container exists to faciliate easy dependency-injection both for services within the container as well as areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route [handlers](#handlers) so that the handlers have full, easy access to all services.
+The container exists to facilitate easy dependency-injection both for services within the container and areas of your application that require any of these dependencies. For example, the container is automatically passed to the `Init()` method of your route [handlers](#handlers) so that the handlers have full, easy access to all services.
 
 ### Test dependencies
 
@@ -255,11 +278,11 @@ When this project was using Postgres, it would automatically drop and recreate t
 
 ## ORM
 
-As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
+As previously mentioned, [Ent](https://entgo.io/) is the supplied ORM. It can be swapped out, but I highly recommend it. I don't think there is anything comparable for Go, at the current time. If you decide to remove Ent, you will lose the dynamic [admin panel](#admin-panel) which allows you to administer all entity types from within the UI. If you're not familiar with Ent, take a look through their top-notch [documentation](https://entgo.io/docs/getting-started).
 
 An Ent client is included in the `Container` to provide easy access to the ORM throughout the application.
 
-Ent relies on code-generation for the entities you create to provide robust, type-safe data operations. Everything within the `ent` package in this repository is generated code for the two entity types listed below with the exception of the schema declaration.
+Ent relies on code-generation for the entities you create to provide robust, type-safe data operations. Everything within the `ent` directory in this repository is generated code for the two entity types listed below except the [schema declaration](#https://github.com/mikestefanello/pagoda/tree/main/ent/schema) and [custom extension](https://github.com/mikestefanello/pagoda/tree/main/ent/admin) to generate code for the [admin panel](#admin-panel).
 
 ### Entity types
 
@@ -343,6 +366,11 @@ The actual registration of a user is not handled within the `AuthClient` but rat
 
 A route is provided for the user to register at `user/register`.
 
+
+### Admins
+
+A checkbox field has been added to the `User` entity type to indicate if the user has admin access. If your app requires a more robust authorization system, such as roles and permissions, you could easily replace this field and adjust all usage of it accordingly. If a user has this field checked, they will be able to access the [admin panel](#admin-panel). [Middleware](#middleware) is provided to easily restrict access to routes based on admin status.
+
 ### Authenticated user
 
 The `AuthClient` has two methods available to get either the `User` entity or the ID of the user currently logged in for a given request. Those methods are `GetAuthenticatedUser()` and `GetAuthenticatedUserID()`.
@@ -352,6 +380,8 @@ The `AuthClient` has two methods available to get either the `User` entity or th
 Registered for all routes is middleware that will load the currently logged in user entity and store it within the request context. The middleware is located at `middleware.LoadAuthenticatedUser()` and, if authenticated, the `User` entity is stored within the context using the key `context.AuthenticatedUserKey`.
 
 If you wish to require either authentication or non-authentication for a given route, you can use either `middleware.RequireAuthentication()` or `middleware.RequireNoAuthentication()`.
+
+If you wish to restrict a route to admins only, you can use `middleware.RequireAdmin`.
 
 ### Email verification
 
@@ -366,6 +396,42 @@ By default, verification tokens expire 12 hours after they are issued. This can 
 Be sure to review the [email](#email) section since actual email sending is not fully implemented.
 
 To generate a new verification token, the `AuthClient` has a method `GenerateEmailVerificationToken()` which creates a token for a given email address. To verify the token, pass it in to `ValidateEmailVerificationToken()` which will return the email address associated with the token and an error if the token is invalid.
+
+## Admin panel
+
+The admin panel functionality is considered to be in _beta_ and remains under active development, though all features described here are expected to be fully-functional. Please use caution when using these features and be sure to report any issues you encounter.
+
+What is currently included in the _admin panel_ is a completely dynamic UI to manage all entities defined by _Ent_ (see [screenshots](#screenshots)). There are no separate templates or interfaces for the admin section.
+
+Users with admin [access](#access) will see additional links on the default sidebar for each defined entity type. As with all default UI components, you can easily move these pages and links to a dedicated section, layout, etc. Clicking on the link for any given entity type will provide a pageable table of entities and the ability to add/edit/delete.
+
+### Code generation
+
+In order to automatically and dynamically provide admin functionality for entities, code generation is used by means of leveraging Ent's [extension API](https://entgo.io/docs/extensions) which makes generating code using the Ent graph schema very easy. A [custom extension](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/extension.go) is provided to generate code that provides flat entity type structs and handler code that work directly with Echo. So, both of those are required in order for any of this to work. Whenever you modify one of your entity types or generate a new one, the admin code will also automatically generate.
+
+Without going in to too much detail here, the generated code provides a [handler](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/handler.go) that is then used by a provided [web handler](https://github.com/mikestefanello/pagoda/blob/master/pkg/handlers/admin.go) to power all the routes used in the admin UI. While the rest of the related code should be simple enough to follow, it's worth calling attention to the highly-dynamic [entity form](https://github.com/mikestefanello/pagoda/blob/master/pkg/ui/forms/admin_entity.go) that is constructed using the _Ent_ graph data structure.
+
+### Access
+
+Only admin users can access the admin panel. The details are outlined in the [admins](#admins) and [middleware](#middleware) sections. If you haven't yet generated an admin user, follow [these instructions](#create-an-admin-account).
+
+### Considerations
+
+Since the generated code is completely dynamic, all entity functionality related to creating and editing must be defined within your _Ent_ schema. Refer to the [User](https://github.com/mikestefanello/pagoda/blob/master/ent/schema/user.go) entity schema as an example.
+- Field validation must be defined within each entity field (ie, validating an email address in a _string_ field).
+- Pre-processing must be defined within entity hooks (ie, hashing the user's password).
+- _Sensitive_ fields will be omitted from the UI, and only modified if a value is provided during creation or editing.
+- _Edges_ must be bound to an [edge field](https://entgo.io/docs/schema-edges#edge-field) if you want them visible and editable.
+
+### Roadmap
+
+* Determine which tests should be included and provide them.
+* Inline validation.
+* Either exposed sorting, or allow the _handler_ to be configured with sort criteria for each type.
+* Exposed filters.
+* Support all field types (types such as _JSON_ as currently not supported).
+* Control which fields appear in the entity list table.
+* More features than just entity management (ie, including the [Backlite](https://github.com/mikestefanello/backlite#screenshots) UI).
 
 ## Routes
 
@@ -1050,14 +1116,6 @@ The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware 
 ```
 2024/06/15 09:07:11 INFO GET /contact request_id=gNblvugTKcyLnBYPMPTwMPEqDOioVLKp ip=::1 host=localhost:8000 referer="" status=200 bytes_in=0 bytes_out=5925 latency=107.527803ms
 ```
-
-## Roadmap
-
-Future work includes but is not limited to:
-
-- Admin section
-- OAuth
-- Flexible pager templates
 
 ## Credits
 

@@ -28,6 +28,9 @@ type (
 		// IsAuth stores whether the user is authenticated.
 		IsAuth bool
 
+		// IsAdmin stores whether the user is an admin.
+		IsAdmin bool
+
 		// AuthUser stores the authenticated user.
 		AuthUser *ent.User
 
@@ -77,6 +80,7 @@ func NewRequest(ctx echo.Context) *Request {
 	if u := ctx.Get(context.AuthenticatedUserKey); u != nil {
 		p.IsAuth = true
 		p.AuthUser = u.(*ent.User)
+		p.IsAdmin = p.AuthUser.Admin
 	}
 
 	if cfg := ctx.Get(context.ConfigKey); cfg != nil {

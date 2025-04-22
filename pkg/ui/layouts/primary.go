@@ -1,6 +1,7 @@
 package layouts
 
 import (
+	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/mikestefanello/pagoda/pkg/ui/cache"
@@ -13,6 +14,7 @@ func Primary(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
+			Data("theme", "light"),
 			Head(
 				Metatags(r),
 				CSS(),
@@ -30,9 +32,12 @@ func Primary(r *ui.Request, content Node) Node {
 						),
 						Div(
 							Class("column is-10"),
-							If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
-							FlashMessages(r),
-							content,
+							Div(
+								Class("box"),
+								If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
+								FlashMessages(r),
+								content,
+							),
 						),
 					),
 				),
@@ -128,6 +133,25 @@ func search(r *ui.Request) Node {
 }
 
 func sidebarMenu(r *ui.Request) Node {
+	adminSubMenu := func() Node {
+		entityTypeNames := admin.GetEntityTypeNames()
+		entityTypeLinks := make(Group, len(entityTypeNames))
+		for _, n := range entityTypeNames {
+			entityTypeLinks = append(entityTypeLinks, MenuLink(r, n, routenames.AdminEntityList(n)))
+		}
+
+		return Group{
+			P(
+				Class("menu-label"),
+				Text("Entities"),
+			),
+			Ul(
+				Class("menu-list"),
+				entityTypeLinks,
+			),
+		}
+	}
+
 	return Aside(
 		Class("menu"),
 		HxBoost(),
@@ -155,5 +179,6 @@ func sidebarMenu(r *ui.Request) Node {
 			If(!r.IsAuth, MenuLink(r, "Register", routenames.Register)),
 			If(!r.IsAuth, MenuLink(r, "Forgot password", routenames.ForgotPasswordSubmit)),
 		),
+		Iff(r.IsAdmin, adminSubMenu),
 	)
 }

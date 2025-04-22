@@ -8,6 +8,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
 	"github.com/mikestefanello/pagoda/ent/user"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/stretchr/testify/require"
 
@@ -41,12 +42,12 @@ func TestAuthClient_Auth(t *testing.T) {
 	assertNoAuth()
 }
 
-func TestAuthClient_PasswordHashing(t *testing.T) {
+func TestAuthClient_CheckPassword(t *testing.T) {
 	pw := "testcheckpassword"
-	hash, err := c.Auth.HashPassword(pw)
-	assert.NoError(t, err)
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	require.NoError(t, err)
 	assert.NotEqual(t, hash, pw)
-	err = c.Auth.CheckPassword(pw, hash)
+	err = c.Auth.CheckPassword(pw, string(hash))
 	assert.NoError(t, err)
 }
 
@@ -54,7 +55,7 @@ func TestAuthClient_GeneratePasswordResetToken(t *testing.T) {
 	token, pt, err := c.Auth.GeneratePasswordResetToken(ctx, usr.ID)
 	require.NoError(t, err)
 	assert.Len(t, token, c.Config.App.PasswordToken.Length)
-	assert.NoError(t, c.Auth.CheckPassword(token, pt.Hash))
+	assert.NoError(t, c.Auth.CheckPassword(token, pt.Token))
 }
 
 func TestAuthClient_GetValidPasswordToken(t *testing.T) {

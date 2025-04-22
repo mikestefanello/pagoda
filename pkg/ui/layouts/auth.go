@@ -13,6 +13,7 @@ func Auth(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
+			Data("theme", "light"),
 			Head(
 				Metatags(r),
 				CSS(),

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	goctx "context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -40,7 +41,7 @@ func TestRequireAuthentication(t *testing.T) {
 	tests.InitSession(ctx)
 
 	// Not logged in
-	err := tests.ExecuteMiddleware(ctx, RequireAuthentication())
+	err := tests.ExecuteMiddleware(ctx, RequireAuthentication)
 	tests.AssertHTTPErrorCode(t, err, http.StatusUnauthorized)
 
 	// Login
@@ -49,7 +50,7 @@ func TestRequireAuthentication(t *testing.T) {
 	_ = tests.ExecuteMiddleware(ctx, LoadAuthenticatedUser(c.Auth))
 
 	// Logged in
-	err = tests.ExecuteMiddleware(ctx, RequireAuthentication())
+	err = tests.ExecuteMiddleware(ctx, RequireAuthentication)
 	assert.Nil(t, err)
 }
 
@@ -58,7 +59,7 @@ func TestRequireNoAuthentication(t *testing.T) {
 	tests.InitSession(ctx)
 
 	// Not logged in
-	err := tests.ExecuteMiddleware(ctx, RequireNoAuthentication())
+	err := tests.ExecuteMiddleware(ctx, RequireNoAuthentication)
 	assert.Nil(t, err)
 
 	// Login
@@ -67,7 +68,7 @@ func TestRequireNoAuthentication(t *testing.T) {
 	_ = tests.ExecuteMiddleware(ctx, LoadAuthenticatedUser(c.Auth))
 
 	// Logged in
-	err = tests.ExecuteMiddleware(ctx, RequireNoAuthentication())
+	err = tests.ExecuteMiddleware(ctx, RequireNoAuthentication)
 	tests.AssertHTTPErrorCode(t, err, http.StatusForbidden)
 }
 
@@ -108,4 +109,37 @@ func TestLoadValidPasswordToken(t *testing.T) {
 	ctxPt, ok := ctx.Get(context.PasswordTokenKey).(*ent.PasswordToken)
 	require.True(t, ok)
 	assert.Equal(t, pt.ID, ctxPt.ID)
+}
+
+func TestRequireAdmin(t *testing.T) {
+	ctx, _ := tests.NewContext(c.Web, "/")
+	tests.InitSession(ctx)
+
+	// Not logged in
+	err := tests.ExecuteMiddleware(ctx, RequireAdmin)
+	tests.AssertHTTPErrorCode(t, err, http.StatusUnauthorized)
+
+	// Login as a non-admin
+	err = c.Auth.Login(ctx, usr.ID)
+	require.NoError(t, err)
+	_ = tests.ExecuteMiddleware(ctx, LoadAuthenticatedUser(c.Auth))
+
+	// Logged in as a non-admin
+	err = tests.ExecuteMiddleware(ctx, RequireAdmin)
+	tests.AssertHTTPErrorCode(t, err, http.StatusUnauthorized)
+
+	// Create an admin and login
+	adm, err := tests.CreateUser(c.ORM)
+	require.NoError(t, err)
+	err = c.ORM.User.Update().
+		SetAdmin(true).
+		Exec(goctx.Background())
+	require.NoError(t, err)
+	err = c.Auth.Login(ctx, adm.ID)
+	require.NoError(t, err)
+	_ = tests.ExecuteMiddleware(ctx, LoadAuthenticatedUser(c.Auth))
+
+	// Logged in as an admin
+	err = tests.ExecuteMiddleware(ctx, RequireAdmin)
+	assert.Nil(t, err)
 }

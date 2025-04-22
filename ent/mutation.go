@@ -35,7 +35,7 @@ type PasswordTokenMutation struct {
 	op            Op
 	typ           string
 	id            *int
-	hash          *string
+	token         *string
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	user          *int
@@ -143,40 +143,76 @@ func (m *PasswordTokenMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetHash sets the "hash" field.
-func (m *PasswordTokenMutation) SetHash(s string) {
-	m.hash = &s
+// SetToken sets the "token" field.
+func (m *PasswordTokenMutation) SetToken(s string) {
+	m.token = &s
 }
 
-// Hash returns the value of the "hash" field in the mutation.
-func (m *PasswordTokenMutation) Hash() (r string, exists bool) {
-	v := m.hash
+// Token returns the value of the "token" field in the mutation.
+func (m *PasswordTokenMutation) Token() (r string, exists bool) {
+	v := m.token
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldHash returns the old "hash" field's value of the PasswordToken entity.
+// OldToken returns the old "token" field's value of the PasswordToken entity.
 // If the PasswordToken object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PasswordTokenMutation) OldHash(ctx context.Context) (v string, err error) {
+func (m *PasswordTokenMutation) OldToken(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHash is only allowed on UpdateOne operations")
+		return v, errors.New("OldToken is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHash requires an ID field in the mutation")
+		return v, errors.New("OldToken requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHash: %w", err)
+		return v, fmt.Errorf("querying old value for OldToken: %w", err)
 	}
-	return oldValue.Hash, nil
+	return oldValue.Token, nil
 }
 
-// ResetHash resets all changes to the "hash" field.
-func (m *PasswordTokenMutation) ResetHash() {
-	m.hash = nil
+// ResetToken resets all changes to the "token" field.
+func (m *PasswordTokenMutation) ResetToken() {
+	m.token = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *PasswordTokenMutation) SetUserID(i int) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *PasswordTokenMutation) UserID() (r int, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the PasswordToken entity.
+// If the PasswordToken object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PasswordTokenMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *PasswordTokenMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -215,27 +251,15 @@ func (m *PasswordTokenMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *PasswordTokenMutation) SetUserID(id int) {
-	m.user = &id
-}
-
 // ClearUser clears the "user" edge to the User entity.
 func (m *PasswordTokenMutation) ClearUser() {
 	m.cleareduser = true
+	m.clearedFields[passwordtoken.FieldUserID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *PasswordTokenMutation) UserCleared() bool {
 	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *PasswordTokenMutation) UserID() (id int, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
@@ -288,9 +312,12 @@ func (m *PasswordTokenMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PasswordTokenMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.hash != nil {
-		fields = append(fields, passwordtoken.FieldHash)
+	fields := make([]string, 0, 3)
+	if m.token != nil {
+		fields = append(fields, passwordtoken.FieldToken)
+	}
+	if m.user != nil {
+		fields = append(fields, passwordtoken.FieldUserID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, passwordtoken.FieldCreatedAt)
@@ -303,8 +330,10 @@ func (m *PasswordTokenMutation) Fields() []string {
 // schema.
 func (m *PasswordTokenMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case passwordtoken.FieldHash:
-		return m.Hash()
+	case passwordtoken.FieldToken:
+		return m.Token()
+	case passwordtoken.FieldUserID:
+		return m.UserID()
 	case passwordtoken.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -316,8 +345,10 @@ func (m *PasswordTokenMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PasswordTokenMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case passwordtoken.FieldHash:
-		return m.OldHash(ctx)
+	case passwordtoken.FieldToken:
+		return m.OldToken(ctx)
+	case passwordtoken.FieldUserID:
+		return m.OldUserID(ctx)
 	case passwordtoken.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -329,12 +360,19 @@ func (m *PasswordTokenMutation) OldField(ctx context.Context, name string) (ent.
 // type.
 func (m *PasswordTokenMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case passwordtoken.FieldHash:
+	case passwordtoken.FieldToken:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetHash(v)
+		m.SetToken(v)
+		return nil
+	case passwordtoken.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
 		return nil
 	case passwordtoken.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -350,13 +388,16 @@ func (m *PasswordTokenMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *PasswordTokenMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *PasswordTokenMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -392,8 +433,11 @@ func (m *PasswordTokenMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PasswordTokenMutation) ResetField(name string) error {
 	switch name {
-	case passwordtoken.FieldHash:
-		m.ResetHash()
+	case passwordtoken.FieldToken:
+		m.ResetToken()
+		return nil
+	case passwordtoken.FieldUserID:
+		m.ResetUserID()
 		return nil
 	case passwordtoken.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -486,6 +530,7 @@ type UserMutation struct {
 	email         *string
 	password      *string
 	verified      *bool
+	admin         *bool
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	owner         map[int]struct{}
@@ -738,6 +783,42 @@ func (m *UserMutation) ResetVerified() {
 	m.verified = nil
 }
 
+// SetAdmin sets the "admin" field.
+func (m *UserMutation) SetAdmin(b bool) {
+	m.admin = &b
+}
+
+// Admin returns the value of the "admin" field in the mutation.
+func (m *UserMutation) Admin() (r bool, exists bool) {
+	v := m.admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAdmin returns the old "admin" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAdmin: %w", err)
+	}
+	return oldValue.Admin, nil
+}
+
+// ResetAdmin resets all changes to the "admin" field.
+func (m *UserMutation) ResetAdmin() {
+	m.admin = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *UserMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -862,7 +943,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
@@ -874,6 +955,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.verified != nil {
 		fields = append(fields, user.FieldVerified)
+	}
+	if m.admin != nil {
+		fields = append(fields, user.FieldAdmin)
 	}
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
@@ -894,6 +978,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Password()
 	case user.FieldVerified:
 		return m.Verified()
+	case user.FieldAdmin:
+		return m.Admin()
 	case user.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -913,6 +999,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPassword(ctx)
 	case user.FieldVerified:
 		return m.OldVerified(ctx)
+	case user.FieldAdmin:
+		return m.OldAdmin(ctx)
 	case user.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -951,6 +1039,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVerified(v)
+		return nil
+	case user.FieldAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAdmin(v)
 		return nil
 	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1019,6 +1114,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldVerified:
 		m.ResetVerified()
+		return nil
+	case user.FieldAdmin:
+		m.ResetAdmin()
 		return nil
 	case user.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -19,16 +19,16 @@ type (
 		Help        string
 	}
 
-	RadiosParams struct {
+	OptionsParams struct {
 		Form      form.Form
 		FormField string
 		Name      string
 		Label     string
 		Value     string
-		Options   []Radio
+		Options   []Choice
 	}
 
-	Radio struct {
+	Choice struct {
 		Value string
 		Label string
 	}
@@ -40,6 +40,14 @@ type (
 		Label     string
 		Value     string
 		Help      string
+	}
+
+	CheckboxParams struct {
+		Form      form.Form
+		FormField string
+		Name      string
+		Label     string
+		Checked   bool
 	}
 )
 
@@ -80,7 +88,7 @@ func TextareaField(el TextareaFieldParams) Node {
 	)
 }
 
-func Radios(el RadiosParams) Node {
+func Radios(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
 	for i, opt := range el.Options {
 		buttons[i] = Label(
@@ -101,6 +109,50 @@ func Radios(el RadiosParams) Node {
 		Div(
 			Class("radios"),
 			buttons,
+		),
+		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func SelectList(el OptionsParams) Node {
+	buttons := make(Group, len(el.Options))
+	for i, opt := range el.Options {
+		buttons[i] = Option(
+			Text(opt.Label),
+			Value(opt.Value),
+			If(opt.Value == el.Value, Attr("selected")),
+		)
+	}
+
+	return Div(
+		Class("control field"),
+		Label(Class("label"), Text(el.Label)),
+		Div(
+			Class("select"),
+			Select(
+				Name(el.Name),
+				buttons,
+			),
+		),
+		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func Checkbox(el CheckboxParams) Node {
+	return Div(
+		Class("field"),
+		Div(
+			Class("control"),
+			Label(
+				Class("checkbox"),
+				Input(
+					Type("checkbox"),
+					Name(el.Name),
+					If(el.Checked, Checked()),
+					Value("true"),
+				),
+				Text(" "+el.Label),
+			),
 		),
 		formFieldErrors(el.Form, el.FormField),
 	)
@@ -153,6 +205,8 @@ func FileField(name, label string) Node {
 
 func formFieldStatusClass(fm form.Form, formField string) string {
 	switch {
+	case fm == nil:
+		return ""
 	case !fm.IsSubmitted():
 		return ""
 	case fm.FieldHasErrors(formField):
@@ -163,6 +217,10 @@ func formFieldStatusClass(fm form.Form, formField string) string {
 }
 
 func formFieldErrors(fm form.Form, field string) Node {
+	if fm == nil {
+		return nil
+	}
+
 	errs := fm.GetFieldErrors(field)
 	if len(errs) == 0 {
 		return nil

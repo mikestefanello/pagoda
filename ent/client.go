@@ -333,7 +333,8 @@ func (c *PasswordTokenClient) QueryUser(pt *PasswordToken) *UserQuery {
 
 // Hooks returns the client hooks.
 func (c *PasswordTokenClient) Hooks() []Hook {
-	return c.hooks.PasswordToken
+	hooks := c.hooks.PasswordToken
+	return append(hooks[:len(hooks):len(hooks)], passwordtoken.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

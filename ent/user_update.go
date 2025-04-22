@@ -84,6 +84,20 @@ func (uu *UserUpdate) SetNillableVerified(b *bool) *UserUpdate {
 	return uu
 }
 
+// SetAdmin sets the "admin" field.
+func (uu *UserUpdate) SetAdmin(b bool) *UserUpdate {
+	uu.mutation.SetAdmin(b)
+	return uu
+}
+
+// SetNillableAdmin sets the "admin" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAdmin(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetAdmin(*b)
+	}
+	return uu
+}
+
 // AddOwnerIDs adds the "owner" edge to the PasswordToken entity by IDs.
 func (uu *UserUpdate) AddOwnerIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddOwnerIDs(ids...)
@@ -195,6 +209,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.Admin(); ok {
+		_spec.SetField(user.FieldAdmin, field.TypeBool, value)
 	}
 	if uu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,6 +330,20 @@ func (uuo *UserUpdateOne) SetVerified(b bool) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableVerified(b *bool) *UserUpdateOne {
 	if b != nil {
 		uuo.SetVerified(*b)
+	}
+	return uuo
+}
+
+// SetAdmin sets the "admin" field.
+func (uuo *UserUpdateOne) SetAdmin(b bool) *UserUpdateOne {
+	uuo.mutation.SetAdmin(b)
+	return uuo
+}
+
+// SetNillableAdmin sets the "admin" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAdmin(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetAdmin(*b)
 	}
 	return uuo
 }
@@ -458,6 +489,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Verified(); ok {
 		_spec.SetField(user.FieldVerified, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.Admin(); ok {
+		_spec.SetField(user.FieldAdmin, field.TypeBool, value)
 	}
 	if uuo.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{

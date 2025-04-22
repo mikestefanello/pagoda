@@ -5,6 +5,7 @@ package passwordtoken
 import (
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -14,8 +15,10 @@ const (
 	Label = "password_token"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldHash holds the string denoting the hash field in the database.
-	FieldHash = "hash"
+	// FieldToken holds the string denoting the token field in the database.
+	FieldToken = "token"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -28,20 +31,15 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "password_token_user"
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for passwordtoken fields.
 var Columns = []string{
 	FieldID,
-	FieldHash,
+	FieldToken,
+	FieldUserID,
 	FieldCreatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "password_tokens"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"password_token_user",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -51,17 +49,18 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
-			return true
-		}
-	}
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/mikestefanello/pagoda/ent/runtime"
 var (
-	// HashValidator is a validator for the "hash" field. It is called by the builders before save.
-	HashValidator func(string) error
+	Hooks [1]ent.Hook
+	// TokenValidator is a validator for the "token" field. It is called by the builders before save.
+	TokenValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
@@ -74,9 +73,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByHash orders the results by the hash field.
-func ByHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldHash, opts...).ToFunc()
+// ByToken orders the results by the token field.
+func ByToken(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldToken, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -413,7 +413,9 @@ func (uq *UserQuery) loadOwner(ctx context.Context, query *PasswordTokenQuery, n
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(passwordtoken.FieldUserID)
+	}
 	query.Where(predicate.PasswordToken(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.OwnerColumn), fks...))
 	}))
@@ -422,13 +424,10 @@ func (uq *UserQuery) loadOwner(ctx context.Context, query *PasswordTokenQuery, n
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.password_token_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "password_token_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "password_token_user" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

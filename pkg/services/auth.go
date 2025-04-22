@@ -106,15 +106,6 @@ func (c *AuthClient) GetAuthenticatedUser(ctx echo.Context) (*ent.User, error) {
 	return nil, NotAuthenticatedError{}
 }
 
-// HashPassword returns a hash of a given password
-func (c *AuthClient) HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hash), nil
-}
-
 // CheckPassword check if a given password matches a given hash
 func (c *AuthClient) CheckPassword(password, hash string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
@@ -123,7 +114,7 @@ func (c *AuthClient) CheckPassword(password, hash string) error {
 // GeneratePasswordResetToken generates a password reset token for a given user.
 // For security purposes, the token itself is not stored in the database but rather
 // a hash of the token, exactly how passwords are handled. This method returns both
-// the generated token as well as the token entity which only contains the hash.
+// the generated token and the token entity which only contains the hash.
 func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (string, *ent.PasswordToken, error) {
 	// Generate the token, which is what will go in the URL, but not the database
 	token, err := c.RandomToken(c.config.App.PasswordToken.Length)
@@ -131,16 +122,10 @@ func (c *AuthClient) GeneratePasswordResetToken(ctx echo.Context, userID int) (s
 		return "", nil, err
 	}
 
-	// Hash the token, which is what will be stored in the database
-	hash, err := c.HashPassword(token)
-	if err != nil {
-		return "", nil, err
-	}
-
 	// Create and save the password reset token
 	pt, err := c.orm.PasswordToken.
 		Create().
-		SetHash(hash).
+		SetToken(token).
 		SetUserID(userID).
 		Save(ctx.Request().Context())
 
@@ -166,7 +151,7 @@ func (c *AuthClient) GetValidPasswordToken(ctx echo.Context, userID, tokenID int
 	case *ent.NotFoundError:
 	case nil:
 		// Check the token for a hash match
-		if err := c.CheckPassword(token, pt.Hash); err == nil {
+		if err := c.CheckPassword(token, pt.Token); err == nil {
 			return pt, nil
 		}
 	default:

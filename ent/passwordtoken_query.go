@@ -24,7 +24,6 @@ type PasswordTokenQuery struct {
 	inters     []Interceptor
 	predicates []predicate.PasswordToken
 	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -299,12 +298,12 @@ func (ptq *PasswordTokenQuery) WithUser(opts ...func(*UserQuery)) *PasswordToken
 // Example:
 //
 //	var v []struct {
-//		Hash string `json:"hash,omitempty"`
+//		Token string `json:"token,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.PasswordToken.Query().
-//		GroupBy(passwordtoken.FieldHash).
+//		GroupBy(passwordtoken.FieldToken).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ptq *PasswordTokenQuery) GroupBy(field string, fields ...string) *PasswordTokenGroupBy {
@@ -322,11 +321,11 @@ func (ptq *PasswordTokenQuery) GroupBy(field string, fields ...string) *Password
 // Example:
 //
 //	var v []struct {
-//		Hash string `json:"hash,omitempty"`
+//		Token string `json:"token,omitempty"`
 //	}
 //
 //	client.PasswordToken.Query().
-//		Select(passwordtoken.FieldHash).
+//		Select(passwordtoken.FieldToken).
 //		Scan(ctx, &v)
 func (ptq *PasswordTokenQuery) Select(fields ...string) *PasswordTokenSelect {
 	ptq.ctx.Fields = append(ptq.ctx.Fields, fields...)
@@ -370,18 +369,11 @@ func (ptq *PasswordTokenQuery) prepareQuery(ctx context.Context) error {
 func (ptq *PasswordTokenQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PasswordToken, error) {
 	var (
 		nodes       = []*PasswordToken{}
-		withFKs     = ptq.withFKs
 		_spec       = ptq.querySpec()
 		loadedTypes = [1]bool{
 			ptq.withUser != nil,
 		}
 	)
-	if ptq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, passwordtoken.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*PasswordToken).scanValues(nil, columns)
 	}
@@ -413,10 +405,7 @@ func (ptq *PasswordTokenQuery) loadUser(ctx context.Context, query *UserQuery, n
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*PasswordToken)
 	for i := range nodes {
-		if nodes[i].password_token_user == nil {
-			continue
-		}
-		fk := *nodes[i].password_token_user
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -433,7 +422,7 @@ func (ptq *PasswordTokenQuery) loadUser(ctx context.Context, query *UserQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "password_token_user" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -466,6 +455,9 @@ func (ptq *PasswordTokenQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != passwordtoken.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ptq.withUser != nil {
+			_spec.Node.AddColumnOnce(passwordtoken.FieldUserID)
 		}
 	}
 	if ps := ptq.predicates; len(ps) > 0 {
