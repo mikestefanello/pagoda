@@ -93,7 +93,6 @@ type (
 		Capacity   int
 		Expiration struct {
 			StaticFile time.Duration
-			Page       time.Duration
 		}
 	}
 

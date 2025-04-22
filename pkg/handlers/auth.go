@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/user"
 	"github.com/mikestefanello/pagoda/pkg/context"
@@ -22,9 +23,10 @@ import (
 )
 
 type Auth struct {
-	auth *services.AuthClient
-	mail *services.MailClient
-	orm  *ent.Client
+	config *config.Config
+	auth   *services.AuthClient
+	mail   *services.MailClient
+	orm    *ent.Client
 }
 
 func init() {
@@ -32,6 +34,7 @@ func init() {
 }
 
 func (h *Auth) Init(c *services.Container) error {
+	h.config = c.Config
 	h.orm = c.ORM
 	h.auth = c.Auth
 	h.mail = c.Mail
@@ -111,7 +114,7 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		Compose().
 		To(u.Email).
 		Subject("Reset your password").
-		Body(fmt.Sprintf("Go here to reset your password: %s", url)).
+		Body(fmt.Sprintf("Go here to reset your password: %s", h.config.App.Host+url)).
 		Send(ctx)
 
 	if err != nil {

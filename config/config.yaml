@@ -28,7 +28,6 @@ cache:
   capacity: 100000
   expiration:
     staticFile: "4380h"
-    page: "24h"
 
 database:
   driver: "sqlite3"
