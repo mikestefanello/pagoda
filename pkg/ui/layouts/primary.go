@@ -149,6 +149,20 @@ func sidebarMenu(r *ui.Request) Node {
 				Class("menu-list"),
 				entityTypeLinks,
 			),
+			P(
+				Class("menu-label"),
+				Text("Monitoring"),
+			),
+			Ul(
+				Class("menu-list"),
+				Li(
+					A(
+						Href(r.Path(routenames.AdminTasks)),
+						Text("Tasks"),
+						Target("_blank"),
+					),
+				),
+			),
 		}
 	}
 

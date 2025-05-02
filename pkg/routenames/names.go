@@ -26,6 +26,7 @@ const (
 	CacheSubmit          = "cache.submit"
 	Files                = "files"
 	FilesSubmit          = "files.submit"
+	AdminTasks           = "admin:tasks"
 )
 
 func AdminEntityList(entityTypeName string) string {

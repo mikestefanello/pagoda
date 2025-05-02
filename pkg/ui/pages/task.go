@@ -22,10 +22,19 @@ func AddTask(ctx echo.Context, form *forms.Task) error {
 				"",
 				Group{
 					P(Raw("Submitting this form will create an <i>ExampleTask</i> in the task queue. After the specified delay, the message will be logged by the queue processor.")),
-					P(Text("See pkg/tasks and the README for more information.")),
+					P(Raw("See <i>pkg/tasks</i> and the README for more information.")),
 				})
 		}),
 		form.Render(r),
+		Iff(r.Htmx.Target != "task", func() Node {
+			return components.Message(
+				"is-warning",
+				"",
+				Group{
+					If(!r.IsAdmin, P(Text("Log in as an admin in order to access the task and queue monitoring UI."))),
+					If(r.IsAdmin, P(Text("View all queued tasks by clicking on the Tasks link in the sidebar."))),
+				})
+		}),
 	}
 
 	return r.Render(layouts.Primary, g)

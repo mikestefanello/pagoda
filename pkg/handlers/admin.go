@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/backlite/ui"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/context"
@@ -23,9 +24,10 @@ import (
 )
 
 type Admin struct {
-	orm   *ent.Client
-	graph *gen.Graph
-	admin *admin.Handler
+	orm      *ent.Client
+	graph    *gen.Graph
+	admin    *admin.Handler
+	backlite *ui.Handler
 }
 
 func init() {
@@ -33,6 +35,7 @@ func init() {
 }
 
 func (h *Admin) Init(c *services.Container) error {
+	var err error
 	h.graph = c.Graph
 	h.orm = c.ORM
 	h.admin = admin.NewHandler(h.orm, admin.HandlerConfig{
@@ -40,12 +43,19 @@ func (h *Admin) Init(c *services.Container) error {
 		PageQueryKey: pager.QueryKey,
 		TimeFormat:   time.DateTime,
 	})
-	return nil
+	h.backlite, err = ui.NewHandler(ui.Config{
+		DB:           c.Database,
+		BasePath:     "/admin/tasks",
+		ItemsPerPage: 25,
+		ReleaseAfter: c.Config.Tasks.ReleaseAfter,
+	})
+	return err
 }
 
 func (h *Admin) Routes(g *echo.Group) {
-	entities := g.Group("/admin/entity", middleware.RequireAdmin)
+	ag := g.Group("/admin", middleware.RequireAdmin)
 
+	entities := ag.Group("/entity")
 	for _, n := range h.graph.Nodes {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
 		ng.GET("", h.EntityList(n)).
@@ -63,6 +73,14 @@ func (h *Admin) Routes(g *echo.Group) {
 		ng.POST("/:id/delete", h.EntityDeleteSubmit(n), h.middlewareEntityLoad(n)).
 			Name = routenames.AdminEntityDeleteSubmit(n.Name)
 	}
+
+	tasks := ag.Group("/tasks")
+	tasks.GET("", h.Backlite(h.backlite.Running)).Name = routenames.AdminTasks
+	tasks.GET("/succeeded", h.Backlite(h.backlite.Succeeded))
+	tasks.GET("/failed", h.Backlite(h.backlite.Failed))
+	tasks.GET("/upcoming", h.Backlite(h.backlite.Upcoming))
+	tasks.GET("/task/:id", h.Backlite(h.backlite.Task))
+	tasks.GET("/completed/:id", h.Backlite(h.backlite.TaskCompleted))
 }
 
 // middlewareEntityLoad is middleware to extract the entity ID and attempt to load the given entity.
@@ -181,4 +199,13 @@ func (h *Admin) getEntitySchema(n *gen.Type) *load.Schema {
 		}
 	}
 	return nil
+}
+
+func (h *Admin) Backlite(handler func(http.ResponseWriter, *http.Request) error) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if id := c.Param("id"); id != "" {
+			c.Request().SetPathValue("task", id)
+		}
+		return handler(c.Response().Writer, c.Request())
+	}
 }

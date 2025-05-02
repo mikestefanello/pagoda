@@ -78,8 +78,8 @@ github.com/mattn/go-sqlite3 v1.14.28 h1:ThEiQrnbtumT+QMknw63Befp/ce/nUPgBPMlRFEu
 github.com/mattn/go-sqlite3 v1.14.28/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/maypok86/otter v1.2.4 h1:HhW1Pq6VdJkmWwcZZq19BlEQkHtI8xgsQzBVXJU0nfc=
 github.com/maypok86/otter v1.2.4/go.mod h1:mKLfoI7v1HOmQMwFgX4QkRk23mX6ge3RDvjdHOWG4R4=
-github.com/mikestefanello/backlite v0.4.0 h1:+OTiErTfwydXzeDS8H8iAdbmrQYJ7XuwxFApFORVy+k=
-github.com/mikestefanello/backlite v0.4.0/go.mod h1:yvGKIFQxscmVYW8dtvlmT3UzfmM0NX2OigwNGsbR46o=
+github.com/mikestefanello/backlite v0.5.0 h1:6lKZdEYgutdmwV4Id8/t9E/NY14U3fS4/RhiOkFDD4c=
+github.com/mikestefanello/backlite v0.5.0/go.mod h1:gx6UKLUQY5OVXQkIm3AzNkyPn9OzoKHKuwM4JGrY4tQ=
 github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=
 github.com/mitchellh/go-wordwrap v1.0.1/go.mod h1:R62XHJLzvMFRBbcrT7m7WgmE1eOyTSsCt+hzestvNj0=
 github.com/pelletier/go-toml/v2 v2.2.3 h1:YmeHyLY8mFWbdkNWwpr+qIL2bEqT0o95WSdkNHvL12M=

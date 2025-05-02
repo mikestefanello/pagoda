@@ -88,6 +88,7 @@
 * [Tasks](#tasks)
   * [Queues](#queues)
   * [Dispatcher](#dispatcher)
+  * [Monitoring tasks and queues](#monitoring-tasks-and-queues)
 * [Cron](#cron)
 * [Files](#files)
 * [Static files](#static-files)
@@ -153,6 +154,10 @@ Originally, Postgres and Redis were chosen as defaults but since the aim of this
 #### User entity edit (admin panel)
 
 <img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/pagoda/admin-user_edit.png" alt="User entity edit"/>
+
+#### Monitor task queues (provided by Backlite via the admin panel)
+
+<img src="https://raw.githubusercontent.com/mikestefanello/readmeimages/main/backlite/failed.png" alt="Manage task queues"/>
 
 ## Getting started
 
@@ -401,9 +406,13 @@ To generate a new verification token, the `AuthClient` has a method `GenerateEma
 
 The admin panel functionality is considered to be in _beta_ and remains under active development, though all features described here are expected to be fully-functional. Please use caution when using these features and be sure to report any issues you encounter.
 
-What is currently included in the _admin panel_ is a completely dynamic UI to manage all entities defined by _Ent_ (see [screenshots](#screenshots)). There are no separate templates or interfaces for the admin section.
+The _admin panel_ currently includes:
+* A completely dynamic UI to manage all entities defined by _Ent_.
+* A section to monitor all [background tasks and queues](#tasks).
 
-Users with admin [access](#access) will see additional links on the default sidebar for each defined entity type. As with all default UI components, you can easily move these pages and links to a dedicated section, layout, etc. Clicking on the link for any given entity type will provide a pageable table of entities and the ability to add/edit/delete.
+There are no separate templates or interfaces for the admin section (see [screenshots](#screenshots)).
+
+Users with admin [access](#access) will see additional links on the default sidebar at the bottom. As with all default UI components, you can easily move these pages and links to a dedicated section, layout, etc. Clicking on the link for any given entity type will provide a pageable table of entities and the ability to add/edit/delete.
 
 ### Code generation
 
@@ -431,7 +440,6 @@ Since the generated code is completely dynamic, all entity functionality related
 * Exposed filters.
 * Support all field types (types such as _JSON_ as currently not supported).
 * Control which fields appear in the entity list table.
-* More features than just entity management (ie, including the [Backlite](https://github.com/mikestefanello/backlite#screenshots) UI).
 
 ## Routes
 
@@ -988,6 +996,10 @@ c.Tasks.Start(ctx)
 The app [configuration](#configuration) contains values to configure the client and dispatcher including how many goroutines to use, when to release stuck tasks back into the queue, and how often to cleanup retained tasks in the database.
 
 When the app is shutdown, the dispatcher is given 10 seconds to wait for any in-progress tasks to finish execution. This can be changed in `cmd/web/main.go`.
+
+### Monitoring tasks and queues
+
+The [admin panel](#admin-panel) contains the UI provided by [Backlite](https://github.com/mikestefanello/backlite) in order to fully monitor all tasks and queues from within your browser.
 
 ## Cron
 

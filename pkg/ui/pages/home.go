@@ -10,6 +10,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	"github.com/mikestefanello/pagoda/pkg/ui/models"
 	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -38,7 +39,7 @@ func Home(ctx echo.Context, posts *models.Posts) error {
 	headerMsg := func() Node {
 		return Group{
 			Section(
-				Class("hero is-info welcome is-small mb-5"),
+				Class("hero is-info welcome is-small mb-3"),
 				Div(
 					Class("hero-body"),
 					Div(
@@ -55,6 +56,28 @@ func Home(ctx echo.Context, posts *models.Posts) error {
 							If(!r.IsAuth, Text("Please login in to your account.")),
 							If(r.IsAuth, Text("Welcome back!")),
 						),
+					),
+				),
+			),
+			Section(
+				Class("hero is-light is-small mb-5"),
+				Div(
+					Class("hero-body"),
+					Div(
+						Class("container"),
+						B(Text("Admin status: ")),
+						Span(
+							Classes{
+								"tag":        true,
+								"is-success": r.IsAdmin,
+								"is-danger":  !r.IsAdmin,
+							},
+							Text(fmt.Sprint(r.IsAdmin)),
+						),
+						If(!r.IsAdmin, Span(
+							Class("is-size-7 ml-3"),
+							Raw(`(<a href="https://github.com/mikestefanello/pagoda#create-an-admin-account">click here</a> for instructions to make an admin account)`),
+						)),
 					),
 				),
 			),
