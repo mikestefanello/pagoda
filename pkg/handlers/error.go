@@ -32,7 +32,7 @@ func (e *Error) Page(err error, ctx echo.Context) {
 	}
 
 	// Set the status code.
-	ctx.Response().Status = code
+	ctx.Response().WriteHeader(code)
 
 	// Render the error page.
 	if err = pages.Error(ctx, code); err != nil {
