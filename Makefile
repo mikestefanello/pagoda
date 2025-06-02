@@ -1,6 +1,19 @@
+# The Tailwind CSS CLI package to install (see https://github.com/tailwindlabs/tailwindcss/releases/latest)
+TAILWIND_PACKAGE = tailwindcss-linux-x64
+
 .PHONY: help
 help: ## Print make targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: install
+install: ent-install air-install tailwind-install ## Install all dependencies
+
+.PHONY: tailwind-install
+tailwind-install: ## Install the Tailwind CSS CLI
+	curl -sLo tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/latest/download/$(TAILWIND_PACKAGE)
+	chmod +x tailwindcss
+	curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
+	curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui-theme.js
 
 .PHONY: ent-install
 ent-install: ## Install Ent code-generation module
@@ -39,3 +52,7 @@ test: ## Run all tests
 .PHONY: check-updates
 check-updates: ## Check for direct dependency updates
 	go list -u -m -f '{{if not .Indirect}}{{.}}{{end}}' all | grep "\["
+
+.PHONY: css
+css: ## Build and minify Tailwind CSS
+	./tailwindcss -i tailwind.css -o public/static/main.css -m

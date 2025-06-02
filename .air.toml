@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./tmp/main"
-  cmd = "go build -o ./tmp/main ./cmd/web"
+  cmd = "make css && go build -o ./tmp/main ./cmd/web"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata", "uploads", "dbs"]
   exclude_file = []

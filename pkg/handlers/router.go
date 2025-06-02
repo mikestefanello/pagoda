@@ -4,20 +4,30 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
-	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/pkg/context"
 	"github.com/mikestefanello/pagoda/pkg/middleware"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	files "github.com/mikestefanello/pagoda/public"
 )
 
 // BuildRouter builds the router.
 func BuildRouter(c *services.Container) error {
-	// Static files with proper cache control.
-	// ui.File() should be used in ui components to append a cache key to the URL in order to break cache
+	// Public files with proper cache control.
+	// ui.PublicFile() should be used in ui components to append a cache key to the URL to break cache
 	// after each server restart.
-	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.StaticFile)).
-		Static(config.StaticPrefix, config.StaticDir)
+	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.PublicFile)).
+		Static("files", "public/files")
+
+	// Static files with proper cache control.
+	// ui.StaticFile() should be used in ui components to append a cache key to the URL to break cache
+	// after each server restart.
+	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.PublicFile)).
+		StaticFS("static", echo.MustSubFS(files.Static, "static"))
+
+	// TODO is cache control needed for ^?
+	// TODO separate cache control? ^
 
 	// Non-static file route group.
 	g := c.Web.Group("")

@@ -17,7 +17,7 @@ func Auth(r *ui.Request, content Node) Node {
 			Head(
 				Metatags(r),
 				CSS(),
-				JS(r),
+				JS(),
 			),
 			Body(
 				Section(

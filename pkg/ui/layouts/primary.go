@@ -14,33 +14,53 @@ func Primary(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
-			Data("theme", "light"),
+			Data("theme", "dark"),
 			Head(
 				Metatags(r),
 				CSS(),
-				JS(r),
+				JS(),
 			),
 			Body(
-				headerNavBar(r),
 				Div(
-					Class("container mt-5"),
+					Class("drawer lg:drawer-open"),
+					Input(
+						ID("sidebar"),
+						Type("checkbox"),
+						Class("drawer-toggle"),
+					),
 					Div(
-						Class("columns"),
-						Div(
-							Class("column is-2"),
-							sidebarMenu(r),
-						),
-						Div(
-							Class("column is-10"),
-							Div(
-								Class("box"),
-								If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
-								FlashMessages(r),
-								content,
-							),
+						Class("drawer-content flex flex-col p-7 prose-sm"),
+						If(len(r.Title) > 0, H1(Text(r.Title))),
+						FlashMessages(r),
+						content,
+						Label(
+							For("sidebar"),
+							Class("btn btn-primary drawer-button lg:hidden"),
+							Text("Open drawer"),
 						),
 					),
+					sidebarMenu(r),
 				),
+				//headerNavBar(r),
+				//Div(
+				//	Class("container mt-5"),
+				//	Div(
+				//		Class("columns"),
+				//		Div(
+				//			Class("column is-2"),
+				//			sidebarMenu(r),
+				//		),
+				//		Div(
+				//			Class("column is-10"),
+				//			Div(
+				//				Class("box"),
+				//				If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
+				//				FlashMessages(r),
+				//				content,
+				//			),
+				//		),
+				//	),
+				//),
 				HtmxListeners(r),
 			),
 		),
@@ -133,6 +153,13 @@ func search(r *ui.Request) Node {
 }
 
 func sidebarMenu(r *ui.Request) Node {
+	header := func(text string) Node {
+		return Li(
+			Class("menu-title mt-3 uppercase"),
+			Span(Text(text)),
+		)
+	}
+
 	adminSubMenu := func() Node {
 		entityTypeNames := admin.GetEntityTypeNames()
 		entityTypeLinks := make(Group, len(entityTypeNames))
@@ -141,58 +168,42 @@ func sidebarMenu(r *ui.Request) Node {
 		}
 
 		return Group{
-			P(
-				Class("menu-label"),
-				Text("Entities"),
-			),
-			Ul(
-				Class("menu-list"),
-				entityTypeLinks,
-			),
-			P(
-				Class("menu-label"),
-				Text("Monitoring"),
-			),
-			Ul(
-				Class("menu-list"),
-				Li(
-					A(
-						Href(r.Path(routenames.AdminTasks)),
-						Text("Tasks"),
-						Target("_blank"),
-					),
+			header("Entities"),
+			entityTypeLinks,
+			header("Monitoring"),
+			Li(
+				A(
+					Href(r.Path(routenames.AdminTasks)),
+					Text("Tasks"),
+					Target("_blank"),
 				),
 			),
 		}
 	}
 
-	return Aside(
-		Class("menu"),
+	return Div(
+		Class("drawer-side"),
 		HxBoost(),
-		P(
-			Class("menu-label"),
-			Text("General"),
+		Label(
+			For("sidebar"),
+			Aria("label", "close sidebar"),
+			Class("drawer-overlay"),
 		),
 		Ul(
-			Class("menu-list"),
+			Class("menu bg-base-200 text-base-content min-h-full w-80 p-4"),
+			header("General"),
 			MenuLink(r, "Dashboard", routenames.Home),
 			MenuLink(r, "About", routenames.About),
 			MenuLink(r, "Contact", routenames.Contact),
 			MenuLink(r, "Cache", routenames.Cache),
 			MenuLink(r, "Task", routenames.Task),
 			MenuLink(r, "Files", routenames.Files),
-		),
-		P(
-			Class("menu-label"),
-			Text("Account"),
-		),
-		Ul(
-			Class("menu-list"),
+			header("Account"),
 			If(r.IsAuth, MenuLink(r, "Logout", routenames.Logout)),
 			If(!r.IsAuth, MenuLink(r, "Login", routenames.Login)),
 			If(!r.IsAuth, MenuLink(r, "Register", routenames.Register)),
 			If(!r.IsAuth, MenuLink(r, "Forgot password", routenames.ForgotPasswordSubmit)),
+			Iff(r.IsAdmin, adminSubMenu),
 		),
-		Iff(r.IsAdmin, adminSubMenu),
 	)
 }

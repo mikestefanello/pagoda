@@ -63,7 +63,7 @@ func (p *Post) Render() Node {
 			P(
 				Class("image is-64x64"),
 				Img(
-					Src(ui.File("gopher.png")),
+					Src(ui.StaticFile("gopher.png")),
 					Alt("Gopher"),
 				),
 			),

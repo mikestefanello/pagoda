@@ -13,7 +13,7 @@ func MenuLink(r *ui.Request, title, routeName string, routeParams ...any) Node {
 		A(
 			Href(href),
 			Text(title),
-			If(href == r.CurrentPath, Class("is-active")),
+			If(href == r.CurrentPath, Class("menu-active")),
 		),
 	)
 }

@@ -221,7 +221,7 @@ func (c *Container) initMail() {
 // initTasks initializes the task client.
 func (c *Container) initTasks() {
 	var err error
-	// You could use a separate database for tasks, if you'd like. but using one
+	// You could use a separate database for tasks, if you'd like, but using one
 	// makes transaction support easier.
 	c.Tasks, err = backlite.NewClient(backlite.ClientConfig{
 		DB:              c.Database,

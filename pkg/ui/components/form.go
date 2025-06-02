@@ -52,38 +52,26 @@ type (
 )
 
 func ControlGroup(controls ...Node) Node {
-	g := make(Group, len(controls))
-	for i, control := range controls {
-		g[i] = Div(
-			Class("control"),
-			control,
-		)
-	}
-
 	return Div(
-		Class("field is-grouped"),
-		g,
+		Class("join mt-2"),
+		Div(controls...),
 	)
 }
 
 func TextareaField(el TextareaFieldParams) Node {
-	return Div(
-		Class("field"),
-		Label(
-			For("name"),
-			Class("label"),
+	return FieldSet(
+		Class("fieldset"),
+		If(len(el.Label) > 0, Legend(
+			Class("fieldset-legend"),
 			Text(el.Label),
+		)),
+		Textarea(
+			Class("textarea h-24 "+formFieldStatusClass(el.Form, el.FormField)),
+			ID(el.Name),
+			Name(el.Name),
+			Text(el.Value),
 		),
-		Div(
-			Class("control"),
-			Textarea(
-				ID(el.Name),
-				Name(el.Name),
-				Class("textarea "+formFieldStatusClass(el.Form, el.FormField)),
-				Text(el.Value),
-			),
-		),
-		If(el.Help != "", P(Class("help"), Text(el.Help))),
+		Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -91,25 +79,30 @@ func TextareaField(el TextareaFieldParams) Node {
 func Radios(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
 	for i, opt := range el.Options {
-		buttons[i] = Label(
-			Class("radio"),
+		id := "radio-" + el.Name + "-" + opt.Value
+		buttons[i] = Div(
+			Class("mb-2"),
 			Input(
+				ID(id),
 				Type("radio"),
 				Name(el.Name),
 				Value(opt.Value),
+				Class("radio mr-1 "+formFieldStatusClass(el.Form, el.FormField)),
 				If(el.Value == opt.Value, Checked()),
 			),
-			Text(" "+opt.Label),
+			Label(
+				Text(opt.Label),
+				For(id),
+			),
 		)
 	}
 
-	return Div(
-		Class("control field"),
-		Label(Class("label"), Text(el.Label)),
-		Div(
-			Class("radios"),
-			buttons,
-		),
+	return FieldSet(
+		If(len(el.Label) > 0, Legend(
+			Class("fieldset-legend"),
+			Text(el.Label),
+		)),
+		buttons,
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -159,27 +152,30 @@ func Checkbox(el CheckboxParams) Node {
 }
 
 func InputField(el InputFieldParams) Node {
-	return Div(
-		Class("field"),
-		Label(
-			Class("label"),
-			For(el.Name),
+	return FieldSet(
+		Class("fieldset"),
+		If(len(el.Label) > 0, Legend(
+			Class("fieldset-legend"),
 			Text(el.Label),
+		)),
+		Input(
+			ID(el.Name),
+			Name(el.Name),
+			Type(el.InputType),
+			Class("input "+formFieldStatusClass(el.Form, el.FormField)),
+			Value(el.Value),
+			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
-		Div(
-			Class("control"),
-			Input(
-				ID(el.Name),
-				Name(el.Name),
-				Type(el.InputType),
-				If(el.Placeholder != "", Placeholder(el.Placeholder)),
-				Class("input "+formFieldStatusClass(el.Form, el.FormField)),
-				Value(el.Value),
-			),
-		),
-		If(el.Help != "", P(Class("help"), Text(el.Help))),
-		formFieldErrors(el.Form, el.FormField),
+		Help(el.Help),
+		formFieldErrors(el.Form, el.FormField), // todo
 	)
+}
+
+func Help(text string) Node {
+	return If(len(text) > 0, Div(
+		Class("label"),
+		Text(text),
+	))
 }
 
 func FileField(name, label string) Node {
@@ -210,9 +206,9 @@ func formFieldStatusClass(fm form.Form, formField string) string {
 	case !fm.IsSubmitted():
 		return ""
 	case fm.FieldHasErrors(formField):
-		return "is-danger"
+		return "input-error"
 	default:
-		return "is-success"
+		return "input-success"
 	}
 }
 
@@ -228,8 +224,8 @@ func formFieldErrors(fm form.Form, field string) Node {
 
 	g := make(Group, len(errs))
 	for i, err := range errs {
-		g[i] = P(
-			Class("help is-danger"),
+		g[i] = Div(
+			Class("text-error"),
 			Text(err),
 		)
 	}
@@ -247,7 +243,7 @@ func CSRF(r *ui.Request) Node {
 
 func FormButton(class, label string) Node {
 	return Button(
-		Class("button "+class),
+		Class("btn btn-soft "+class),
 		Text(label),
 	)
 }

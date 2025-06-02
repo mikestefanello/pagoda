@@ -3,8 +3,6 @@ package ui
 import (
 	"fmt"
 	"time"
-
-	"github.com/mikestefanello/pagoda/config"
 )
 
 var (
@@ -12,7 +10,16 @@ var (
 	cacheBuster = fmt.Sprint(time.Now().Unix())
 )
 
-// File generates a relative URL to a static file including a cache-buster query parameter.
-func File(filepath string) string {
-	return fmt.Sprintf("/%s/%s?v=%s", config.StaticPrefix, filepath, cacheBuster)
+// PublicFile generates a relative URL to a public file including a cache-buster query parameter.
+func PublicFile(filepath string) string {
+	return file("files", filepath)
+}
+
+// StaticFile generates a relative URL to a static file including a cache-buster query parameter.
+func StaticFile(filepath string) string {
+	return file("static", filepath)
+}
+
+func file(dir, filepath string) string {
+	return fmt.Sprintf("/%s/%s?v=%s", dir, filepath, cacheBuster)
 }
