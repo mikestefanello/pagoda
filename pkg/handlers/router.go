@@ -40,7 +40,6 @@ func BuildRouter(c *services.Container) error {
 	// Create a cookie store for session data.
 	cookieStore := sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))
 	cookieStore.Options.HttpOnly = true
-	cookieStore.Options.Secure = true
 	cookieStore.Options.SameSite = http.SameSiteStrictMode
 
 	g.Use(
@@ -62,7 +61,6 @@ func BuildRouter(c *services.Container) error {
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			TokenLookup:    "form:csrf",
 			CookieHTTPOnly: true,
-			CookieSecure:   true,
 			CookieSameSite: http.SameSiteStrictMode,
 			ContextKey:     context.CSRFKey,
 		}),
