@@ -70,13 +70,13 @@ func AdminEntityList(
 			Td(
 				ButtonLink(
 					r.Path(routenames.AdminEntityEdit(entityTypeName), row.ID),
-					"is-link",
+					"btn-primary",
 					"Edit",
 				),
 			),
 			Td(
 				ButtonLink(r.Path(routenames.AdminEntityDelete(entityTypeName), row.ID),
-					"is-danger",
+					"btn-error",
 					"Delete",
 				),
 			),
@@ -103,7 +103,7 @@ func AdminEntityList(
 	return r.Render(layouts.Primary, Group{
 		ButtonLink(
 			r.Path(routenames.AdminEntityAdd(entityTypeName)),
-			"is-primary",
+			"btn-primary",
 			fmt.Sprintf("Add %s", entityTypeName),
 		),
 		Table(

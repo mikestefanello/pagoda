@@ -4,6 +4,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -243,7 +244,7 @@ func CSRF(r *ui.Request) Node {
 
 func FormButton(class, label string) Node {
 	return Button(
-		Class("btn btn-soft "+class),
+		Class("btn "+class),
 		Text(label),
 	)
 }
@@ -251,7 +252,11 @@ func FormButton(class, label string) Node {
 func ButtonLink(href, class, label string) Node {
 	return A(
 		Href(href),
-		Class("button "+class),
+		Classes{
+			"btn": true,
+			//"btn-soft": class != "btn-link",
+			class: true,
+		},
 		Text(label),
 	)
 }

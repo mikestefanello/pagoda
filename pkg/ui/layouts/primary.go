@@ -6,6 +6,7 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/mikestefanello/pagoda/pkg/ui/cache"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
+	"github.com/mikestefanello/pagoda/pkg/ui/icons"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -164,7 +165,7 @@ func sidebarMenu(r *ui.Request) Node {
 		entityTypeNames := admin.GetEntityTypeNames()
 		entityTypeLinks := make(Group, len(entityTypeNames))
 		for _, n := range entityTypeNames {
-			entityTypeLinks = append(entityTypeLinks, MenuLink(r, n, routenames.AdminEntityList(n)))
+			entityTypeLinks = append(entityTypeLinks, MenuLink(r, icons.PencilSquare(), n, routenames.AdminEntityList(n)))
 		}
 
 		return Group{
@@ -173,6 +174,7 @@ func sidebarMenu(r *ui.Request) Node {
 			header("Monitoring"),
 			Li(
 				A(
+					icons.UserCircle(),
 					Href(r.Path(routenames.AdminTasks)),
 					Text("Tasks"),
 					Target("_blank"),
@@ -192,17 +194,17 @@ func sidebarMenu(r *ui.Request) Node {
 		Ul(
 			Class("menu bg-base-200 text-base-content min-h-full w-80 p-4"),
 			header("General"),
-			MenuLink(r, "Dashboard", routenames.Home),
-			MenuLink(r, "About", routenames.About),
-			MenuLink(r, "Contact", routenames.Contact),
-			MenuLink(r, "Cache", routenames.Cache),
-			MenuLink(r, "Task", routenames.Task),
-			MenuLink(r, "Files", routenames.Files),
+			MenuLink(r, icons.Home(), "Dashboard", routenames.Home),
+			MenuLink(r, icons.Info(), "About", routenames.About),
+			MenuLink(r, icons.Mail(), "Contact", routenames.Contact),
+			MenuLink(r, icons.Archive(), "Cache", routenames.Cache),
+			MenuLink(r, icons.PencilSquare(), "Task", routenames.Task),
+			MenuLink(r, icons.Document(), "Files", routenames.Files),
 			header("Account"),
-			If(r.IsAuth, MenuLink(r, "Logout", routenames.Logout)),
-			If(!r.IsAuth, MenuLink(r, "Login", routenames.Login)),
-			If(!r.IsAuth, MenuLink(r, "Register", routenames.Register)),
-			If(!r.IsAuth, MenuLink(r, "Forgot password", routenames.ForgotPasswordSubmit)),
+			If(r.IsAuth, MenuLink(r, icons.Exit(), "Logout", routenames.Logout)),
+			If(!r.IsAuth, MenuLink(r, icons.Enter(), "Login", routenames.Login)),
+			If(!r.IsAuth, MenuLink(r, icons.UserPlus(), "Register", routenames.Register)),
+			If(!r.IsAuth, MenuLink(r, icons.QuestionCircle(), "Forgot password", routenames.ForgotPasswordSubmit)),
 			Iff(r.IsAdmin, adminSubMenu),
 		),
 	)

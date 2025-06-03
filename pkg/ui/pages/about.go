@@ -15,12 +15,12 @@ func About(ctx echo.Context) error {
 	r.Title = "About"
 	r.Metatags.Description = "Learn a little about what's included in Pagoda."
 
-	// The tabs are static so we can render and cache them.
+	// The tabs are static, so we can render and cache them.
 	tabs := cache.SetIfNotExists("pages.about.Tabs", func() Node {
 		return Group{
+			H2(Text("Frontend")),
+			P(Text("The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.")),
 			Tabs(
-				"Frontend",
-				"The following incredible projects make developing advanced, modern frontends possible and simple without having to write a single line of JS or CSS. You can go extremely far without leaving the comfort of Go with server-side rendered HTML.",
 				[]Tab{
 					{
 						Title: "HTMX",
@@ -36,10 +36,9 @@ func About(ctx echo.Context) error {
 					},
 				},
 			),
-			Div(Class("mb-4")),
+			H2(Text("Backend")),
+			P(Text("The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.")),
 			Tabs(
-				"Backend",
-				"The following incredible projects provide the foundation of the Go backend. See the repository for a complete list of included projects.",
 				[]Tab{
 					{
 						Title: "Echo",

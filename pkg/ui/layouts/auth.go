@@ -13,31 +13,24 @@ func Auth(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
-			Data("theme", "light"),
+			Data("theme", "dark"),
 			Head(
 				Metatags(r),
 				CSS(),
 				JS(),
 			),
 			Body(
-				Section(
-					Class("hero is-fullheight"),
+				Div(
+					Class("hero flex items-center justify-center min-h-screen"),
 					Div(
-						Class("hero-body"),
+						Class("flex-col hero-content"),
 						Div(
-							Class("container"),
+							Class("card shadow-md bg-base-200 w-96"),
 							Div(
-								Class("columns is-centered"),
-								Div(
-									Class("column is-half"),
-									If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
-									Div(
-										Class("notification"),
-										FlashMessages(r),
-										content,
-										authNavBar(r),
-									),
-								),
+								Class("card-body"),
+								If(len(r.Title) > 0, H1(Class("text-2xl font-bold"), Text(r.Title))),
+								FlashMessages(r),
+								content,
 							),
 						),
 					),
@@ -50,17 +43,11 @@ func Auth(r *ui.Request, content Node) Node {
 
 func authNavBar(r *ui.Request) Node {
 	return cache.SetIfNotExists("authNavBar", func() Node {
-		return Nav(
-			Class("navbar"),
-			Div(
-				Class("navbar-menu"),
-				Div(
-					Class("navbar-start"),
-					A(Class("navbar-item"), Href(r.Path(routenames.Login)), Text("Login")),
-					A(Class("navbar-item"), Href(r.Path(routenames.Register)), Text("Create an account")),
-					A(Class("navbar-item"), Href(r.Path(routenames.ForgotPassword)), Text("Forgot password")),
-				),
-			),
+		return Ul(
+			Class("menu menu-horizontal bg-base-200"),
+			Li(A(Href(r.Path(routenames.Login)), Text("Login"))),
+			Li(A(Href(r.Path(routenames.Register)), Text("Create an account"))),
+			Li(A(Href(r.Path(routenames.ForgotPassword)), Text("Forgot password"))),
 		)
 	})
 }

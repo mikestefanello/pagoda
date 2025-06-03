@@ -116,7 +116,7 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 			FormButton("is-primary", "Submit"),
 			ButtonLink(
 				r.Path(routenames.AdminEntityList(schema.Name)),
-				"is-secondary",
+				"btn-link",
 				"Cancel",
 			),
 		),

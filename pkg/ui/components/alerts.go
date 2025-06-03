@@ -3,6 +3,7 @@ package components
 import (
 	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/icons"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -28,24 +29,26 @@ func Notification(typ msg.Type, text string) Node {
 
 	switch typ {
 	case msg.TypeSuccess:
-		class = "success"
+		class = "alert-success"
 	case msg.TypeInfo:
-		class = "info"
+		class = "alert-info"
 	case msg.TypeWarning:
-		class = "warning"
+		class = "alert-warning"
 	case msg.TypeDanger:
-		class = "danger"
+		class = "alert-error"
 	}
 
 	return Div(
-		Class("notification is-"+class),
+		Role("alert"),
+		Class("alert alert-soft "+class),
 		Attr("x-data", "{show: true}"),
 		Attr("x-show", "show"),
 		Button(
-			Class("delete"),
 			Attr("@click", "show = false"),
+			Class("cursor-pointer"),
+			icons.XCircle(),
 		),
-		Text(text),
+		Span(Text(text)),
 	)
 }
 

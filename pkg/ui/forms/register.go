@@ -58,9 +58,17 @@ func (f *Register) Render(r *ui.Request) Node {
 			Placeholder: "******",
 		}),
 		ControlGroup(
-			FormButton("is-primary", "Register"),
-			ButtonLink(r.Path(routenames.Home), "is-light", "Cancel"),
+			FormButton("btn-primary", "Register"),
+			ButtonLink(r.Path(routenames.Home), "btn-link", "Cancel"),
 		),
 		CSRF(r),
+		Div(
+			Class("text-center text-base-content/50 mt-4"),
+			Text("Already have an account? "),
+			A(
+				Href(r.Path(routenames.Login)),
+				Text("Login"),
+			),
+		),
 	)
 }

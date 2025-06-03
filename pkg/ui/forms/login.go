@@ -40,10 +40,25 @@ func (f *Login) Render(r *ui.Request) Node {
 			Label:       "Password",
 			Placeholder: "******",
 		}),
+		Div(
+			Class("text-right text-primary mt-2"),
+			A(
+				Href(r.Path(routenames.ForgotPassword)),
+				Text("Forgot password?"),
+			),
+		),
 		ControlGroup(
-			FormButton("is-link", "Login"),
-			ButtonLink(r.Path(routenames.Home), "is-light", "Cancel"),
+			FormButton("btn-primary", "Login"),
+			ButtonLink(r.Path(routenames.Home), "btn-link", "Cancel"),
 		),
 		CSRF(r),
+		Div(
+			Class("text-center text-base-content/50 mt-4"),
+			Text("Don't have an account? "),
+			A(
+				Href(r.Path(routenames.Register)),
+				Text("Register"),
+			),
+		),
 	)
 }

@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"math/rand"
 
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -11,46 +12,27 @@ type Tab struct {
 	Title, Body string
 }
 
-func Tabs(heading, description string, items []Tab) Node {
-	renderTitles := func() Node {
-		g := make(Group, len(items))
-		for i, item := range items {
-			g[i] = Li(
-				Attr(":class", fmt.Sprintf("{'is-active': tab === %d}", i)),
-				Attr("@click", fmt.Sprintf("tab = %d", i)),
-				A(Text(item.Title)),
-			)
-		}
-		return g
-	}
+func Tabs(tabs []Tab) Node {
+	g := make(Group, 0, len(tabs)*2)
+	id := fmt.Sprintf("tabs-%d", rand.Int())
 
-	renderBodies := func() Node {
-		g := make(Group, len(items))
-		for i, item := range items {
-			g[i] = Div(
-				Attr("x-show", fmt.Sprintf("tab == %d", i)),
-				P(Raw(" "+item.Body)),
-			)
-		}
-		return g
+	for i, tab := range tabs {
+		g = append(g,
+			Input(
+				Type("radio"),
+				Name(id),
+				Class("tab"),
+				Aria("label", tab.Title),
+				If(i == 0, Checked()),
+			),
+			Div(
+				Class("tab-content bg-base-100 border-base-300 p-6"),
+				Raw(tab.Body),
+			))
 	}
 
 	return Div(
-		P(
-			Class("subtitle mt-5"),
-			Text(heading),
-		),
-		P(
-			Class("mb-4"),
-			Text(description),
-		),
-		Div(
-			Attr("x-data", "{tab: 0}"),
-			Div(
-				Class("tabs"),
-				Ul(renderTitles()),
-			),
-			renderBodies(),
-		),
+		Class("tabs tabs-lift"),
+		g,
 	)
 }
