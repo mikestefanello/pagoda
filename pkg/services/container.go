@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -21,6 +22,7 @@ import (
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/log"
+	inertia "github.com/romsar/gonertia/v2"
 	"github.com/spf13/afero"
 
 	// Required by ent.
@@ -62,6 +64,9 @@ type Container struct {
 
 	// Tasks stores the task client.
 	Tasks *backlite.Client
+
+	// Inertia for React
+	Inertia *inertia.Inertia
 }
 
 // NewContainer creates and initializes a new Container.
@@ -77,6 +82,7 @@ func NewContainer() *Container {
 	c.initAuth()
 	c.initMail()
 	c.initTasks()
+	c.initInertia()
 	return c
 }
 
@@ -230,13 +236,109 @@ func (c *Container) initTasks() {
 		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,
 		CleanupInterval: c.Config.Tasks.CleanupInterval,
 	})
-
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
 	}
 
 	if err = c.Tasks.Install(); err != nil {
 		panic(fmt.Sprintf("failed to install task schema: %v", err))
+	}
+}
+
+func (c *Container) getInertia() *inertia.Inertia {
+	viteHotFile := "./public/hot"
+	rootViewFile := "resources/views/root.html"
+
+	// check if laravel-vite-plugin is running in dev mode (it puts a "hot" file in the public folder)
+	_, err := os.Stat(viteHotFile)
+	if err == nil {
+		i, err := inertia.NewFromFile(
+			rootViewFile,
+		)
+		if err != nil {
+			log.Default().Error("inertia failed to initialize", err)
+			panic(err)
+		}
+		i.ShareTemplateFunc("vite", func(entry string) (string, error) {
+			content, err := os.ReadFile(viteHotFile)
+			if err != nil {
+				return "", err
+			}
+			url := strings.TrimSpace(string(content))
+			if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+				url = url[strings.Index(url, ":")+1:]
+			} else {
+				url = "//localhost:8080"
+			}
+			if entry != "" && !strings.HasPrefix(entry, "/") {
+				entry = "/" + entry
+			}
+			return url + entry, nil
+		})
+
+		i.ShareTemplateData("hmr", true)
+		return i
+	}
+
+	// laravel-vite-plugin not running in dev mode, use build manifest file
+	manifestPath := "./public/build/manifest.json"
+
+	// check if the manifest file exists, if not, rename it
+	if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
+		// move the manifest from ./public/build/.vite/manifest.json to ./public/build/manifest.json
+		// so that the vite function can find it
+		err := os.Rename("./public/build/.vite/manifest.json", "./public/build/manifest.json")
+		if err != nil {
+			return nil
+		}
+	}
+
+	i, err := inertia.NewFromFile(
+		rootViewFile,
+		inertia.WithVersionFromFile(manifestPath),
+	)
+	if err != nil {
+		log.Default().Error("inertia failed new from file", err)
+		panic(err)
+	}
+
+	i.ShareTemplateFunc("vite", vite(manifestPath, "/build/"))
+
+	return i
+}
+
+func (c *Container) initInertia() {
+	c.Inertia = c.getInertia()
+}
+
+func vite(manifestPath, buildDir string) func(path string) (string, error) {
+	f, err := os.Open(manifestPath)
+	if err != nil {
+		log.Default().Error("cannot open provided vite manifest file: %s", err)
+		panic(err)
+	}
+	defer f.Close()
+
+	viteAssets := make(map[string]*struct {
+		File   string `json:"file"`
+		Source string `json:"src"`
+	})
+	err = json.NewDecoder(f).Decode(&viteAssets)
+	// print content of viteAssets
+	for k, v := range viteAssets {
+		log.Default().Debug("%s: %s\n", k, v.File)
+	}
+
+	if err != nil {
+		log.Default().Error("cannot unmarshal vite manifest file to json: %s", err)
+		panic(err)
+	}
+
+	return func(p string) (string, error) {
+		if val, ok := viteAssets[p]; ok {
+			return path.Join("/", buildDir, val.File), nil
+		}
+		return "", fmt.Errorf("asset %q not found", p)
 	}
 }
 
