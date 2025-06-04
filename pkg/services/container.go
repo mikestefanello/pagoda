@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"math/rand"
 	"os"
@@ -245,49 +246,66 @@ func (c *Container) initTasks() {
 	}
 }
 
+func ProjectRoot() string {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+
+	for {
+		_, err := os.ReadFile(filepath.Join(currentDir, "go.mod"))
+		if os.IsNotExist(err) {
+			if currentDir == filepath.Dir(currentDir) {
+				return ""
+			}
+			currentDir = filepath.Dir(currentDir)
+			continue
+		} else if err != nil {
+			return ""
+		}
+		break
+	}
+	return currentDir
+}
+
 func (c *Container) getInertia() *inertia.Inertia {
-	viteHotFile := "./public/hot"
-	rootViewFile := "resources/views/root.html"
+	rootDir := ProjectRoot()
+	viteHotFile := filepath.Join(rootDir, "public", "hot")
+	rootViewFile := filepath.Join(rootDir, "resources", "views", "root.html")
+	manifestPath := filepath.Join(rootDir, "public", "build", "manifest.json")
+	viteManifestPath := filepath.Join(rootDir, "public", "build", ".vite", "manifest.json")
+	// flashProvider := provider.NewSessionFlashProvider()
 
 	// check if laravel-vite-plugin is running in dev mode (it puts a "hot" file in the public folder)
-	_, err := os.Stat(viteHotFile)
-	if err == nil {
+	url, err := viteHotFileUrl(viteHotFile)
+	if err != nil {
+		panic(err)
+	}
+	if url != "" {
 		i, err := inertia.NewFromFile(
 			rootViewFile,
+			// inertia.WithFlashProvider(flashProvider),
 		)
 		if err != nil {
-			log.Default().Error("inertia failed to initialize", err)
 			panic(err)
 		}
-		i.ShareTemplateFunc("vite", func(entry string) (string, error) {
-			content, err := os.ReadFile(viteHotFile)
-			if err != nil {
-				return "", err
-			}
-			url := strings.TrimSpace(string(content))
-			if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
-				url = url[strings.Index(url, ":")+1:]
-			} else {
-				url = "//localhost:8080"
-			}
+
+		i.ShareTemplateFunc("vite", func(entry string) (template.HTML, error) {
 			if entry != "" && !strings.HasPrefix(entry, "/") {
 				entry = "/" + entry
 			}
-			return url + entry, nil
+			htmlTag := fmt.Sprintf(`<script type="module" src="%s%s"></script>`, url, entry)
+			return template.HTML(htmlTag), nil
 		})
-
-		i.ShareTemplateData("hmr", true)
 		return i
 	}
 
 	// laravel-vite-plugin not running in dev mode, use build manifest file
-	manifestPath := "./public/build/manifest.json"
-
 	// check if the manifest file exists, if not, rename it
 	if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
 		// move the manifest from ./public/build/.vite/manifest.json to ./public/build/manifest.json
 		// so that the vite function can find it
-		err := os.Rename("./public/build/.vite/manifest.json", "./public/build/manifest.json")
+		err := os.Rename(viteManifestPath, manifestPath)
 		if err != nil {
 			return nil
 		}
@@ -296,13 +314,13 @@ func (c *Container) getInertia() *inertia.Inertia {
 	i, err := inertia.NewFromFile(
 		rootViewFile,
 		inertia.WithVersionFromFile(manifestPath),
+		// inertia.WithFlashProvider(flashProvider),
 	)
 	if err != nil {
-		log.Default().Error("inertia failed new from file", err)
 		panic(err)
 	}
 
-	i.ShareTemplateFunc("vite", vite(manifestPath, "/build/"))
+	i.ShareTemplateFunc("vite", vite(manifestPath, "/public/build/"))
 
 	return i
 }
@@ -363,4 +381,23 @@ func openDB(driver, connection string) (*sql.DB, error) {
 	}
 
 	return sql.Open(driver, connection)
+}
+
+// viteHotFileUrl Get the vite hot file url
+func viteHotFileUrl(viteHotFile string) (string, error) {
+	_, err := os.Stat(viteHotFile)
+	if err != nil {
+		return "", nil
+	}
+	content, err := os.ReadFile(viteHotFile)
+	if err != nil {
+		return "", err
+	}
+	url := strings.TrimSpace(string(content))
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		url = url[strings.Index(url, ":")+1:]
+	} else {
+		url = "//localhost:1323"
+	}
+	return url, nil
 }

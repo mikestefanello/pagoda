@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/server.ts"],
+  "sourcesContent": ["export { default as default } from '@inertiajs/core/server'\n"],
+  "mappings": "6iBAAA,IAAAA,EAAA,GAAAC,EAAAD,EAAA,wCAAAE,EAAAF,GAAA,IAAAG,EAAmC",
+  "names": ["server_exports", "__export", "__toCommonJS", "import_server"]
+}
