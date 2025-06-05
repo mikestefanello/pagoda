@@ -16,7 +16,11 @@
   },
   "homepage": "https://github.com/occult/pagode#readme",
   "dependencies": {
-    "@inertiajs/react": "^2.0.11"
+    "@inertiajs/react": "^2.0.11",
+    "@vitejs/plugin-react": "^4.5.1",
+    "laravel-vite-plugin": "^1.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "vite": "^6.3.5"
