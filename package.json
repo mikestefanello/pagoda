@@ -17,10 +17,17 @@
   "homepage": "https://github.com/occult/pagode#readme",
   "dependencies": {
     "@inertiajs/react": "^2.0.11",
+    "@tailwindcss/vite": "^4.1.8",
     "@vitejs/plugin-react": "^4.5.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "laravel-vite-plugin": "^1.3.0",
+    "lucide-react": "^0.513.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.8",
+    "tw-animate-css": "^1.3.4"
   },
   "devDependencies": {
     "@types/react": "^19.1.6",
