@@ -20,13 +20,15 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/ui/emails"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/pages"
+	inertia "github.com/romsar/gonertia/v2"
 )
 
 type Auth struct {
-	config *config.Config
-	auth   *services.AuthClient
-	mail   *services.MailClient
-	orm    *ent.Client
+	config  *config.Config
+	auth    *services.AuthClient
+	mail    *services.MailClient
+	orm     *ent.Client
+	Inertia *inertia.Inertia
 }
 
 func init() {
@@ -38,6 +40,7 @@ func (h *Auth) Init(c *services.Container) error {
 	h.orm = c.ORM
 	h.auth = c.Auth
 	h.mail = c.Mail
+	h.Inertia = c.Inertia
 	return nil
 }
 
@@ -116,7 +119,6 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 		Subject("Reset your password").
 		Body(fmt.Sprintf("Go here to reset your password: %s", h.config.App.Host+url)).
 		Send(ctx)
-
 	if err != nil {
 		return fail(err, "error sending password reset email")
 	}
@@ -125,7 +127,20 @@ func (h *Auth) ForgotPasswordSubmit(ctx echo.Context) error {
 }
 
 func (h *Auth) LoginPage(ctx echo.Context) error {
-	return pages.Login(ctx, form.Get[forms.Login](ctx))
+	err := h.Inertia.Render(
+		ctx.Response().Writer,
+		ctx.Request(),
+		"Login",
+		inertia.Props{
+			"text": "Teste",
+		},
+	)
+	if err != nil {
+		handleServerErr(ctx.Response().Writer, err)
+		return err
+	}
+
+	return nil
 }
 
 func (h *Auth) LoginSubmit(ctx echo.Context) error {
@@ -273,7 +288,6 @@ func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
 		Subject("Confirm your email address").
 		Component(emails.ConfirmEmailAddress(ctx, usr.Name, token)).
 		Send(ctx)
-
 	if err != nil {
 		log.Ctx(ctx).Error("unable to send email verification link",
 			"user_id", usr.ID,
@@ -310,7 +324,6 @@ func (h *Auth) ResetPasswordSubmit(ctx echo.Context) error {
 		Update().
 		SetPassword(input.Password).
 		Save(ctx.Request().Context())
-
 	if err != nil {
 		return fail(err, "unable to update password")
 	}
@@ -355,7 +368,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 			Query().
 			Where(user.Email(email)).
 			Only(ctx.Request().Context())
-
 		if err != nil {
 			return fail(err, "query failed loading email verification token user")
 		}
@@ -367,7 +379,6 @@ func (h *Auth) VerifyEmail(ctx echo.Context) error {
 			Update().
 			SetVerified(true).
 			Save(ctx.Request().Context())
-
 		if err != nil {
 			return fail(err, "failed to set user as verified")
 		}
