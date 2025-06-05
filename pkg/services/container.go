@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"math/rand"
 	"os"
@@ -21,6 +23,7 @@ import (
 	"github.com/mikestefanello/pagoda/config"
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/pkg/log"
+	inertia "github.com/romsar/gonertia/v2"
 	"github.com/spf13/afero"
 
 	// Required by ent.
@@ -62,6 +65,9 @@ type Container struct {
 
 	// Tasks stores the task client.
 	Tasks *backlite.Client
+
+	// Inertia for React
+	Inertia *inertia.Inertia
 }
 
 // NewContainer creates and initializes a new Container.
@@ -77,6 +83,7 @@ func NewContainer() *Container {
 	c.initAuth()
 	c.initMail()
 	c.initTasks()
+	c.initInertia()
 	return c
 }
 
@@ -230,13 +237,129 @@ func (c *Container) initTasks() {
 		ReleaseAfter:    c.Config.Tasks.ReleaseAfter,
 		CleanupInterval: c.Config.Tasks.CleanupInterval,
 	})
-
 	if err != nil {
 		panic(fmt.Sprintf("failed to create task client: %v", err))
 	}
 
 	if err = c.Tasks.Install(); err != nil {
 		panic(fmt.Sprintf("failed to install task schema: %v", err))
+	}
+}
+
+func ProjectRoot() string {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+
+	for {
+		_, err := os.ReadFile(filepath.Join(currentDir, "go.mod"))
+		if os.IsNotExist(err) {
+			if currentDir == filepath.Dir(currentDir) {
+				return ""
+			}
+			currentDir = filepath.Dir(currentDir)
+			continue
+		} else if err != nil {
+			return ""
+		}
+		break
+	}
+	return currentDir
+}
+
+func (c *Container) getInertia() *inertia.Inertia {
+	rootDir := ProjectRoot()
+	viteHotFile := filepath.Join(rootDir, "public", "hot")
+	rootViewFile := filepath.Join(rootDir, "resources", "views", "root.html")
+	manifestPath := filepath.Join(rootDir, "public", "build", "manifest.json")
+	viteManifestPath := filepath.Join(rootDir, "public", "build", ".vite", "manifest.json")
+	// flashProvider := provider.NewSessionFlashProvider()
+
+	// check if laravel-vite-plugin is running in dev mode (it puts a "hot" file in the public folder)
+	url, err := viteHotFileUrl(viteHotFile)
+	if err != nil {
+		panic(err)
+	}
+	if url != "" {
+		i, err := inertia.NewFromFile(
+			rootViewFile,
+			// inertia.WithFlashProvider(flashProvider),
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		i.ShareTemplateFunc("vite", func(entry string) (template.HTML, error) {
+			if entry != "" && !strings.HasPrefix(entry, "/") {
+				entry = "/" + entry
+			}
+			htmlTag := fmt.Sprintf(`<script type="module" src="%s%s"></script>`, url, entry)
+			return template.HTML(htmlTag), nil
+		})
+		i.ShareTemplateFunc("viteReactRefresh", viteReactRefresh(url))
+
+		return i
+	}
+
+	// laravel-vite-plugin not running in dev mode, use build manifest file
+	// check if the manifest file exists, if not, rename it
+	if _, err := os.Stat(manifestPath); os.IsNotExist(err) {
+		// move the manifest from ./public/build/.vite/manifest.json to ./public/build/manifest.json
+		// so that the vite function can find it
+		err := os.Rename(viteManifestPath, manifestPath)
+		if err != nil {
+			return nil
+		}
+	}
+
+	i, err := inertia.NewFromFile(
+		rootViewFile,
+		inertia.WithVersionFromFile(manifestPath),
+		// inertia.WithFlashProvider(flashProvider),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	i.ShareTemplateFunc("vite", vite(manifestPath, "/public/build/"))
+	i.ShareTemplateFunc("viteReactRefresh", viteReactRefresh(url))
+
+	return i
+}
+
+func (c *Container) initInertia() {
+	c.Inertia = c.getInertia()
+}
+
+func vite(manifestPath, buildDir string) func(path string) (string, error) {
+	f, err := os.Open(manifestPath)
+	if err != nil {
+		log.Default().Error("cannot open provided vite manifest file: %s", err)
+		panic(err)
+	}
+	defer f.Close()
+
+	viteAssets := make(map[string]*struct {
+		File   string `json:"file"`
+		Source string `json:"src"`
+	})
+	err = json.NewDecoder(f).Decode(&viteAssets)
+	// print content of viteAssets
+	for k, v := range viteAssets {
+		log.Default().Debug("%s: %s\n", k, v.File)
+	}
+
+	if err != nil {
+		log.Default().Error("cannot unmarshal vite manifest file to json: %s", err)
+		panic(err)
+	}
+
+	return func(p string) (string, error) {
+		if val, ok := viteAssets[p]; ok {
+			return path.Join("/", buildDir, val.File), nil
+		}
+		return "", fmt.Errorf("asset %q not found", p)
 	}
 }
 
@@ -261,4 +384,42 @@ func openDB(driver, connection string) (*sql.DB, error) {
 	}
 
 	return sql.Open(driver, connection)
+}
+
+// viteHotFileUrl Get the vite hot file url
+func viteHotFileUrl(viteHotFile string) (string, error) {
+	_, err := os.Stat(viteHotFile)
+	if err != nil {
+		return "", nil
+	}
+	content, err := os.ReadFile(viteHotFile)
+	if err != nil {
+		return "", err
+	}
+	url := strings.TrimSpace(string(content))
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		url = url[strings.Index(url, ":")+1:]
+	} else {
+		url = "//localhost:1323"
+	}
+	return url, nil
+}
+
+// viteReactRefresh Generate React refresh runtime script
+func viteReactRefresh(url string) func() (template.HTML, error) {
+	return func() (template.HTML, error) {
+		if url == "" {
+			return "", nil
+		}
+		script := fmt.Sprintf(`
+<script type="module">
+    import RefreshRuntime from '%s/@react-refresh'
+    RefreshRuntime.injectIntoGlobalHook(window)
+    window.$RefreshReg$ = () => {}
+    window.$RefreshSig$ = () => (type) => type
+    window.__vite_plugin_react_preamble_installed__ = true
+</script>`, url)
+
+		return template.HTML(script), nil
+	}
 }

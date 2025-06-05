@@ -1,0 +1,30 @@
+{
+  "name": "pagode",
+  "version": "1.0.0",
+  "description": "[![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda) [![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Go Reference](https://pkg.go.dev/badge/github.com/mikestefanello/pagoda.svg)](https://pkg.go.dev/github.com/mikestefanello/pagoda) [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev) [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/occult/pagode.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/occult/pagode/issues"
+  },
+  "homepage": "https://github.com/occult/pagode#readme",
+  "dependencies": {
+    "@inertiajs/react": "^2.0.11",
+    "@vitejs/plugin-react": "^4.5.1",
+    "laravel-vite-plugin": "^1.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "vite": "^6.3.5"
+  }
+}
