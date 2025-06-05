@@ -281,7 +281,6 @@ func (c *Container) getInertia() *inertia.Inertia {
 	if err != nil {
 		panic(err)
 	}
-	log.Default().Info("URL: %s", url)
 	if url != "" {
 		i, err := inertia.NewFromFile(
 			rootViewFile,
@@ -398,7 +397,6 @@ func viteHotFileUrl(viteHotFile string) (string, error) {
 		return "", err
 	}
 	url := strings.TrimSpace(string(content))
-	log.Default().Info("URL: %s", url)
 	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
 		url = url[strings.Index(url, ":")+1:]
 	} else {
@@ -410,7 +408,6 @@ func viteHotFileUrl(viteHotFile string) (string, error) {
 // viteReactRefresh Generate React refresh runtime script
 func viteReactRefresh(url string) func() (template.HTML, error) {
 	return func() (template.HTML, error) {
-		log.Default().Info("URL: %s", url)
 		if url == "" {
 			return "", nil
 		}
