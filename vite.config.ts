@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [
     laravel({
-      input: "resources/js/app.tsx",
+      input: "resources/js/app.jsx",
       publicDirectory: "public",
       buildDirectory: "build",
       refresh: true,
@@ -16,7 +16,7 @@ export default defineConfig({
     manifest: true, // Generate manifest.json file
     outDir: "public/build",
     rollupOptions: {
-      input: "resources/js/app.tsx",
+      input: "resources/js/app.jsx",
       output: {
         entryFileNames: "assets/[name].[hash].js",
         chunkFileNames: "assets/[name].[hash].js",

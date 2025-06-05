@@ -297,6 +297,8 @@ func (c *Container) getInertia() *inertia.Inertia {
 			htmlTag := fmt.Sprintf(`<script type="module" src="%s%s"></script>`, url, entry)
 			return template.HTML(htmlTag), nil
 		})
+		i.ShareTemplateFunc("viteReactRefresh", viteReactRefresh(url))
+
 		return i
 	}
 
@@ -321,6 +323,7 @@ func (c *Container) getInertia() *inertia.Inertia {
 	}
 
 	i.ShareTemplateFunc("vite", vite(manifestPath, "/public/build/"))
+	i.ShareTemplateFunc("viteReactRefresh", viteReactRefresh(url))
 
 	return i
 }
@@ -400,4 +403,23 @@ func viteHotFileUrl(viteHotFile string) (string, error) {
 		url = "//localhost:1323"
 	}
 	return url, nil
+}
+
+// viteReactRefresh Generate React refresh runtime script
+func viteReactRefresh(url string) func() (template.HTML, error) {
+	return func() (template.HTML, error) {
+		if url == "" {
+			return "", nil
+		}
+		script := fmt.Sprintf(`
+<script type="module">
+    import RefreshRuntime from '%s/@react-refresh'
+    RefreshRuntime.injectIntoGlobalHook(window)
+    window.$RefreshReg$ = () => {}
+    window.$RefreshSig$ = () => (type) => type
+    window.__vite_plugin_react_preamble_installed__ = true
+</script>`, url)
+
+		return template.HTML(script), nil
+	}
 }

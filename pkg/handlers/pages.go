@@ -36,7 +36,7 @@ func (h *Pages) Home(ctx echo.Context) error {
 	err := h.Inertia.Render(
 		ctx.Response().Writer,
 		ctx.Request(),
-		"Home/Index",
+		"Home",
 		inertia.Props{
 			"text": "Inertia.js with React and Go! 💚",
 		},
