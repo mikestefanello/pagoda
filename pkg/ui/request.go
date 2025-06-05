@@ -57,7 +57,7 @@ type (
 	}
 
 	// LayoutFunc is a callback function intended to render your page node within a given layout.
-	// This is handled as a callback in order to automatically support HTMX requests so that you can respond
+	// This is handled as a callback to automatically support HTMX requests so that you can respond
 	// with only the page content and not the entire layout.
 	// See Request.Render().
 	LayoutFunc func(*Request, gomponents.Node) gomponents.Node

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
@@ -14,28 +15,37 @@ import (
 
 // BuildRouter builds the router.
 func BuildRouter(c *services.Container) error {
-	// Public files with proper cache control.
-	// ui.PublicFile() should be used in ui components to append a cache key to the URL to break cache
-	// after each server restart.
+	// Force HTTPS, if enabled.
+	if c.Config.HTTP.TLS.Enabled {
+		c.Web.Use(echomw.HTTPSRedirect())
+	}
+
+	// Serve public files with cache control.
 	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.PublicFile)).
 		Static("files", "public/files")
 
-	// Static files with proper cache control.
+	// Serve static files.
 	// ui.StaticFile() should be used in ui components to append a cache key to the URL to break cache
-	// after each server restart.
-	c.Web.Group("", middleware.CacheControl(c.Config.Cache.Expiration.PublicFile)).
-		StaticFS("static", echo.MustSubFS(files.Static, "static"))
-
-	// TODO is cache control needed for ^?
-	// TODO separate cache control? ^
+	// after each server reboot.
+	c.Web.Group(
+		"",
+		echomw.GzipWithConfig(echomw.GzipConfig{
+			Skipper: func(c echo.Context) bool {
+				for _, ext := range []string{
+					".js",
+					".css",
+				} {
+					if strings.HasSuffix(c.Request().URL.Path, ext) {
+						return false
+					}
+				}
+				return true
+			},
+		}),
+	).StaticFS("static", echo.MustSubFS(files.Static, "static"))
 
 	// Non-static file route group.
 	g := c.Web.Group("")
-
-	// Force HTTPS, if enabled.
-	if c.Config.HTTP.TLS.Enabled {
-		g.Use(echomw.HTTPSRedirect())
-	}
 
 	// Create a cookie store for session data.
 	cookieStore := sessions.NewCookieStore([]byte(c.Config.App.EncryptionKey))

@@ -10,16 +10,12 @@ var (
 	cacheBuster = fmt.Sprint(time.Now().Unix())
 )
 
-// PublicFile generates a relative URL to a public file including a cache-buster query parameter.
+// PublicFile generates a relative URL to a public file.
 func PublicFile(filepath string) string {
-	return file("files", filepath)
+	return fmt.Sprintf("/%s/%s", "files", filepath)
 }
 
 // StaticFile generates a relative URL to a static file including a cache-buster query parameter.
 func StaticFile(filepath string) string {
-	return file("static", filepath)
-}
-
-func file(dir, filepath string) string {
-	return fmt.Sprintf("/%s/%s?v=%s", dir, filepath, cacheBuster)
+	return fmt.Sprintf("/%s/%s?v=%s", "static", filepath, cacheBuster)
 }

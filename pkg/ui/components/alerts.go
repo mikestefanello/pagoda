@@ -14,7 +14,7 @@ func FlashMessages(r *ui.Request) Node {
 		msg.TypeSuccess,
 		msg.TypeInfo,
 		msg.TypeWarning,
-		msg.TypeDanger,
+		msg.TypeError,
 	} {
 		for _, str := range msg.Get(r.Context, typ) {
 			g = append(g, Notification(typ, str))
@@ -34,16 +34,16 @@ func Notification(typ msg.Type, text string) Node {
 		class = "alert-info"
 	case msg.TypeWarning:
 		class = "alert-warning"
-	case msg.TypeDanger:
+	case msg.TypeError:
 		class = "alert-error"
 	}
 
 	return Div(
 		Role("alert"),
-		Class("alert alert-soft "+class),
+		Class("alert "+class),
 		Attr("x-data", "{show: true}"),
 		Attr("x-show", "show"),
-		Button(
+		Span(
 			Attr("@click", "show = false"),
 			Class("cursor-pointer"),
 			icons.XCircle(),

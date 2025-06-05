@@ -4,7 +4,6 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "maragu.dev/gomponents"
-	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -134,19 +133,16 @@ func SelectList(el OptionsParams) Node {
 
 func Checkbox(el CheckboxParams) Node {
 	return Div(
-		Class("field"),
-		Div(
-			Class("control"),
-			Label(
+		Label(
+			Class("label"),
+			Input(
 				Class("checkbox"),
-				Input(
-					Type("checkbox"),
-					Name(el.Name),
-					If(el.Checked, Checked()),
-					Value("true"),
-				),
-				Text(" "+el.Label),
+				Type("checkbox"),
+				Name(el.Name),
+				If(el.Checked, Checked()),
+				Value("true"),
 			),
+			Text(" "+el.Label),
 		),
 		formFieldErrors(el.Form, el.FormField),
 	)
@@ -168,7 +164,7 @@ func InputField(el InputFieldParams) Node {
 			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
 		Help(el.Help),
-		formFieldErrors(el.Form, el.FormField), // todo
+		formFieldErrors(el.Form, el.FormField),
 	)
 }
 
@@ -252,11 +248,7 @@ func FormButton(class, label string) Node {
 func ButtonLink(href, class, label string) Node {
 	return A(
 		Href(href),
-		Classes{
-			"btn": true,
-			//"btn-soft": class != "btn-link",
-			class: true,
-		},
+		Class("btn "+class),
 		Text(label),
 	)
 }

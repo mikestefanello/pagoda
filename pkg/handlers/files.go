@@ -54,7 +54,7 @@ func (h *Files) Page(ctx echo.Context) error {
 func (h *Files) Submit(ctx echo.Context) error {
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		msg.Danger(ctx, "A file is required.")
+		msg.Error(ctx, "A file is required.")
 		return h.Page(ctx)
 	}
 

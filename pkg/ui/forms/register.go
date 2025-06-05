@@ -51,7 +51,7 @@ func (f *Register) Render(r *ui.Request) Node {
 		}),
 		InputField(InputFieldParams{
 			Form:        f,
-			FormField:   "PasswordConfirm",
+			FormField:   "ConfirmPassword",
 			Name:        "password-confirm",
 			InputType:   "password",
 			Label:       "Confirm password",

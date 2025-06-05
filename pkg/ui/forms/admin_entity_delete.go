@@ -14,14 +14,13 @@ func AdminEntityDelete(r *ui.Request, entityTypeName string) Node {
 	return Form(
 		Method(http.MethodPost),
 		P(
-			Class("subtitle"),
 			Textf("Are you sure you want to delete this %s?", entityTypeName),
 		),
 		ControlGroup(
-			FormButton("is-link", "Delete"),
+			FormButton("btn-error", "Delete"),
 			ButtonLink(
 				r.Path(routenames.AdminEntityList(entityTypeName)),
-				"is-secondary",
+				"btn-link",
 				"Cancel",
 			),
 		),

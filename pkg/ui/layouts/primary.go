@@ -15,7 +15,7 @@ func Primary(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
-			Data("theme", "dark"),
+			Data("theme", "light"),
 			Head(
 				Metatags(r),
 				CSS(),
@@ -43,25 +43,6 @@ func Primary(r *ui.Request, content Node) Node {
 					sidebarMenu(r),
 				),
 				//headerNavBar(r),
-				//Div(
-				//	Class("container mt-5"),
-				//	Div(
-				//		Class("columns"),
-				//		Div(
-				//			Class("column is-2"),
-				//			sidebarMenu(r),
-				//		),
-				//		Div(
-				//			Class("column is-10"),
-				//			Div(
-				//				Class("box"),
-				//				If(len(r.Title) > 0, H1(Class("title"), Text(r.Title))),
-				//				FlashMessages(r),
-				//				content,
-				//			),
-				//		),
-				//	),
-				//),
 				HtmxListeners(r),
 			),
 		),

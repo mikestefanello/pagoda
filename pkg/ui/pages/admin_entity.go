@@ -7,14 +7,12 @@ import (
 	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent/admin"
-	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	. "maragu.dev/gomponents"
-	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -51,12 +49,12 @@ func AdminEntityList(
 	r.Title = entityTypeName
 
 	genHeader := func() Node {
-		g := make(Group, 0, len(entityList.Columns)+3)
+		g := make(Group, 0, len(entityList.Columns)+2)
 		g = append(g, Th(Text("ID")))
 		for _, h := range entityList.Columns {
 			g = append(g, Th(Text(h)))
 		}
-		g = append(g, Th(), Th())
+		g = append(g, Th())
 		return g
 	}
 
@@ -70,11 +68,9 @@ func AdminEntityList(
 			Td(
 				ButtonLink(
 					r.Path(routenames.AdminEntityEdit(entityTypeName), row.ID),
-					"btn-primary",
+					"btn-info mr-2",
 					"Edit",
 				),
-			),
-			Td(
 				ButtonLink(r.Path(routenames.AdminEntityDelete(entityTypeName), row.ID),
 					"btn-error",
 					"Delete",
@@ -92,45 +88,26 @@ func AdminEntityList(
 		return g
 	}
 
-	pagedHref := func(page int) string {
-		return fmt.Sprintf("%s?%s=%d",
-			r.Path(routenames.AdminEntityList(entityTypeName)),
-			pager.QueryKey,
-			page,
-		)
-	}
-
 	return r.Render(layouts.Primary, Group{
-		ButtonLink(
-			r.Path(routenames.AdminEntityAdd(entityTypeName)),
-			"btn-primary",
-			fmt.Sprintf("Add %s", entityTypeName),
+		Div(
+			Class("form-control mb-2"),
+			ButtonLink(
+				r.Path(routenames.AdminEntityAdd(entityTypeName)),
+				"btn-accent",
+				fmt.Sprintf("Add %s", entityTypeName),
+			),
 		),
 		Table(
-			Class("table"),
+			Class("table table-zebra mb-2"),
 			THead(
 				Tr(genHeader()),
 			),
 			TBody(genRows()),
 		),
-		Nav(
-			Class("pagination"),
-			A(
-				Classes{
-					"pagination-previous": true,
-					"is-disabled":         entityList.Page == 1,
-				},
-				If(entityList.Page != 1, Href(pagedHref(entityList.Page-1))),
-				Text("Previous page"),
-			),
-			A(
-				Classes{
-					"pagination-previous": true,
-					"is-disabled":         !entityList.HasNextPage,
-				},
-				If(entityList.HasNextPage, Href(pagedHref(entityList.Page+1))),
-				Text("Next page"),
-			),
+		Pager(
+			entityList.Page,
+			r.Path(routenames.AdminEntityAdd(entityTypeName)),
+			entityList.HasNextPage,
 		),
 	})
 }

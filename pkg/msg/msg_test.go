@@ -33,8 +33,8 @@ func TestMsg(t *testing.T) {
 	assertMsg(TypeInfo, text)
 
 	text = "ccc"
-	Danger(ctx, text)
-	assertMsg(TypeDanger, text)
+	Error(ctx, text)
+	assertMsg(TypeError, text)
 
 	text = "ddd"
 	Warning(ctx, text)

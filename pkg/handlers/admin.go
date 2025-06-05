@@ -128,7 +128,7 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		err := h.admin.Create(ctx, n.Name)
 		if err != nil {
-			msg.Danger(ctx, err.Error())
+			msg.Error(ctx, err.Error())
 			return h.EntityAdd(n)(ctx)
 		}
 
@@ -154,7 +154,7 @@ func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		err := h.admin.Update(ctx, n.Name, id)
 		if err != nil {
-			msg.Danger(ctx, err.Error())
+			msg.Error(ctx, err.Error())
 			return h.EntityEdit(n)(ctx)
 		}
 
@@ -178,7 +178,7 @@ func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
-			msg.Danger(ctx, err.Error())
+			msg.Error(ctx, err.Error())
 			return h.EntityDelete(n)(ctx)
 		}
 

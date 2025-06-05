@@ -20,8 +20,8 @@ const (
 	// TypeWarning represents a warning message type.
 	TypeWarning Type = "warning"
 
-	// TypeDanger represents a danger message type.
-	TypeDanger Type = "danger"
+	// TypeError represents an error message type.
+	TypeError Type = "error"
 )
 
 const (
@@ -44,9 +44,9 @@ func Warning(ctx echo.Context, message string) {
 	Set(ctx, TypeWarning, message)
 }
 
-// Danger sets a danger flash message.
-func Danger(ctx echo.Context, message string) {
-	Set(ctx, TypeDanger, message)
+// Error sets an error flash message.
+func Error(ctx echo.Context, message string) {
+	Set(ctx, TypeError, message)
 }
 
 // Set adds a new flash message of a given type into the session storage.

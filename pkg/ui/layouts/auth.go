@@ -1,9 +1,7 @@
 package layouts
 
 import (
-	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
-	"github.com/mikestefanello/pagoda/pkg/ui/cache"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -13,7 +11,7 @@ func Auth(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
-			Data("theme", "dark"),
+			Data("theme", "light"),
 			Head(
 				Metatags(r),
 				CSS(),
@@ -39,15 +37,4 @@ func Auth(r *ui.Request, content Node) Node {
 			),
 		),
 	)
-}
-
-func authNavBar(r *ui.Request) Node {
-	return cache.SetIfNotExists("authNavBar", func() Node {
-		return Ul(
-			Class("menu menu-horizontal bg-base-200"),
-			Li(A(Href(r.Path(routenames.Login)), Text("Login"))),
-			Li(A(Href(r.Path(routenames.Register)), Text("Create an account"))),
-			Li(A(Href(r.Path(routenames.ForgotPassword)), Text("Forgot password"))),
-		)
-	})
 }
