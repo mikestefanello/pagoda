@@ -1,5 +1,11 @@
-import React from "react";
+import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
 export default function Home({ text }) {
-  return <div className="text-blue-300">Home: {text}</div>;
+  return (
+    <HeroGeometric
+      badge="Pagode"
+      title1="Elevate Your"
+      title2="Fullstack Game"
+    />
+  );
 }

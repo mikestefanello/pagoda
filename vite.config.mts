@@ -14,6 +14,9 @@ export default defineConfig({
     react({ include: /\.(mdx|js|jsx|ts|tsx)$/ }),
     tailwindcss(),
   ],
+  esbuild: {
+    jsx: "automatic",
+  },
   build: {
     manifest: true, // Generate manifest.json file
     outDir: "public/build",
