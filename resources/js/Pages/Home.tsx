@@ -1,6 +1,6 @@
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
-export default function Home({ text }) {
+export default function Home() {
   return (
     <HeroGeometric
       badge="Pagode"
