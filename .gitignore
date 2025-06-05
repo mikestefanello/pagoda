@@ -5,3 +5,7 @@ tmp
 node_modules/
 .DS_Store
 build/
+/public/build
+/public/hot
+/public/storage
+
