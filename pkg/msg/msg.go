@@ -61,19 +61,19 @@ func Set(ctx echo.Context, typ Type, message string) {
 // Get gets flash messages of a given type from the session storage.
 // Errors will be logged and not returned.
 func Get(ctx echo.Context, typ Type) []string {
-	var msgs []string
-
 	if sess, err := getSession(ctx); err == nil {
 		if flash := sess.Flashes(string(typ)); len(flash) > 0 {
 			save(ctx, sess)
 
+			msgs := make([]string, len(flash))
 			for _, m := range flash {
 				msgs = append(msgs, m.(string))
 			}
+			return msgs
 		}
 	}
 
-	return msgs
+	return nil
 }
 
 // getSession gets the flash message session.
