@@ -1,16 +1,12 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { FlashMessages } from "@/types/global";
+import { SharedProps } from "@/types/global";
 import { useFlashToasts } from "@/hooks/useFlashToast";
 
-export default function PublicLayout({
-  children,
-  flash,
-}: {
-  children: ReactNode;
-  flash: FlashMessages;
-}) {
+export default function PublicLayout({ children }: { children: ReactNode }) {
+  const { flash } = usePage<SharedProps>().props;
+
   useFlashToasts(flash);
 
   return (

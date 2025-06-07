@@ -4,3 +4,7 @@ export type FlashMessages = {
   warning?: string[];
   danger?: string[];
 };
+
+export type SharedProps = {
+  flash: FlashMessages;
+};
