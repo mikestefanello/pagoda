@@ -18,13 +18,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4">
-      <Card className="w-full max-w-md border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl shadow-xl">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <Card className="w-full max-w-md border bg-card backdrop-blur-xl shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-extrabold tracking-tight text-[var(--primary)]">
+          <CardTitle className="text-3xl font-extrabold tracking-tight text-primary">
             <Link href="/">🥁 Pagode</Link>
           </CardTitle>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+          <p className="mt-2 text-sm text-muted-foreground">
             Crafting seamless digital experiences with InertiaJS, React, and
             Golang
           </p>
@@ -33,67 +33,55 @@ export default function Login() {
         <CardContent>
           <form onSubmit={submit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[var(--card-foreground)]">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={data.email}
                 onChange={(e) => setData("email", e.target.value)}
                 required
-                className="bg-white/5 text-[var(--card-foreground)] border border-[var(--border)] placeholder:text-[var(--muted-foreground)]"
+                className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
               {errors.email && (
-                <p className="text-sm text-[var(--destructive)]">
-                  {errors.email}
-                </p>
+                <p className="text-sm text-destructive">{errors.email}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-[var(--card-foreground)]"
-              >
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={data.password}
                 onChange={(e) => setData("password", e.target.value)}
                 required
-                className="bg-white/5 text-[var(--card-foreground)] border border-[var(--border)] placeholder:text-[var(--muted-foreground)]"
+                className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
               {errors.password && (
-                <p className="text-sm text-[var(--destructive)]">
-                  {errors.password}
-                </p>
+                <p className="text-sm text-destructive">{errors.password}</p>
               )}
             </div>
 
             <Button
               type="submit"
               disabled={processing}
-              className="w-full font-semibold text-[var(--primary-foreground)] 
-                bg-gradient-to-br from-[color-mix(in srgb, var(--primary) 90%, white)] to-[var(--primary)] 
-                hover:from-[color-mix(in srgb, var(--primary) 80%, white)] hover:to-[color-mix(in srgb, var(--primary) 90%, black)] 
-                shadow-lg shadow-[color-mix(in srgb, var(--primary) 40%, black)] 
-                border border-[var(--border)]"
+              className="w-full font-semibold text-primary-foreground 
+                bg-gradient-to-br from-primary to-primary 
+                hover:from-primary/90 hover:to-primary/80 
+                shadow-lg shadow-primary/40 border"
             >
               Log in
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-[var(--muted-foreground)]">
+          <div className="mt-6 text-center text-sm text-muted-foreground">
             Don’t have an account?{" "}
-            <a
+            <Link
               href="/user/register"
-              className="underline text-[var(--foreground)] hover:text-[var(--primary)]"
+              className="underline text-foreground hover:text-primary"
             >
               Register
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
