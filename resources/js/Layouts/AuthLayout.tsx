@@ -1,7 +1,7 @@
 import AuthLayoutTemplate from "@/Layouts/Auth/AuthSimpleLayout";
 import { useFlashToasts } from "@/hooks/useFlashToast";
 import { Toaster } from "@/components/ui/sonner";
-import { FlashMessages } from "@/types/global";
+import { SharedProps } from "@/types/global";
 import { usePage } from "@inertiajs/react";
 
 export default function AuthLayout({
@@ -16,7 +16,7 @@ export default function AuthLayout({
   description: string;
   logo: string;
 }) {
-  const { flash } = usePage<{ flash: FlashMessages }>().props;
+  const { flash } = usePage<SharedProps>().props;
 
   useFlashToasts(flash);
 
