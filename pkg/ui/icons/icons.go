@@ -163,9 +163,13 @@ func XCircle() Node {
 	)
 }
 
-func Exit5() Node {
-	return icon("Exit",
-
+func MagnifyingGlass() Node {
+	return icon("MagnifyingGlass",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"),
+		),
 	)
 }
 
