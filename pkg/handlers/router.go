@@ -49,8 +49,10 @@ func BuildRouter(c *services.Container) error {
 		middleware.Session(cookieStore),
 		middleware.LoadAuthenticatedUser(c.Auth),
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
-			TokenLookup:    "form:csrf",
-			CookieHTTPOnly: true,
+			TokenLookup:    "header:X-XSRF-TOKEN", // where to look for token
+			CookieName:     "XSRF-TOKEN",          // this sets the cookie
+			CookiePath:     "/",                   // make it accessible app-wide
+			CookieHTTPOnly: false,                 // must be false so JS (Axios) can read it
 			CookieSameSite: http.SameSiteStrictMode,
 			ContextKey:     context.CSRFKey,
 		}),
