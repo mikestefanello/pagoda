@@ -1,4 +1,4 @@
-## Pagode: Rapid, easy full-stack web development starter kit in Go
+## Pagode: Modern Go + React starter kit
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda)
 [![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml)
@@ -120,7 +120,6 @@ While many great projects were used to build this, all of which are listed in th
 
 - [Echo](https://echo.labstack.com/): High performance, extensible, minimalist Go web framework.
 - [Ent](https://entgo.io/): Simple, yet powerful ORM for modeling and querying data.
-- [Gomponents](https://github.com/maragudk/gomponents): HTML components written in pure Go. They render to HTML 5, and make it easy for you to build reusable components.
 
 #### Frontend
 
@@ -174,8 +173,8 @@ Ensure that [Go](https://go.dev/) is installed on your system.
 Start by checking out the repository. Since this repository is a _template_ and not a Go _library_, you **do not** use `go get`.
 
 ```
-git clone git@github.com:mikestefanello/pagoda.git
-cd pagoda
+git clone git@github.com:occult/pagode.git
+cd pagode
 ```
 
 ### Create an admin account
@@ -579,52 +578,15 @@ assert.Equal(t, "About", h1.Text())
 
 ## User interface
 
-### Why Gomponents?
+### Why React + InertiaJS?
 
-Originally, standard Go templates were chosen for this project and a lot of code was written to build tools to make using them as easy and flexible as possible. That code remains archived in [this branch](https://github.com/mikestefanello/pagoda/tree/templates) but is no longer maintained. Despite providing tools such as a powerful _template renderer_, which did things like automatically compile nested templates to separate layouts from pages, automatically include component templates, support HTMX partial rendering, provide _funcmap_ function helpers, and more, the end result left a lot to be desired. Templates provide no type-safety, child templates are difficult to call when you have multiple arguments, templates are not flexible enough to easily provide reusable components and elements, the _funcmap_ and form submission code often had to return HTML or CSS classes, and more.
+Modern single-page interactions, rich component ecosystems, and type-safety are now table-stakes for productive web development. By pairing **React 18** with **InertiaJS**, Pagode keeps the simplicity of server-side routing while delivering a fully interactive SPA experience.
 
-While I was extremely hesitant to adopt a rendering option outside the standard library, if an option exists that I personally feel is far superior, that is what I'm going to go with. [Templ](https://github.com/a-h/templ) was also a consideration as that project has made massive progress, seen an explosion in adoption, and aims to solve all the problems previously mentioned. I did not feel that it was a good fit for this project though as it requires you to know and understand their templating language, to install a CLI and an IDE plugin (which does not work with all IDEs; especially GoLand), and separately compile template code.
-
-[Gomponents](https://github.com/maragudk/gomponents) allows you to build HTML using nothing except pure, type-safe Go; whether that's entire documents or dynamic, reusable components. [Here](https://www.gomponents.com/) are some basic examples to give you an idea of how it works and [this tool](https://gomponents.morehart.dev/) is incredibly useful for quickly converting HTML to _gomponent_ Go code. When I first came across this library, I was very much against it, and couldn't imagine writing tons of nested function calls just to produce some HTML; especially for complex markup. But after actually spending some time using it to replicate the UI of this project, and feeling the downsides of Go templates, I quickly became a big fan and supporter of this approach. Between this and the chosen JS/CSS libraries, you can literally write your entire frontend without leaving Go.
-
-Before making any quick judgements of your own, I ask that you deeply consider what you've used in the past, review what previously existed in this project, and compare to the current solution and code presented here. I believe I've laid out the `ui` package in a way that makes building your frontend with _gomponents_ very easy and enjoyable.
-
-### HTMX support
-
-[HTMX](https://htmx.org/) is an awesome JavaScript library allows you to access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
-
-Many examples of its usage are available in the included examples:
-
-- All navigation links use [boost](https://htmx.org/docs/#boosting) which dynamically replaces the page content with an AJAX request, providing a SPA-like experience.
-- All forms use either [boost](https://htmx.org/docs/#boosting) or [hx-post](https://htmx.org/docs/#triggers) to submit via AJAX.
-- The mock search autocomplete modal uses [hx-get](https://htmx.org/docs/#targets) to fetch search results from the server via AJAX and update the UI.
-- The mock posts on the homepage/dashboard use [hx-get](https://htmx.org/docs/#targets) to fetch and page posts via AJAX.
-
-All of this can be easily accomplished without writing any JavaScript at all.
-
-Another benefit of [HTMX](https://htmx.org/) is that it's completely backend-agnostic and does not require any special tools or integrations on the backend, though many things are provided here to make it simple.
-
-#### Header management
-
-Included is an [htmx package](https://github.com/mikestefanello/pagoda/blob/main/pkg/htmx/htmx.go) to read and write [HTTP headers](https://htmx.org/docs/#requests) that HTMX uses to communicate additional information and commands for both the request and response. This allows you, for example, to determine if HTMX is making the given request and what exactly it is doing, which could be useful both in your _route_ and your _ui_.
-
-From within your _route_, you can fetch HTMX request details by calling `htmx.GetRequest(ctx)`, and you can send commands back to HTMX by calling `htmx.Response{...}.Apply(ctx)`, and populating any fields on the `htmx.Response` struct.
-
-From within your _ui_, the [Request](#request) object will automatically contain the request details on the `Htmx` field.
-
-#### Conditional and partial rendering
-
-Since HTMX communicates what it is doing with the server, you can use the request headers to conditionally process in your _route_ or render in your _ui_, if needed.
-
-The most important case to support is _partial_ rendering. If HTMX is making a request, unless it is [boosted](https://htmx.org/docs/#boosting), you only want to render the _content_ of your _route_, and not the entire [layout](#layouts). This is automatically handled by the `Render()` method on the [Request](#request) type. More can be read about that [here](#rendering).
-
-If your routes aren't doing multiple things, you may not need _conditional_ rendering, but it's worth knowing how flexible you can be. A simple example of this:
-
-```go
-if htmx.GetRequest(ctx).Target == "search" {
-    // This request is HTMX fetching content just for the #search element
-}
-```
+- **No separate API layer** – Controllers still live in Go; they just return JSON “page props” for React.
+- **Reuse the entire npm ecosystem** – Charts, editors, drag-and-drop, and every other React package drop right in.
+- **Zero client-side routing boilerplate** – Inertia intercepts links and form submissions automatically.
+- **Typed front-end** – Ship confident UIs with TypeScript and shadcn/ui primitives styled by Tailwind v4.
+- **Faster iteration** – Hot-reload for both Go and React via Vite; no template compilation steps.
 
 #### CSRF token
 
@@ -1147,16 +1109,18 @@ The `LogRequest()` middleware is a replacement for Echo's `Logger()` middleware 
 Thank you to all the following amazing projects for making this possible.
 
 - [afero](https://github.com/spf13/afero)
+- [gonertia](https://github.com/romsar/gonertia)
+- [inertiajs](https://inertiajs.com/)
+- [laravel](https://github.com/laravel)
+- [tailwindcss](https://github.com/tailwindlabs/tailwindcss)
+- [shadcn](https://github.com/shadcn-ui/ui)
 - [air](https://github.com/air-verse/air)
-- [alpinejs](https://github.com/alpinejs/alpine)
 - [backlite](https://github.com/mikestefanello/backlite)
 - [echo](https://github.com/labstack/echo)
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
 - [go-sqlite3](https://github.com/mattn/go-sqlite3)
-- [gomponents](https://github.com/maragudk/gomponents)
 - [goquery](https://github.com/PuerkitoBio/goquery)
-- [htmx](https://github.com/bigskysoftware/htmx)
 - [jwt](https://github.com/golang-jwt/jwt)
 - [otter](https://github.com/maypok86/otter)
 - [sessions](https://github.com/gorilla/sessions)
@@ -1164,4 +1128,3 @@ Thank you to all the following amazing projects for making this possible.
 - [testify](https://github.com/stretchr/testify)
 - [validator](https://github.com/go-playground/validator)
 - [viper](https://github.com/spf13/viper)
-
