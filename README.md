@@ -1,4 +1,4 @@
-## Pagoda: Rapid, easy full-stack web development starter kit in Go
+## Pagode: Rapid, easy full-stack web development starter kit in Go
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/mikestefanello/pagoda)](https://goreportcard.com/report/github.com/mikestefanello/pagoda)
 [![Test](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml/badge.svg)](https://github.com/mikestefanello/pagoda/actions/workflows/test.yml)
@@ -7,7 +7,7 @@
 [![GoT](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
-<p align="center"><strong style="font-size: 2rem;">🥁Pagode</strong></p>
+![pagode_banner](https://github.com/user-attachments/assets/756e2fa3-de77-4469-8f6f-6940c83696cc)
 
 ## Table of Contents
 
