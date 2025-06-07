@@ -8,11 +8,16 @@ import { Link } from "@inertiajs/react";
 import AuthLayout from "@/Layouts/AuthLayout";
 
 export default function Register() {
-  const { data, setData, post, processing, errors } = useForm({
-    name: "",
-    email: "",
-    password: "",
-    password_confirmation: "",
+  const { data, setData, post, processing, errors } = useForm<{
+    Name: string;
+    Email: string;
+    Password: string;
+    ConfirmPassword: string;
+  }>({
+    Name: "",
+    Email: "",
+    Password: "",
+    ConfirmPassword: "",
   });
 
   const submit = (e: FormEvent) => {
@@ -30,65 +35,63 @@ export default function Register() {
         <CardContent>
           <form onSubmit={submit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="Name">Name</Label>
               <Input
-                id="name"
+                id="Name"
                 type="text"
-                value={data.name}
-                onChange={(e) => setData("name", e.target.value)}
+                value={data.Name}
+                onChange={(e) => setData("Name", e.target.value)}
                 required
                 className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name}</p>
+              {errors.Name && (
+                <p className="text-sm text-destructive">{errors.Name}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="Email">Email</Label>
               <Input
-                id="email"
+                id="Email"
                 type="email"
-                value={data.email}
-                onChange={(e) => setData("email", e.target.value)}
+                value={data.Email}
+                onChange={(e) => setData("Email", e.target.value)}
                 required
                 className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
+              {errors.Email && (
+                <p className="text-sm text-destructive">{errors.Email}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="Password">Password</Label>
               <Input
-                id="password"
+                id="Password"
                 type="password"
-                value={data.password}
-                onChange={(e) => setData("password", e.target.value)}
+                value={data.Password}
+                onChange={(e) => setData("Password", e.target.value)}
                 required
                 className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
+              {errors.Password && (
+                <p className="text-sm text-destructive">{errors.Password}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <Label htmlFor="ConfirmPassword">Confirm Password</Label>
               <Input
-                id="password_confirmation"
+                id="ConfirmPassword"
                 type="password"
-                value={data.password_confirmation}
-                onChange={(e) =>
-                  setData("password_confirmation", e.target.value)
-                }
+                value={data.ConfirmPassword}
+                onChange={(e) => setData("ConfirmPassword", e.target.value)}
                 required
                 className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
-              {errors.password_confirmation && (
+              {errors.ConfirmPassword && (
                 <p className="text-sm text-destructive">
-                  {errors.password_confirmation}
+                  {errors.ConfirmPassword}
                 </p>
               )}
             </div>

@@ -15,7 +15,7 @@ type Register struct {
 	Name            string `form:"name" validate:"required"`
 	Email           string `form:"email" validate:"required,email"`
 	Password        string `form:"password" validate:"required"`
-	ConfirmPassword string `form:"password-confirm" validate:"required,eqfield=Password"`
+	ConfirmPassword string `form:"password_confirmation" validate:"required,eqfield=Password"`
 	form.Submission
 }
 
@@ -25,6 +25,7 @@ func (f *Register) Render(r *ui.Request) Node {
 		Method(http.MethodPost),
 		HxBoost(),
 		Action(r.Path(routenames.RegisterSubmit)),
+
 		InputField(InputFieldParams{
 			Form:      f,
 			FormField: "Name",
@@ -51,8 +52,8 @@ func (f *Register) Render(r *ui.Request) Node {
 		}),
 		InputField(InputFieldParams{
 			Form:        f,
-			FormField:   "PasswordConfirm",
-			Name:        "password-confirm",
+			FormField:   "ConfirmPassword",
+			Name:        "password_confirmation",
 			InputType:   "password",
 			Label:       "Confirm password",
 			Placeholder: "******",

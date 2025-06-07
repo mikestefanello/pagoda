@@ -144,13 +144,16 @@ func (h *Auth) LoginPage(ctx echo.Context) error {
 }
 
 func (h *Auth) LoginSubmit(ctx echo.Context) error {
+	w := ctx.Response().Writer
+	r := ctx.Request()
+
 	var input forms.Login
 
 	authFailed := func() error {
 		input.SetFieldError("Email", "")
 		input.SetFieldError("Password", "")
 		msg.Danger(ctx, "Invalid credentials. Please try again.")
-		h.Inertia.Back(ctx.Response().Writer, ctx.Request())
+		h.Inertia.Back(w, r)
 		return nil
 	}
 
@@ -192,9 +195,8 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 
 	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
 
-	return redirect.New(ctx).
-		Route(routenames.Home).
-		Go()
+	h.Inertia.Redirect(w, r, routenames.Home)
+	return nil
 }
 
 func (h *Auth) Logout(ctx echo.Context) error {
@@ -226,62 +228,64 @@ func (h *Auth) RegisterPage(ctx echo.Context) error {
 }
 
 func (h *Auth) RegisterSubmit(ctx echo.Context) error {
-	var input forms.Register
+	w := ctx.Response().Writer
+	r := ctx.Request()
 
+	var input forms.Register
 	err := form.Submit(ctx, &input)
 
+	// Validate submitted form data
 	switch err.(type) {
 	case nil:
+		log.Ctx(ctx).Info("Form submitted successfully", "data", input)
 	case validator.ValidationErrors:
-		return h.RegisterPage(ctx)
+		msg.Danger(ctx, "Please fill in all required fields correctly.")
+		h.Inertia.Back(w, r)
+		return nil
+
 	default:
-		return err
+		msg.Danger(ctx, "Something went wrong. Please try again.")
+		h.Inertia.Back(w, r)
+		return nil
 	}
 
-	// Attempt creating the user.
+	// Attempt to create the user
 	u, err := h.orm.User.
 		Create().
 		SetName(input.Name).
 		SetEmail(input.Email).
 		SetPassword(input.Password).
-		Save(ctx.Request().Context())
+		Save(r.Context())
 
 	switch err.(type) {
 	case nil:
-		log.Ctx(ctx).Info("user created",
-			"user_name", u.Name,
-			"user_id", u.ID,
+		log.Ctx(ctx).Info("✅ User created",
+			"user_name", input.Name,
+			"user_email", input.Email,
 		)
 	case *ent.ConstraintError:
 		msg.Warning(ctx, "A user with this email address already exists. Please log in.")
-		return redirect.New(ctx).
-			Route(routenames.Login).
-			Go()
+		h.Inertia.Back(w, r)
+		return nil
 	default:
 		return fail(err, "unable to create user")
 	}
 
-	// Log the user in.
+	// Try to log the user in
 	err = h.auth.Login(ctx, u.ID)
 	if err != nil {
-		log.Ctx(ctx).Error("unable to log user in",
-			"error", err,
-			"user_id", u.ID,
-		)
 		msg.Info(ctx, "Your account has been created.")
-		return redirect.New(ctx).
-			Route(routenames.Login).
-			Go()
+		h.Inertia.Redirect(w, r, "/login")
+		return nil
 	}
 
 	msg.Success(ctx, "Your account has been created. You are now logged in.")
 
-	// Send the verification email.
+	// Send verification email
 	h.sendVerificationEmail(ctx, u)
 
-	return redirect.New(ctx).
-		Route(routenames.Home).
-		Go()
+	h.Inertia.Redirect(w, r, routenames.Home)
+	return nil
 }
 
 func (h *Auth) sendVerificationEmail(ctx echo.Context, usr *ent.User) {
