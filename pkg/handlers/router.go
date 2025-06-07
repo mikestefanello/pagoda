@@ -56,6 +56,7 @@ func BuildRouter(c *services.Container) error {
 			CookieSameSite: http.SameSiteStrictMode,
 			ContextKey:     context.CSRFKey,
 		}),
+		middleware.InertiaProps(), // leave this as the last one
 	)
 
 	// Error handler.
