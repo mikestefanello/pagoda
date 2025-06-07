@@ -274,7 +274,6 @@ func (c *Container) getInertia() *inertia.Inertia {
 	rootViewFile := filepath.Join(rootDir, "resources", "views", "root.html")
 	manifestPath := filepath.Join(rootDir, "public", "build", "manifest.json")
 	viteManifestPath := filepath.Join(rootDir, "public", "build", ".vite", "manifest.json")
-	// flashProvider := provider.NewSessionFlashProvider()
 
 	// check if laravel-vite-plugin is running in dev mode (it puts a "hot" file in the public folder)
 	url, err := viteHotFileUrl(viteHotFile)
@@ -284,7 +283,6 @@ func (c *Container) getInertia() *inertia.Inertia {
 	if url != "" {
 		i, err := inertia.NewFromFile(
 			rootViewFile,
-			// inertia.WithFlashProvider(flashProvider),
 		)
 		if err != nil {
 			panic(err)
@@ -316,7 +314,6 @@ func (c *Container) getInertia() *inertia.Inertia {
 	i, err := inertia.NewFromFile(
 		rootViewFile,
 		inertia.WithVersionFromFile(manifestPath),
-		// inertia.WithFlashProvider(flashProvider),
 	)
 	if err != nil {
 		panic(err)

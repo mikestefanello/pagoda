@@ -14,7 +14,7 @@ func InertiaProps() echo.MiddlewareFunc {
 			user := ctx.Get(context.AuthenticatedUserKey)
 
 			// Collect errors by type
-			errors := make(map[string][]string)
+			flash := make(map[string][]string)
 			for _, typ := range []msg.Type{
 				msg.TypeSuccess,
 				msg.TypeInfo,
@@ -23,13 +23,13 @@ func InertiaProps() echo.MiddlewareFunc {
 			} {
 				messages := msg.Get(ctx, typ)
 				if len(messages) > 0 {
-					errors[string(typ)] = messages
+					flash[string(typ)] = messages
 				}
 			}
 
 			// Set Inertia props
 			newCtx := gonertia.SetProps(ctx.Request().Context(), map[string]any{
-				"errors": errors,
+				"flash": flash,
 				"auth": map[string]any{
 					"user": user,
 				},

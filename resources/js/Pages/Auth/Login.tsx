@@ -5,8 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "@inertiajs/react";
+import { FlashMessages } from "@/types/global";
+import { useFlashToasts } from "@/hooks/useFlashToast";
+import { Toaster } from "@/components/ui/sonner";
 
-export default function Login() {
+type LoginProps = {
+  flash: FlashMessages;
+};
+
+export default function Login({ flash }: LoginProps) {
+  useFlashToasts(flash);
   const { data, setData, post, processing, errors } = useForm({
     email: "",
     password: "",
@@ -19,6 +27,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <Toaster richColors position="top-center" />
       <Card className="w-full max-w-md border bg-card backdrop-blur-xl shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-extrabold tracking-tight text-primary">
