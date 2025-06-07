@@ -150,7 +150,8 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 		input.SetFieldError("Email", "")
 		input.SetFieldError("Password", "")
 		msg.Danger(ctx, "Invalid credentials. Please try again.")
-		return h.LoginPage(ctx)
+		h.Inertia.Back(ctx.Response().Writer, ctx.Request())
+		return nil
 	}
 
 	err := form.Submit(ctx, &input)
