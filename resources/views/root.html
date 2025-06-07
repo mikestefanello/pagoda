@@ -1,18 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {{ .inertiaHead }} {{ viteReactRefresh }} {{ vite "resources/js/app.jsx" }}
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{ .inertiaHead }}
-
-    {{ viteReactRefresh }}
-    {{ vite "resources/js/app.jsx" }}
-
-</head>
-
-<body class="font-sans antialiased">
+  <body class="font-sans antialiased">
     {{ .inertia }}
-</body>
-
+  </body>
 </html>
