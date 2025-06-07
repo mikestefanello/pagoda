@@ -25,7 +25,7 @@ export default function AuthSimpleLayout({
             >
               <div className="mb-1 flex h-9 items-center justify-center rounded-md">
                 {/* TODO: Make this an image */}
-                <span className="text-2xl font-bold tracking-tighter text-[var(--foreground)] dark:text-white">
+                <span className="text-2xl font-bold tracking-tighter text-foreground">
                   {logo}
                 </span>
               </div>
