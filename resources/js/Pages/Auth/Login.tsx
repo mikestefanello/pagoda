@@ -7,12 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@inertiajs/react";
 import AuthLayout from "@/Layouts/AuthLayout";
 
-type LoginProps = {
-  flash: FlashMessages;
-};
-
-export default function Login({ flash }: LoginProps) {
-  useFlashToasts(flash);
+export default function Login() {
   const { data, setData, post, processing, errors } = useForm({
     email: "",
     password: "",
