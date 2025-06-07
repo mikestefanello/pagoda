@@ -67,12 +67,14 @@ func AdminEntityList(
 		g = append(g,
 			Td(
 				ButtonLink(
+					ColorInfo,
 					r.Path(routenames.AdminEntityEdit(entityTypeName), row.ID),
-					"btn-info mr-2",
 					"Edit",
 				),
-				ButtonLink(r.Path(routenames.AdminEntityDelete(entityTypeName), row.ID),
-					"btn-error",
+				Span(Class("mr-2")),
+				ButtonLink(
+					ColorError,
+					r.Path(routenames.AdminEntityDelete(entityTypeName), row.ID),
 					"Delete",
 				),
 			),
@@ -92,8 +94,8 @@ func AdminEntityList(
 		Div(
 			Class("form-control mb-2"),
 			ButtonLink(
+				ColorAccent,
 				r.Path(routenames.AdminEntityAdd(entityTypeName)),
-				"btn-accent",
 				fmt.Sprintf("Add %s", entityTypeName),
 			),
 		),
@@ -108,6 +110,7 @@ func AdminEntityList(
 			entityList.Page,
 			r.Path(routenames.AdminEntityAdd(entityTypeName)),
 			entityList.HasNextPage,
+			"",
 		),
 	})
 }

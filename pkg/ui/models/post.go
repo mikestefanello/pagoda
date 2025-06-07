@@ -5,6 +5,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/ui"
+	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -16,6 +17,7 @@ type (
 	}
 
 	Post struct {
+		ID          int
 		Title, Body string
 	}
 )
@@ -28,57 +30,37 @@ func (p *Posts) Render(path string) Node {
 
 	return Div(
 		ID("posts"),
-		g,
-		Div(
-			Class("field is-grouped is-grouped-centered"),
-			If(!p.Pager.IsBeginning(), P(
-				Class("control"),
-				Button(
-					Class("button is-primary"),
-					Attr("hx-swap", "outerHTML"),
-					Attr("hx-get", fmt.Sprintf("%s?%s=%d", path, pager.QueryKey, p.Pager.Page-1)),
-					Attr("hx-target", "#posts"),
-					Text("Previous page"),
-				),
-			)),
-			If(!p.Pager.IsEnd(), P(
-				Class("control"),
-				Button(
-					Class("button is-primary"),
-					Attr("hx-swap", "outerHTML"),
-					Attr("hx-get", fmt.Sprintf("%s?%s=%d", path, pager.QueryKey, p.Pager.Page+1)),
-					Attr("hx-target", "#posts"),
-					Text("Next page"),
-				),
-			)),
+		Ul(
+			Class("list bg-base-100 rounded-box shadow-md not-prose"),
+			g,
 		),
+		Div(Class("mb-4")),
+		Pager(p.Pager.Page, path, !p.Pager.IsEnd(), "#posts"),
 	)
 }
 
 func (p *Post) Render() Node {
-	return Article(
-		Class("media"),
-		Figure(
-			Class("media-left"),
-			P(
-				Class("image is-64x64"),
-				Img(
-					Src(ui.StaticFile("gopher.png")),
-					Alt("Gopher"),
-				),
+	return Li(
+		Class("list-row"),
+		Div(
+			Class("text-4xl font-thin opacity-30 tabular-nums"),
+			Text(fmt.Sprintf("%02d", p.ID)),
+		),
+		Div(
+			Img(
+				Class("size-10 rounded-box"),
+				Src(ui.StaticFile("gopher.png")),
+				Alt("Gopher"),
 			),
 		),
 		Div(
-			Class("media-content"),
+			Class("list-col-grow"),
 			Div(
-				Class("content"),
-				P(
-					Strong(
-						Text(p.Title),
-					),
-					Br(),
-					Text(p.Body),
-				),
+				Text(p.Title),
+			),
+			Div(
+				Class("text-xs font-semibold opacity-60"),
+				Text(p.Body),
 			),
 		),
 	)

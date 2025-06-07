@@ -53,8 +53,8 @@ type (
 
 func ControlGroup(controls ...Node) Node {
 	return Div(
-		Class("join mt-2"),
-		Div(controls...),
+		Class("mt-2 flex gap-2"),
+		Group(controls),
 	)
 }
 
@@ -238,17 +238,35 @@ func CSRF(r *ui.Request) Node {
 	)
 }
 
-func FormButton(class, label string) Node {
+func FormButton(color Color, label string) Node {
 	return Button(
-		Class("btn "+class),
+		Class("btn "+buttonColor(color)),
 		Text(label),
 	)
 }
 
-func ButtonLink(href, class, label string) Node {
+func ButtonLink(color Color, href, label string) Node {
 	return A(
 		Href(href),
-		Class("btn "+class),
+		Class("btn "+buttonColor(color)),
 		Text(label),
 	)
+}
+
+func buttonColor(color Color) string {
+	// Only colors being used are included so unused styles are not compiled.
+	switch color {
+	case ColorPrimary:
+		return "btn-primary"
+	case ColorInfo:
+		return "btn-info"
+	case ColorAccent:
+		return "btn-accent"
+	case ColorError:
+		return "btn-error"
+	case ColorLink:
+		return "btn-link"
+	default:
+		return ""
+	}
 }

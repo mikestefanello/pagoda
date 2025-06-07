@@ -42,6 +42,7 @@ func (h *Pages) fetchPosts(pager *pager.Pager) []models.Post {
 
 	for k := range posts {
 		posts[k] = models.Post{
+			ID:    k + 1,
 			Title: fmt.Sprintf("Post example #%d", k+1),
 			Body:  fmt.Sprintf("Lorem ipsum example #%d ddolor sit amet, consectetur adipiscing elit. Nam elementum vulputate tristique.", k+1),
 		}

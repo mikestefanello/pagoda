@@ -31,8 +31,8 @@ func (f *ForgotPassword) Render(r *ui.Request) Node {
 			Value:     f.Email,
 		}),
 		ControlGroup(
-			FormButton("btn-primary", "Reset password"),
-			ButtonLink(r.Path(routenames.Home), "btn-link", "Cancel"),
+			FormButton(ColorPrimary, "Reset password"),
+			ButtonLink(ColorLink, r.Path(routenames.Home), "Cancel"),
 		),
 		CSRF(r),
 	)

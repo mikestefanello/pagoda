@@ -17,14 +17,14 @@ func FlashMessages(r *ui.Request) Node {
 		msg.TypeError,
 	} {
 		for _, str := range msg.Get(r.Context, typ) {
-			g = append(g, Notification(typ, str))
+			g = append(g, Alert(typ, str))
 		}
 	}
 
 	return g
 }
 
-func Notification(typ msg.Type, text string) Node {
+func Alert(typ msg.Type, text string) Node {
 	var class string
 
 	switch typ {
@@ -40,7 +40,7 @@ func Notification(typ msg.Type, text string) Node {
 
 	return Div(
 		Role("alert"),
-		Class("alert "+class),
+		Class("alert mb-2 "+class),
 		Attr("x-data", "{show: true}"),
 		Attr("x-show", "show"),
 		Span(

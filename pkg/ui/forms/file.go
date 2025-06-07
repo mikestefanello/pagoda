@@ -20,7 +20,7 @@ func (f File) Render(r *ui.Request) Node {
 		EncType("multipart/form-data"),
 		FileField("file", "Choose a file.. "),
 		ControlGroup(
-			FormButton("is-link", "Upload"),
+			FormButton(ColorPrimary, "Upload"),
 		),
 		CSRF(r),
 	)

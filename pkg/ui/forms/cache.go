@@ -35,8 +35,8 @@ func (f *Cache) Render(r *ui.Request) Node {
 			Class("value"),
 			Text("Value in cache: "),
 		),
-		If(f.CurrentValue != "", Badge("badge-success", f.CurrentValue)),
-		If(f.CurrentValue == "", Badge("badge-warning", "empty")),
+		If(f.CurrentValue != "", Badge(ColorSuccess, f.CurrentValue)),
+		If(f.CurrentValue == "", Badge(ColorWarning, "empty")),
 		InputField(InputFieldParams{
 			Form:      f,
 			FormField: "Value",
@@ -46,7 +46,7 @@ func (f *Cache) Render(r *ui.Request) Node {
 			Value:     f.Value,
 		}),
 		ControlGroup(
-			FormButton("btn-primary", "Update cache"),
+			FormButton(ColorPrimary, "Update cache"),
 		),
 		CSRF(r),
 	)

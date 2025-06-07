@@ -58,8 +58,8 @@ func (f *Register) Render(r *ui.Request) Node {
 			Placeholder: "******",
 		}),
 		ControlGroup(
-			FormButton("btn-primary", "Register"),
-			ButtonLink(r.Path(routenames.Home), "btn-link", "Cancel"),
+			FormButton(ColorPrimary, "Register"),
+			ButtonLink(ColorLink, r.Path(routenames.Home), "Cancel"),
 		),
 		CSRF(r),
 		Div(

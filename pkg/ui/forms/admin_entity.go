@@ -113,10 +113,10 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 		Method(http.MethodPost),
 		nodes,
 		ControlGroup(
-			FormButton("btn-primary", "Submit"),
+			FormButton(ColorPrimary, "Submit"),
 			ButtonLink(
+				ColorNone,
 				r.Path(routenames.AdminEntityList(schema.Name)),
-				"btn-link",
 				"Cancel",
 			),
 		),

@@ -27,7 +27,7 @@ func MenuLink(r *ui.Request, icon Node, title, routeName string, routeParams ...
 	)
 }
 
-func Pager(page int, path string, hasNext bool) Node {
+func Pager(page int, path string, hasNext bool, hxTarget string) Node {
 	href := func(page int) string {
 		return fmt.Sprintf("%s?%s=%d",
 			path,
@@ -43,6 +43,13 @@ func Pager(page int, path string, hasNext bool) Node {
 			Text("«"),
 			If(page <= 1, Disabled()),
 			Href(href(page-1)),
+			Iff(len(hxTarget) > 0, func() Node {
+				return Group{
+					Attr("hx-get", href(page-1)),
+					Attr("hx-swap", "outerHTML"),
+					Attr("hx-target", hxTarget),
+				}
+			}),
 		),
 		Button(
 			Class("join-item btn"),
@@ -53,6 +60,13 @@ func Pager(page int, path string, hasNext bool) Node {
 			Text("»"),
 			If(!hasNext, Disabled()),
 			Href(href(page+1)),
+			Iff(len(hxTarget) > 0, func() Node {
+				return Group{
+					Attr("hx-get", href(page+1)),
+					Attr("hx-swap", "outerHTML"),
+					Attr("hx-target", hxTarget),
+				}
+			}),
 		),
 	)
 }

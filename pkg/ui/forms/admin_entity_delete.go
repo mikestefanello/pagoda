@@ -17,10 +17,10 @@ func AdminEntityDelete(r *ui.Request, entityTypeName string) Node {
 			Textf("Are you sure you want to delete this %s?", entityTypeName),
 		),
 		ControlGroup(
-			FormButton("btn-error", "Delete"),
+			FormButton(ColorError, "Delete"),
 			ButtonLink(
+				ColorNone,
 				r.Path(routenames.AdminEntityList(entityTypeName)),
-				"btn-link",
 				"Cancel",
 			),
 		),
