@@ -1,4 +1,4 @@
-import AuthLayoutTemplate from "@/layouts/auth/auth-simple-layout";
+import AuthLayoutTemplate from "@/Layouts/Auth/AuthSimpleLayout";
 import { useFlashToasts } from "@/hooks/useFlashToast";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashMessages } from "@/types/global";

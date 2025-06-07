@@ -1,14 +1,9 @@
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
-import PublicLayout from "@/Layouts/public-layout";
-import { FlashMessages } from "@/types/global";
+import PublicLayout from "@/Layouts/PublicLayout";
 
-type Props = {
-  flash: FlashMessages;
-};
-
-export default function Home({ flash }: Props) {
+export default function Home() {
   return (
-    <PublicLayout flash={flash}>
+    <PublicLayout>
       <HeroGeometric
         badge="Pagode"
         title1="Elevate Your"
