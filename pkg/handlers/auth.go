@@ -130,7 +130,7 @@ func (h *Auth) LoginPage(ctx echo.Context) error {
 	err := h.Inertia.Render(
 		ctx.Response().Writer,
 		ctx.Request(),
-		"Auth/Login",
+		"Auth/login",
 		inertia.Props{
 			"text": "Teste",
 		},
@@ -212,7 +212,7 @@ func (h *Auth) RegisterPage(ctx echo.Context) error {
 	err := h.Inertia.Render(
 		ctx.Response().Writer,
 		ctx.Request(),
-		"Auth/Register",
+		"Auth/register",
 		inertia.Props{
 			"text": "Teste",
 		},

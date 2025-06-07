@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "@inertiajs/react";
+import AuthLayout from "@/layouts/auth-layout";
 
 export default function Register() {
   const { data, setData, post, processing, errors } = useForm({
@@ -20,17 +21,12 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <AuthLayout
+      title="Log in to your account"
+      description="Crafting seamless digital experiences with InertiaJS, React, and Golang"
+      logo="🥁 Pagode"
+    >
       <Card className="w-full max-w-md border bg-card backdrop-blur-xl shadow-xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-extrabold tracking-tight text-primary">
-            <Link href="/">🥁 Pagode</Link>
-          </CardTitle>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Create your account to join the platform
-          </p>
-        </CardHeader>
-
         <CardContent>
           <form onSubmit={submit} className="space-y-6">
             <div className="space-y-2">
@@ -117,6 +113,6 @@ export default function Register() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AuthLayout>
   );
 }
