@@ -8,4 +8,4 @@ build/
 /public/build
 /public/hot
 /public/storage
-
+.aider
