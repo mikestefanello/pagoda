@@ -51,18 +51,3 @@ func Alert(typ msg.Type, text string) Node {
 		Span(Text(text)),
 	)
 }
-
-// Deprecated
-func Message(class, header string, body Node) Node {
-	return Article(
-		Class("message "+class),
-		If(header != "", Div(
-			Class("message-header"),
-			P(Text(header)),
-		)),
-		Div(
-			Class("message-body"),
-			body,
-		),
-	)
-}

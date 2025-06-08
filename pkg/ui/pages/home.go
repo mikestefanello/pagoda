@@ -1,16 +1,14 @@
 package pages
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
+	"github.com/mikestefanello/pagoda/pkg/ui/icons"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	"github.com/mikestefanello/pagoda/pkg/ui/models"
 	. "maragu.dev/gomponents"
-	. "maragu.dev/gomponents/components"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -38,69 +36,71 @@ func Home(ctx echo.Context, posts *models.Posts) error {
 
 	headerMsg := func() Node {
 		return Group{
-			Section(
-				Class("hero is-info welcome is-small mb-3"),
-				Div(
-					Class("hero-body"),
-					Div(
-						Class("container"),
-						H1(
-							Class("title"),
-							Iff(r.IsAuth, func() Node {
-								return Text(fmt.Sprintf("Hello, %s", r.AuthUser.Name))
-							}),
-							If(!r.IsAuth, Text("Hello")),
-						),
-						H2(
-							Class("subtitle"),
-							If(!r.IsAuth, Text("Please login in to your account.")),
-							If(r.IsAuth, Text("Welcome back!")),
-						),
-					),
-				),
+			Stats(
+				Stat{
+					Title: "User name",
+					Value: func() string {
+						if r.IsAuth {
+							return r.AuthUser.Name
+						}
+						return "(not logged in)"
+					}(),
+					Description: "The logged in user's name",
+					Icon:        icons.UserCircle(),
+				},
+				Stat{
+					Title: "Admin status",
+					Value: func() string {
+						if r.IsAdmin {
+							return "Administrator"
+						}
+						return "Non-administrator"
+					}(),
+					Description: "Use `make admin` to create an admin account",
+					Icon:        icons.LockClosed(),
+				},
+				Stat{
+					Title:       "GitHub Stars",
+					Value:       "2,500+",
+					Description: "Star if you like Pagoda",
+					Icon:        icons.Star(),
+				},
 			),
-			Section(
-				Class("hero is-light is-small mb-5"),
-				Div(
-					Class("hero-body"),
-					Div(
-						Class("container"),
-						B(Text("Admin status: ")),
-						Span(
-							Classes{
-								"tag":        true,
-								"is-success": r.IsAdmin,
-								"is-danger":  !r.IsAdmin,
-							},
-							Text(fmt.Sprint(r.IsAdmin)),
-						),
-						If(!r.IsAdmin, Span(
-							Class("is-size-7 ml-3"),
-							Raw(`(<a href="https://github.com/mikestefanello/pagoda#create-an-admin-account">click here</a> for instructions to make an admin account)`),
-						)),
-					),
-				),
-			),
-			H2(Class("title"), Text("Recent posts")),
-			H3(Class("subtitle"), Text("Below is an example of both paging and AJAX fetching using HTMX")),
+			H2(Text("Recent posts")),
+			Span(Text("Below is an example of both paging and AJAX fetching using HTMX")),
 		}
 	}
 
-	filesMsg := func() Node {
-		return Message(
-			"is-small is-warning mt-5",
-			"Serving files",
-			Group{
-				Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted. "),
-				Text("Static files also contain cache-control headers which are configured via middleware."),
-			},
+	cards := func() Node {
+		return Div(
+			Class("flex w-full gap-2 mt-5"),
+			Card(CardParams{
+				Title: "Serving files",
+				Body: Group{
+					Text("In the example posts above, check how the file URL contains a cache-buster query parameter which changes only when the app is restarted. "),
+					Text("Static files also contain cache-control headers which are configured via middleware."),
+				},
+				Color: ColorWarning,
+				Size:  SizeSmall,
+			}),
+			Card(CardParams{
+				Title: "Documentation",
+				Body: Group{
+					Text("Have you read through the entire documentation? If not, you may be missing functionality or have questions. "),
+				},
+				Footer: Group{
+					ButtonLink(ColorNeutral, "https://github.com/mikestefanello/pagoda?tab=readme-ov-file#table-of-contents", "Learn more"),
+				},
+				Color: ColorNeutral,
+				Size:  SizeSmall,
+			}),
 		)
 	}
 
 	g := Group{
 		Iff(r.Htmx.Target != "posts", headerMsg),
 		posts.Render(r.Path(routenames.Home)),
-		Iff(r.Htmx.Target != "posts", filesMsg),
+		Iff(r.Htmx.Target != "posts", cards),
 	}
 
 	return r.Render(layouts.Primary, g)

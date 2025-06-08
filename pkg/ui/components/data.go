@@ -13,6 +13,13 @@ type CardParams struct {
 	Size   Size
 }
 
+type Stat struct {
+	Title       string
+	Value       string
+	Description string
+	Icon        Node
+}
+
 func Badge(color Color, text string) Node {
 	var class string
 
@@ -55,6 +62,8 @@ func Card(params CardParams) Node {
 	}
 
 	switch params.Size {
+	case SizeSmall:
+		sizeClass = "card-sm"
 	case SizeMedium:
 		sizeClass = "card-md"
 	case SizeLarge:
@@ -75,5 +84,36 @@ func Card(params CardParams) Node {
 				params.Footer,
 			)),
 		),
+	)
+}
+
+func Stats(stats ...Stat) Node {
+	g := make(Group, 0, len(stats))
+	for _, stat := range stats {
+		g = append(g, Div(
+			Class("stat"),
+			Iff(stat.Icon != nil, func() Node {
+				return Div(
+					Class("stat-figure text-secondary"),
+					stat.Icon,
+				)
+			}),
+			Div(
+				Class("stat-title"),
+				Text(stat.Title),
+			),
+			Div(
+				Class("stat-value"),
+				Text(stat.Value),
+			),
+			Div(
+				Class("stat-desc"),
+				Text(stat.Description),
+			),
+		))
+	}
+	return Div(
+		Class("stats shadow"),
+		g,
 	)
 }
