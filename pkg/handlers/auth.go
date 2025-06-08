@@ -195,7 +195,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 
 	msg.Success(ctx, fmt.Sprintf("Welcome back, %s. You are now logged in.", u.Name))
 
-	h.Inertia.Redirect(w, r, routenames.Home)
+	h.Inertia.Redirect(w, r, routenames.Welcome)
 	return nil
 }
 
@@ -206,7 +206,7 @@ func (h *Auth) Logout(ctx echo.Context) error {
 		msg.Danger(ctx, "An error occurred. Please try again.")
 	}
 	return redirect.New(ctx).
-		Route(routenames.Home).
+		Route(routenames.Welcome).
 		Go()
 }
 
@@ -285,7 +285,7 @@ func (h *Auth) RegisterSubmit(ctx echo.Context) error {
 	// Send verification email
 	h.sendVerificationEmail(ctx, u)
 
-	h.Inertia.Redirect(w, r, routenames.Home)
+	h.Inertia.Redirect(w, r, routenames.Dashboard)
 	return nil
 }
 
