@@ -52,6 +52,7 @@ func Alert(typ msg.Type, text string) Node {
 	)
 }
 
+// Deprecated
 func Message(class, header string, body Node) Node {
 	return Article(
 		Class("message "+class),

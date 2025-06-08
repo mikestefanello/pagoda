@@ -19,6 +19,12 @@ type (
 		Help        string
 	}
 
+	FileFieldParams struct {
+		Name  string
+		Label string
+		Help  string
+	}
+
 	OptionsParams struct {
 		Form      form.Form
 		FormField string
@@ -26,6 +32,7 @@ type (
 		Label     string
 		Value     string
 		Options   []Choice
+		Help      string
 	}
 
 	Choice struct {
@@ -59,14 +66,10 @@ func ControlGroup(controls ...Node) Node {
 }
 
 func TextareaField(el TextareaFieldParams) Node {
-	return FieldSet(
-		Class("fieldset"),
-		If(len(el.Label) > 0, Legend(
-			Class("fieldset-legend"),
-			Text(el.Label),
-		)),
+	return Fieldset(
+		el.Label,
 		Textarea(
-			Class("textarea h-24 "+formFieldStatusClass(el.Form, el.FormField)),
+			Class("textarea h-24 w-2/3 "+formFieldStatusClass(el.Form, el.FormField)),
 			ID(el.Name),
 			Name(el.Name),
 			Text(el.Value),
@@ -97,11 +100,8 @@ func Radios(el OptionsParams) Node {
 		)
 	}
 
-	return FieldSet(
-		If(len(el.Label) > 0, Legend(
-			Class("fieldset-legend"),
-			Text(el.Label),
-		)),
+	return Fieldset(
+		el.Label,
 		buttons,
 		formFieldErrors(el.Form, el.FormField),
 	)
@@ -117,16 +117,13 @@ func SelectList(el OptionsParams) Node {
 		)
 	}
 
-	return Div(
-		Class("control field"),
-		Label(Class("label"), Text(el.Label)),
-		Div(
-			Class("select"),
-			Select(
-				Name(el.Name),
-				buttons,
-			),
+	return Fieldset(
+		el.Label,
+		Select(
+			Class("select "+formFieldStatusClass(el.Form, el.FormField)),
+			buttons,
 		),
+		Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -149,12 +146,8 @@ func Checkbox(el CheckboxParams) Node {
 }
 
 func InputField(el InputFieldParams) Node {
-	return FieldSet(
-		Class("fieldset"),
-		If(len(el.Label) > 0, Legend(
-			Class("fieldset-legend"),
-			Text(el.Label),
-		)),
+	return Fieldset(
+		el.Label,
 		Input(
 			ID(el.Name),
 			Name(el.Name),
@@ -175,24 +168,26 @@ func Help(text string) Node {
 	))
 }
 
-func FileField(name, label string) Node {
-	return Div(
-		Class("field file"),
-		Label(
-			Class("file-label"),
-			Input(
-				Class("file-input"),
-				Type("file"),
-				Name(name),
-			),
-			Span(
-				Class("file-cta"),
-				Span(
-					Class("file-label"),
-					Text(label),
-				),
-			),
+func Fieldset(label string, els ...Node) Node {
+	return FieldSet(
+		Class("fieldset"),
+		If(len(label) > 0, Legend(
+			Class("fieldset-legend"),
+			Text(label),
+		)),
+		Group(els),
+	)
+}
+
+func FileField(el FileFieldParams) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			Type("file"),
+			Class("file-input"),
+			Name(el.Name),
 		),
+		Help(el.Help),
 	)
 }
 

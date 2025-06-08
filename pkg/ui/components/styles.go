@@ -1,6 +1,9 @@
 package components
 
-type Color int
+type (
+	Color int
+	Size  int
+)
 
 const (
 	ColorNone Color = iota
@@ -13,4 +16,12 @@ const (
 	ColorWarning
 	ColorError
 	ColorLink
+)
+
+const (
+	SizeExtraSmall Size = iota
+	SizeSmall
+	SizeMedium
+	SizeLarge
+	SizeExtraLarge
 )

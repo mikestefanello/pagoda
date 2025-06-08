@@ -22,14 +22,15 @@ func (f *Cache) Render(r *ui.Request) Node {
 		ID("cache"),
 		Method(http.MethodPost),
 		Attr("hx-post", r.Path(routenames.CacheSubmit)),
-		Message(
-			"is-info",
-			"Test the cache",
-			Group{
-				P(Text("This route handler shows how the default in-memory cache works. Try updating the value using the form below and see how it persists after you reload the page.")),
-				P(Text("HTMX makes it easy to re-render the cached value after the form is submitted.")),
+		Card(CardParams{
+			Title: "Test the cache",
+			Body: Group{
+				Span(Text("This route handler shows how the default in-memory cache works. Try updating the value using the form below and see how it persists after you reload the page.")),
+				Span(Text("HTMX makes it easy to re-render the cached value after the form is submitted.")),
 			},
-		),
+			Color: ColorInfo,
+			Size:  SizeMedium,
+		}),
 		Label(
 			For("value"),
 			Class("value"),

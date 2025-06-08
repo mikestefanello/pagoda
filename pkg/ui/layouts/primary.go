@@ -15,7 +15,7 @@ func Primary(r *ui.Request, content Node) Node {
 	return Doctype(
 		HTML(
 			Lang("en"),
-			Data("theme", "light"),
+			Data("theme", "dark"),
 			Head(
 				Metatags(r),
 				CSS(),
@@ -42,42 +42,14 @@ func Primary(r *ui.Request, content Node) Node {
 					),
 					sidebarMenu(r),
 				),
-				//headerNavBar(r),
+				searchModal(r),
 				HtmxListeners(r),
 			),
 		),
 	)
 }
 
-//func headerNavBar(r *ui.Request) Node {
-//	return cache.SetIfNotExists("layout.headerNavBar", func() Node {
-//		return Nav(
-//			Class("navbar is-dark"),
-//			Div(
-//				Class("container"),
-//				Div(
-//					Class("navbar-brand"),
-//					HxBoost(),
-//					A(
-//						Href(r.Path(routenames.Home)),
-//						Class("navbar-item"),
-//						Text("Pagoda"),
-//					),
-//				),
-//				Div(
-//					ID("navbarMenu"),
-//					Class("navbar-menu"),
-//					Div(
-//						Class("navbar-end"),
-//						search(r),
-//					),
-//				),
-//			),
-//		)
-//	})
-//}
-
-func search(r *ui.Request) Node {
+func search() Node {
 	return cache.SetIfNotExists("layout.search", func() Node {
 		return Div(
 			Class("ml-2"),
@@ -89,46 +61,51 @@ func search(r *ui.Request) Node {
 					Type("search"),
 					Class("grow"),
 					Placeholder("Search"),
-					Attr("@click", "search_modal.showModal(); $nextTick(() => $refs.input.focus());"),
+					Attr("@click", "search_modal.showModal();"),
 				),
 			),
-			Dialog(
-				ID("search_modal"),
-				Class("modal"),
-				Div(
-					Class("modal-box"),
-					Form(
-						Method("dialog"),
-						Button(
-							Class("btn btn-sm btn-circle btn-ghost absolute right-2 top-2"),
-							Text("✕"),
-						),
-					),
-					H3(
-						Class("text-lg font-bold mb-2"),
-						Text("Search"),
-					),
-					Input(
-						Attr("hx-get", r.Path(routenames.Search)),
-						Attr("hx-trigger", "keyup changed delay:500ms"),
-						Attr("hx-target", "#results"),
-						Name("query"),
-						Class("input w-full"),
-						Type("search"),
-						Placeholder("Search..."),
-						Attr("x-ref", "input"),
-					),
-					Ul(
-						ID("results"),
-						Class("list"),
-					),
-				),
+
+		)
+	})
+}
+
+func searchModal(r *ui.Request) Node {
+	return cache.SetIfNotExists("layout.searchModal", func() Node {
+		return Dialog(
+			ID("search_modal"),
+			Class("modal"),
+			Div(
+				Class("modal-box"),
 				Form(
 					Method("dialog"),
-					Class("modal-backdrop"),
 					Button(
-						Text("close"),
+						Class("btn btn-sm btn-circle btn-ghost absolute right-2 top-2"),
+						Text("✕"),
 					),
+				),
+				H3(
+					Class("text-lg font-bold mb-2"),
+					Text("Search"),
+				),
+				Input(
+					Attr("hx-get", r.Path(routenames.Search)),
+					Attr("hx-trigger", "keyup changed delay:500ms"),
+					Attr("hx-target", "#results"),
+					Name("query"),
+					Class("input w-full"),
+					Type("search"),
+					Placeholder("Search..."),
+				),
+				Ul(
+					ID("results"),
+					Class("list"),
+				),
+			),
+			Form(
+				Method("dialog"),
+				Class("modal-backdrop"),
+				Button(
+					Text("close"),
 				),
 			),
 		)
@@ -180,7 +157,7 @@ func sidebarMenu(r *ui.Request) Node {
 					Src(ui.StaticFile("logo.png")),
 				),
 			),
-			search(r),
+			search(),
 			Ul(
 				HxBoost(),
 				header("General"),

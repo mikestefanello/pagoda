@@ -26,9 +26,9 @@ func UploadFile(ctx echo.Context, files []*models.File) error {
 			"",
 			P(Text("This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.")),
 		),
-		Hr(),
+		Divider(""),
 		forms.File{}.Render(r),
-		Hr(),
+		Divider(""),
 		H3(
 			Class("title"),
 			Text("Uploaded files"),

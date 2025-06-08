@@ -173,12 +173,6 @@ func MagnifyingGlass() Node {
 	)
 }
 
-func Exit6() Node {
-	return icon("Exit",
-
-	)
-}
-
 func icon(id string, els ...Node) Node {
 	return cache.SetIfNotExists(fmt.Sprintf("icon.%s", id), func() Node {
 		return SVG(
