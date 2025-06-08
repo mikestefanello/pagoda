@@ -7,6 +7,7 @@ import (
 const (
 	Home                 = "home"
 	Welcome              = "welcome"
+	Dashboard            = "dashboard"
 	About                = "about"
 	Contact              = "contact"
 	ContactSubmit        = "contact.submit"
