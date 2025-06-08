@@ -12,12 +12,14 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
-    password_confirmation: "",
+    "password-confirm": "",
   });
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    post("/user/register");
+    post("/user/register", {
+      forceFormData: true,
+    });
   };
 
   return (
@@ -75,20 +77,18 @@ export default function Register() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <Label htmlFor="password-confirm">Confirm Password</Label>
               <Input
-                id="password_confirmation"
+                id="password-confirm"
                 type="password"
-                value={data.password_confirmation}
-                onChange={(e) =>
-                  setData("password_confirmation", e.target.value)
-                }
+                value={data["password-confirm"]}
+                onChange={(e) => setData("password-confirm", e.target.value)}
                 required
                 className="bg-muted text-card-foreground placeholder:text-muted-foreground"
               />
-              {errors.password_confirmation && (
+              {errors["password-confirm"] && (
                 <p className="text-sm text-destructive">
-                  {errors.password_confirmation}
+                  {errors["password-confirm"]}
                 </p>
               )}
             </div>
