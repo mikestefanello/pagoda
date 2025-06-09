@@ -31,8 +31,8 @@ func About(ctx echo.Context) error {
 						Body:  "Drop-in, Vue-like functionality written directly in your markup. Visit <a href=\"https://alpinejs.dev/\">alpinejs.dev</a> to learn more.",
 					},
 					{
-						Title: "Bulma",
-						Body:  "Ready-to-use frontend components that you can easily combine to build responsive web interfaces with no JavaScript requirements. Visit <a href=\"https://bulma.io/\">bulma.io</a> to learn more.",
+						Title: "DaisyUI",
+						Body:  "DaisyUI is the Tailwind CSS plugin you will love! It provides useful component class names to help you write less code and build faster. No JavaScript requirements. Visit <a href=\"https://daisyui.com/\">daisyui.com</a> to learn more.",
 					},
 				},
 			),

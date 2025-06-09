@@ -10,6 +10,8 @@ import (
 
 func FlashMessages(r *ui.Request) Node {
 	var g Group
+	var color Color
+
 	for _, typ := range []msg.Type{
 		msg.TypeSuccess,
 		msg.TypeInfo,
@@ -17,24 +19,35 @@ func FlashMessages(r *ui.Request) Node {
 		msg.TypeError,
 	} {
 		for _, str := range msg.Get(r.Context, typ) {
-			g = append(g, Alert(typ, str))
+			switch typ {
+			case msg.TypeSuccess:
+				color = ColorSuccess
+			case msg.TypeInfo:
+				color = ColorInfo
+			case msg.TypeWarning:
+				color = ColorWarning
+			case msg.TypeError:
+				color = ColorError
+			}
+
+			g = append(g, Alert(color, str))
 		}
 	}
 
 	return g
 }
 
-func Alert(typ msg.Type, text string) Node {
+func Alert(color Color, text string) Node {
 	var class string
 
-	switch typ {
-	case msg.TypeSuccess:
+	switch color {
+	case ColorSuccess:
 		class = "alert-success"
-	case msg.TypeInfo:
+	case ColorInfo:
 		class = "alert-info"
-	case msg.TypeWarning:
+	case ColorWarning:
 		class = "alert-warning"
-	case msg.TypeError:
+	case ColorError:
 		class = "alert-error"
 	}
 

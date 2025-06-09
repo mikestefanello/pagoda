@@ -2,7 +2,6 @@ package pages
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
@@ -33,10 +32,7 @@ func AddTask(ctx echo.Context, form *forms.Task) error {
 			}
 			return Group{
 				Div(Class("mt-5")),
-				Alert(
-					msg.TypeWarning,
-					text,
-				),
+				Alert(ColorWarning, text),
 			}
 		}),
 	}
