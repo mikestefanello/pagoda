@@ -642,9 +642,9 @@ If [CSRF](#csrf) protection is enabled, the token value will automatically be pa
 
 [DaisyUI](https://daisyui.com/), which is a component library for [Tailwind CSS](https://tailwindcss.com/), was chosen as the default CSS solution. You are not required to use either of these and removing what has been provided should be quite simple. Both of these tools are very mature, have huge communities, and endless resources, making them ideal for rapid, simple frontend development
 
-Review the [installing tools](#installing-tools) section to ensure you have everything installed, and you understand how the `make` commands handle building your CSS styles and how live reloading automatically handles executing the Tailwind CLI. By default, the compiled CSS is written to `public/static/main.css`.
+Review the [installing tools](#installing-tools) section to ensure you have everything installed, and you understand how the `make` commands handle building your CSS styles and how live reloading automatically handles executing the Tailwind CLI. By default, the compiled CSS is written to `public/static/main.css` when `make css` is executed.
 
-Tailwind configuration is stored in `tailwind.css` and is configured to check for classes within `pkg/ui`. Remember, full class names must be present in the Go files in order for Tailwind to find them; you cannot dynamically build classes.
+Tailwind configuration is stored in [tailwind.css](https://github.com/mikestefanello/pagoda/blob/main/tailwind.css) and is configured to check for classes within `pkg/ui`. Remember, full class names must be present in the Go files in order for Tailwind to find them; you cannot dynamically build classes.
 
 ### Request
 
