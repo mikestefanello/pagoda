@@ -5,20 +5,21 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-type CardParams struct {
-	Title  string
-	Body   Group
-	Footer Group
-	Color  Color
-	Size   Size
-}
-
-type Stat struct {
-	Title       string
-	Value       string
-	Description string
-	Icon        Node
-}
+type (
+	CardParams struct {
+		Title  string
+		Body   Group
+		Footer Group
+		Color  Color
+		Size   Size
+	}
+	Stat struct {
+		Title       string
+		Value       string
+		Description string
+		Icon        Node
+	}
+)
 
 func Badge(color Color, text string) Node {
 	var class string

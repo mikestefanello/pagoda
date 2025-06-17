@@ -42,6 +42,7 @@ func BuildRouter(c *services.Container) error {
 				return true
 			},
 		}),
+		middleware.CacheControl(c.Config.Cache.Expiration.PublicFile),
 	).StaticFS("static", echo.MustSubFS(files.Static, "static"))
 
 	// Non-static file route group.
