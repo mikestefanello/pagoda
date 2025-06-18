@@ -20,6 +20,7 @@
 * [Getting started](#getting-started)
   * [Dependencies](#dependencies)
   * [Getting the code](#getting-the-code)
+  * [Installing tools](#installing-tools)
   * [Create an admin account](#create-an-admin-account)
   * [Start the application](#start-the-application)
   * [Live reloading](#live-reloading)
@@ -65,6 +66,7 @@
     * [Header management](#header-management)
     * [Conditional and partial rendering](#conditional-and-partial-rendering)
     * [CSRF token](#csrf-token)
+  * [CSS](#css)
   * [Request](#request)
     * [Title and metatags](#title-and-metatags)
     * [URL generation](#url-generation)
@@ -77,6 +79,7 @@
     * [Inline validation](#inline-validation)
     * [CSRF](#csrf)
   * [Models](#models)
+  * [Icons](#icons)
   * [Node caching](#node-caching)
   * [Flash messaging](#flash-messaging)
 * [Pager](#pager)
@@ -91,9 +94,11 @@
   * [Monitoring tasks and queues](#monitoring-tasks-and-queues)
 * [Cron](#cron)
 * [Files](#files)
-* [Static files](#static-files)
+  * [Uploads](#uploads)
+  * [Static files](#static-files)
+    * [Cache-buster](#cache-buster)
+  * [Public files](#public-files)
   * [Cache control headers](#cache-control-headers)
-  * [Cache-buster](#cache-buster)
 * [Email](#email)
 * [HTTPS](#https)
 * [Logging](#logging)
@@ -125,7 +130,7 @@ Go server-side rendered HTML combined with the projects below enable you to crea
 
 - [HTMX](https://htmx.org/): Access AJAX, CSS Transitions, WebSockets and Server Sent Events directly in HTML, using attributes, so you can build modern user interfaces with the simplicity and power of hypertext.
 - [Alpine.js](https://alpinejs.dev/): Rugged, minimal tool for composing behavior directly in your markup. Think of it like jQuery for the modern web. Plop in a script tag and get going.
-- [Bulma](https://bulma.io/): Provides ready-to-use frontend components that you can easily combine to build responsive web interfaces. No JavaScript dependencies.
+- [DaisyUI](https://daisyui.com/): The [Tailwind CSS](https://tailwindcss.com/) plugin you will love! It provides useful component class names to help you write less code and build faster. No JavaScript dependencies.
 
 #### Storage
 
@@ -174,9 +179,17 @@ git clone git@github.com:mikestefanello/pagoda.git
 cd pagoda
 ```
 
+### Installing tools
+
+Several optional tools are available to make development easier for you. This includes [Ent](#orm) code-generator, for generating ORM code, [Air](https://github.com/air-verse/air) CLI, to provide [live reloading](#live-reloading), and [Tailwind CSS](https://tailwindcss.com/docs/installation/tailwind-cli) CLI, to generate CSS. 
+
+If you wish to use Tailwind (with or without [Daisy UI](https://daisyui.com/)), modify the [Makefile](https://github.com/mikestefanello/pagoda/blob/main/Makefile), and adjust the `TAILWIND_PACKAGE` variable to reference the proper package for your operating system. By default, it's set to work with Linux x64. If you want to use Tailwind but don't want to use the standalone CLI, ie `npm`, modify the `tailwind-install` and `css` _make targets_ based on your preferences.
+
+To easily install all tools, run `make install` from the root of the repo. There are also separate _make targets_ for each tool (run `make help` to list all targets).
+
 ### Create an admin account
 
-In order to access the [admin panel](#admin-panel), you must log in with an admin user and in order to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
+To access the [admin panel](#admin-panel), you must log in with an admin user and to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
 
 Once you have one admin account, you can use that account to manage other users and admins from within the UI.
 
@@ -190,7 +203,9 @@ These settings, and many others, can be changed via the [configuration](#configu
 
 ### Live reloading
 
-Rather than using `make run`, if you prefer live reloading so your app automatically rebuilds and runs whenever you save code changes, start by installing [air](https://github.com/air-verse/air) by running `make air-install`, then use `make watch` to start the application with automatic live reloading.
+Rather than using `make run`, if you prefer live reloading so your app automatically rebuilds and runs whenever you save code changes, start by installing [Air](https://github.com/air-verse/air), if you haven't already, by running `make air-install` (or `make install` to install all tools), then use `make watch` to start the application with automatic live reloading.
+
+When code changes are detected, `make css` will run to re-compile Tailwind styles automatically before restarting the app. If you choose not to use Tailwind, either modify `make css` to run whatever commands you require, or remove this from the `make build` target.
 
 ## Service container
 
@@ -623,6 +638,14 @@ if htmx.GetRequest(ctx).Target == "search" {
 
 If [CSRF](#csrf) protection is enabled, the token value will automatically be passed to HTMX to be included in all non-GET requests. This is done in the `JS()` [component](#components) by leveraging HTMX [events](https://htmx.org/reference/#events).
 
+### CSS
+
+[DaisyUI](https://daisyui.com/), which is a component library for [Tailwind CSS](https://tailwindcss.com/), was chosen as the default CSS solution. You are not required to use either of these and removing what has been provided should be quite simple. Both of these tools are very mature, have huge communities, and endless resources, making them ideal for rapid, simple frontend development
+
+Review the [installing tools](#installing-tools) section to ensure you have everything installed, and you understand how the `make` commands handle building your CSS styles and how live reloading automatically handles executing the Tailwind CLI. By default, the compiled CSS is written to `public/static/main.css` when `make css` is executed.
+
+Tailwind configuration is stored in [tailwind.css](https://github.com/mikestefanello/pagoda/blob/main/tailwind.css) and is configured to check for classes within `pkg/ui`. Remember, full class names must be present in the Go files in order for Tailwind to find them; you cannot dynamically build classes.
+
 ### Request
 
 The `Request` type in the `ui` package is a foundational helper that provides useful data from the current request as well as resources and methods that make rendering UI components much easier. Using the `echo.Context`, a `Request` can be generated by executing `ui.NewRequest(ctx)`. As you develop and expand your application, you will likely want to expand this type to include additional data and methods that your frontend requires.
@@ -676,7 +699,40 @@ func ProfileLink(r *ui.Request, userName string, userID int64) gomponents.Node {
 
 The [components package](https://github.com/mikestefanello/pagoda/tree/templates/pkg/ui/components) is meant to be your library of reusable _gomponent_ components. Having this makes building your [layouts](#layouts), [pages](#pages), [forms](#forms), [models](#models) and the rest of your user interface much easier. Some of the examples provided include components for [flash messages](#flash-messaging), navigation menus, tabs, metatags, and form elements used to automatically provide [inline validation](#inline-form-validation).
 
-Your components can also make using utility-based CSS libraries, such as [Tailwind CSS](https://tailwindcss.com/), much easier by avoiding excessive duplication of classes across elements.
+Your components can also make using utility-based CSS libraries, such as [Tailwind CSS](https://tailwindcss.com/), much easier by avoiding excessive duplication of classes across elements. A number of [DaisyUI](https://daisyui.com/) components are provided.
+
+Here are some examples:
+
+```go
+Badge(ColorSuccess, "Hello")
+```
+
+```go
+Card(CardParams{
+    Title: "Hello world",
+    Body: Group{
+        Span(Text("This is a card.")),
+    },
+    Footer: Group{
+        ButtonLink(ColorNeutral, "https://daisyui.com", "Learn more"),
+    },
+    Color: ColorInfo,
+    Size:  SizeMedium,
+})
+```
+
+```go
+Tabs([]Tab{
+    {
+        Title: "Tab 1",
+        Body:  "Here is tab 1.",
+    },
+    {
+        Title: "Tab 2",
+        Body:  "Check out tab 2.",
+    },
+})
+```
 
 ### Layouts
 
@@ -740,7 +796,7 @@ func (f *Guestbook) Render(r *ui.Request) Node {
             Value:     f.Message,
         }),
         ControlGroup(
-            FormButton("is-link", "Submit"),
+            FormButton(ColorPrimary, "Submit"),
         ),
         CSRF(r),
     )
@@ -834,6 +890,19 @@ The `Request` automatically extracts the CSRF token from the context, but you mu
 
 Models are objects built and provided by your _routes_ that can be rendered by your _ui_. Though not required, they reside in the [models package](https://github.com/mikestefanello/pagoda/tree/main/pkg/ui/models) and each has a `Render()` method, making them easy to render within your [pages](#pages). Please see example routes such as the homepage and search for an example.
 
+### Icons
+
+A starting SVG icon library is provided in `pkg/ui/icons` with icons from [heroicons](https://heroicons.com/). You are free to use any icons you want and in any manner.
+
+Example:
+```go
+A(
+  Href("/user/123"),
+  icons.UserCircle,
+  Text("Profile")
+)
+```
+
 ### Node caching
 
 While most likely unnecessary for most applications, but because optimizing software is fun, a simple `gomponents.Node` cache is provided. This is not because _gomponents_ is inefficient, in fact my basic benchmarks put it as either similar or slightly better than Go templates, but rather because there are _some_ performance gains to be seen by caching static nodes and it may seem wasteful to build and render static HTML on every single page load. It is important to note, you can only cache nodes that are static and will never change.
@@ -868,11 +937,11 @@ There are four types of messages, and each can be created as follows:
 - Success: `msg.Success(ctx echo.Context, message string)`
 - Info: `msg.Info(ctx echo.Context, message string)`
 - Warning: `msg.Warning(ctx echo.Context, message string)`
-- Danger: `msg.Danger(ctx echo.Context, message string)`
+- Error: `msg.Error(ctx echo.Context, message string)`
 
 #### Rendering messages
 
-When a flash message is retrieved from storage in order to be rendered, it is deleted from storage so that it cannot be rendered again.
+When a flash message is retrieved from storage to be rendered, it is deleted from storage so that it cannot be rendered again.
 
 A [component](#components), `FlashMessages()`, is provided to render flash messages within your UI.
 
@@ -1007,35 +1076,43 @@ By default, no cron solution is provided because it's very easy to add yourself 
 
 ## Files
 
+Providing a generic approach to files that works for all use-cases is nearly impossible, so the defaults provided here is more of an illustration of what features are available. It's likely you will want to use a CDN and/or cloud storage for all or some of your file management.
+
+### Uploads
+
 To handle file management functionality such as file uploads, an abstracted file system interface is provided as a _Service_ on the `Container` powered by [afero](https://github.com/spf13/afero). This allows you to easily change the file system backend (ie, local, GCS, SFTP, in-memory) without having to change any of the application code other than the initialization on the `Container`. By default, the local OS is used with a directory specified in the application configuration (which defaults to `uploads`). When running tests, an in-memory file system backend is automatically used.
 
 A simple file upload form example is provided at `/files` which also dynamically lists all files previously uploaded. No database entities or entries are created or provided for files and uploaded files are not available to be served. You will have to implement whatever functionality your application needs.
 
-## Static files
+### Static files
 
-Static files are currently configured in the router (`pkg/handler/router.go`) to be served from the `static` directory. If you wish to change the directory, alter the constant `config.StaticDir`. The URL prefix for static files is `/files` which is controlled via the `config.StaticPrefix` constant.
+Static files, which are intended to be CSS, JS, UI images, etc, are currently configured in the router (`pkg/handler/router.go`) to be served from the `public/static` directory and are available via the URL prefix `/static`. By default, `make css` will write your css file here.
 
-### Cache control headers
+#### Cache-buster
 
-Static files are grouped separately so you can apply middleware only to them. Included is a custom middleware to set cache control headers (`middleware.CacheControl`) which has been added to the static files router group.
+While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. To do this, a function, `StaticFile()`, is provided in the `ui` package to generate a static file URL for a given file that appends a cache-buster query. This query string is generated using the timestamp of when the app started and persists until the application restarts.
 
-The cache max-life is controlled by the configuration at `Config.Cache.Expiration.StaticFile` and defaults to 6 months.
-
-### Cache-buster
-
-While it's ideal to use cache control headers on your static files so browsers cache the files, you need a way to bust the cache in case the files are changed. In order to do this, a function, `File()`, is provided in the `ui` package to generate a static file URL for a given file that appends a cache-buster query. This query string is generated using the timestamp of when the app started and persists until the application restarts.
-
-For example, to render a file located in `static/picture.png`, you would use:
+For example, to render a file located in `public/static/picture.png`, you would use:
 ```go
-return Img(Src(ui.File("picture.png")))
+return Img(Src(ui.StaticFile("picture.png")))
 ```
 
 Which would result in:
 ```html
-<img src="/files/picture.png?v=1741053493"/>
+<img src="/static/picture.png?v=1741053493"/>
 ```
 
 Where `1741053493` is the cache-buster.
+
+### Public files
+
+An additional option for public files that do not fit in to the previously mentioned categories is provided as an example. Defined in the router, files located in `public/files` are available via the URL prefix `/files`. `ui.PublicFile()` can be used to generate URLs for files within this directory.
+
+### Cache control headers
+
+Static and public files are grouped separately so you can apply middleware only to them. Included is a custom middleware to set cache control headers (`middleware.CacheControl`) which has been added to the static files router group.
+
+The cache max-life is controlled by the configuration at `Config.Cache.Expiration.PublicFile` and defaults to 6 months.
 
 ## Email
 
@@ -1137,7 +1214,7 @@ Thank you to all the following amazing projects for making this possible.
 - [air](https://github.com/air-verse/air)
 - [alpinejs](https://github.com/alpinejs/alpine)
 - [backlite](https://github.com/mikestefanello/backlite)
-- [bulma](https://github.com/jgthms/bulma)
+- [daisyui](https://github.com/saadeghi/daisyui)
 - [echo](https://github.com/labstack/echo)
 - [ent](https://github.com/ent/ent)
 - [go](https://go.dev/)
@@ -1149,6 +1226,7 @@ Thank you to all the following amazing projects for making this possible.
 - [otter](https://github.com/maypok86/otter)
 - [sessions](https://github.com/gorilla/sessions)
 - [sqlite](https://sqlite.org/)
+- [tailwindcss](https://github.com/tailwindlabs/tailwindcss)
 - [testify](https://github.com/stretchr/testify)
 - [validator](https://github.com/go-playground/validator)
 - [viper](https://github.com/spf13/viper)

@@ -21,19 +21,19 @@ func UploadFile(ctx echo.Context, files []*models.File) error {
 	}
 
 	n := Group{
-		Message(
-			"is-link",
-			"",
-			P(Text("This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.")),
-		),
-		Hr(),
+		P(Text("This is a very basic example of how to handle file uploads. Files uploaded will be saved to the directory specified in your configuration.")),
+		Divider(""),
 		forms.File{}.Render(r),
-		Hr(),
+		Divider(""),
 		H3(
 			Class("title"),
 			Text("Uploaded files"),
 		),
-		Message("is-warning", "", P(Text("Below are all files in the configured upload directory."))),
+		Card(CardParams{
+			Body:  Group{Text("Below are all files in the configured upload directory.")},
+			Color: ColorWarning,
+			Size:  SizeMedium,
+		}),
 		Table(
 			Class("table"),
 			THead(

@@ -18,9 +18,13 @@ func (f File) Render(r *ui.Request) Node {
 		Method(http.MethodPost),
 		Action(r.Path(routenames.FilesSubmit)),
 		EncType("multipart/form-data"),
-		FileField("file", "Choose a file.. "),
+		FileField(FileFieldParams{
+			Name:  "file",
+			Label: "Test file",
+			Help:  "Pick a file to upload.",
+		}),
 		ControlGroup(
-			FormButton("is-link", "Upload"),
+			FormButton(ColorPrimary, "Upload"),
 		),
 		CSRF(r),
 	)

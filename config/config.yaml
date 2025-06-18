@@ -27,7 +27,7 @@ app:
 cache:
   capacity: 100000
   expiration:
-    staticFile: "4380h"
+    publicFile: "4380h"
 
 database:
   driver: "sqlite3"

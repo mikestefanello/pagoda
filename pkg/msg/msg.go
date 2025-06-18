@@ -20,8 +20,8 @@ const (
 	// TypeWarning represents a warning message type.
 	TypeWarning Type = "warning"
 
-	// TypeDanger represents a danger message type.
-	TypeDanger Type = "danger"
+	// TypeError represents an error message type.
+	TypeError Type = "error"
 )
 
 const (
@@ -44,9 +44,9 @@ func Warning(ctx echo.Context, message string) {
 	Set(ctx, TypeWarning, message)
 }
 
-// Danger sets a danger flash message.
-func Danger(ctx echo.Context, message string) {
-	Set(ctx, TypeDanger, message)
+// Error sets an error flash message.
+func Error(ctx echo.Context, message string) {
+	Set(ctx, TypeError, message)
 }
 
 // Set adds a new flash message of a given type into the session storage.
@@ -61,19 +61,19 @@ func Set(ctx echo.Context, typ Type, message string) {
 // Get gets flash messages of a given type from the session storage.
 // Errors will be logged and not returned.
 func Get(ctx echo.Context, typ Type) []string {
-	var msgs []string
-
 	if sess, err := getSession(ctx); err == nil {
 		if flash := sess.Flashes(string(typ)); len(flash) > 0 {
 			save(ctx, sess)
 
+			msgs := make([]string, 0, len(flash))
 			for _, m := range flash {
 				msgs = append(msgs, m.(string))
 			}
+			return msgs
 		}
 	}
 
-	return msgs
+	return nil
 }
 
 // getSession gets the flash message session.

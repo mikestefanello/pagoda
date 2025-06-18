@@ -134,7 +134,7 @@ func (h *Auth) LoginSubmit(ctx echo.Context) error {
 	authFailed := func() error {
 		input.SetFieldError("Email", "")
 		input.SetFieldError("Password", "")
-		msg.Danger(ctx, "Invalid credentials. Please try again.")
+		msg.Error(ctx, "Invalid credentials. Please try again.")
 		return h.LoginPage(ctx)
 	}
 
@@ -185,7 +185,7 @@ func (h *Auth) Logout(ctx echo.Context) error {
 	if err := h.auth.Logout(ctx); err == nil {
 		msg.Success(ctx, "You have been logged out successfully.")
 	} else {
-		msg.Danger(ctx, "An error occurred. Please try again.")
+		msg.Error(ctx, "An error occurred. Please try again.")
 	}
 	return redirect.New(ctx).
 		Route(routenames.Home).

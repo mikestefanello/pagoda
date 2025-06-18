@@ -51,7 +51,7 @@ func (f *Contact) Render(r *ui.Request) Node {
 			Value:     f.Message,
 		}),
 		ControlGroup(
-			FormButton("is-link", "Submit"),
+			FormButton(ColorPrimary, "Submit"),
 		),
 		CSRF(r),
 	)

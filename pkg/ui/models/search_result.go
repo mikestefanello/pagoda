@@ -11,9 +11,11 @@ type SearchResult struct {
 }
 
 func (s *SearchResult) Render() Node {
-	return A(
-		Class("panel-block"),
-		Href(s.URL),
-		Text(s.Title),
+	return Li(
+		Class("list-row"),
+		A(
+			Href(s.URL),
+			Text(s.Title),
+		),
 	)
 }

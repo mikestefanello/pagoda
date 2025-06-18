@@ -42,7 +42,7 @@ func (f *Task) Render(r *ui.Request) Node {
 			Help:      "The message the task will output to the log",
 		}),
 		ControlGroup(
-			FormButton("is-link", "Add task to queue"),
+			FormButton(ColorPrimary, "Add task to queue"),
 		),
 		CSRF(r),
 	)

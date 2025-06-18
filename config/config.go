@@ -8,14 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	// StaticDir stores the name of the directory that will serve static files.
-	StaticDir = "static"
-
-	// StaticPrefix stores the URL prefix used when serving static files.
-	StaticPrefix = "files"
-)
-
 type environment string
 
 const (
@@ -25,8 +17,8 @@ const (
 	// EnvTest represents the test environment.
 	EnvTest environment = "test"
 
-	// EnvDevelop represents the development environment.
-	EnvDevelop environment = "dev"
+	// EnvDevelopment represents the development environment.
+	EnvDevelopment environment = "dev"
 
 	// EnvStaging represents the staging environment.
 	EnvStaging environment = "staging"
@@ -92,7 +84,7 @@ type (
 	CacheConfig struct {
 		Capacity   int
 		Expiration struct {
-			StaticFile time.Duration
+			PublicFile time.Duration
 		}
 	}
 

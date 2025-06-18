@@ -39,7 +39,7 @@ func (f *ResetPassword) Render(r *ui.Request) Node {
 			Placeholder: "******",
 		}),
 		ControlGroup(
-			FormButton("is-primary", "Update password"),
+			FormButton(ColorPrimary, "Update password"),
 		),
 		CSRF(r),
 	)

@@ -19,6 +19,12 @@ type (
 		Help        string
 	}
 
+	FileFieldParams struct {
+		Name  string
+		Label string
+		Help  string
+	}
+
 	OptionsParams struct {
 		Form      form.Form
 		FormField string
@@ -26,6 +32,7 @@ type (
 		Label     string
 		Value     string
 		Options   []Choice
+		Help      string
 	}
 
 	Choice struct {
@@ -52,38 +59,22 @@ type (
 )
 
 func ControlGroup(controls ...Node) Node {
-	g := make(Group, len(controls))
-	for i, control := range controls {
-		g[i] = Div(
-			Class("control"),
-			control,
-		)
-	}
-
 	return Div(
-		Class("field is-grouped"),
-		g,
+		Class("mt-2 flex gap-2"),
+		Group(controls),
 	)
 }
 
 func TextareaField(el TextareaFieldParams) Node {
-	return Div(
-		Class("field"),
-		Label(
-			For("name"),
-			Class("label"),
-			Text(el.Label),
+	return Fieldset(
+		el.Label,
+		Textarea(
+			Class("textarea h-24 w-2/3 "+formFieldStatusClass(el.Form, el.FormField)),
+			ID(el.Name),
+			Name(el.Name),
+			Text(el.Value),
 		),
-		Div(
-			Class("control"),
-			Textarea(
-				ID(el.Name),
-				Name(el.Name),
-				Class("textarea "+formFieldStatusClass(el.Form, el.FormField)),
-				Text(el.Value),
-			),
-		),
-		If(el.Help != "", P(Class("help"), Text(el.Help))),
+		Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -91,25 +82,27 @@ func TextareaField(el TextareaFieldParams) Node {
 func Radios(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
 	for i, opt := range el.Options {
-		buttons[i] = Label(
-			Class("radio"),
+		id := "radio-" + el.Name + "-" + opt.Value
+		buttons[i] = Div(
+			Class("mb-2"),
 			Input(
+				ID(id),
 				Type("radio"),
 				Name(el.Name),
 				Value(opt.Value),
+				Class("radio mr-1 "+formFieldStatusClass(el.Form, el.FormField)),
 				If(el.Value == opt.Value, Checked()),
 			),
-			Text(" "+opt.Label),
+			Label(
+				Text(opt.Label),
+				For(id),
+			),
 		)
 	}
 
-	return Div(
-		Class("control field"),
-		Label(Class("label"), Text(el.Label)),
-		Div(
-			Class("radios"),
-			buttons,
-		),
+	return Fieldset(
+		el.Label,
+		buttons,
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -124,82 +117,77 @@ func SelectList(el OptionsParams) Node {
 		)
 	}
 
-	return Div(
-		Class("control field"),
-		Label(Class("label"), Text(el.Label)),
-		Div(
-			Class("select"),
-			Select(
-				Name(el.Name),
-				buttons,
-			),
+	return Fieldset(
+		el.Label,
+		Select(
+			Class("select "+formFieldStatusClass(el.Form, el.FormField)),
+			buttons,
 		),
+		Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
 
 func Checkbox(el CheckboxParams) Node {
 	return Div(
-		Class("field"),
-		Div(
-			Class("control"),
-			Label(
+		Label(
+			Class("label"),
+			Input(
 				Class("checkbox"),
-				Input(
-					Type("checkbox"),
-					Name(el.Name),
-					If(el.Checked, Checked()),
-					Value("true"),
-				),
-				Text(" "+el.Label),
+				Type("checkbox"),
+				Name(el.Name),
+				If(el.Checked, Checked()),
+				Value("true"),
 			),
+			Text(" "+el.Label),
 		),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
 
 func InputField(el InputFieldParams) Node {
-	return Div(
-		Class("field"),
-		Label(
-			Class("label"),
-			For(el.Name),
-			Text(el.Label),
+	return Fieldset(
+		el.Label,
+		Input(
+			ID(el.Name),
+			Name(el.Name),
+			Type(el.InputType),
+			Class("input "+formFieldStatusClass(el.Form, el.FormField)),
+			Value(el.Value),
+			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
-		Div(
-			Class("control"),
-			Input(
-				ID(el.Name),
-				Name(el.Name),
-				Type(el.InputType),
-				If(el.Placeholder != "", Placeholder(el.Placeholder)),
-				Class("input "+formFieldStatusClass(el.Form, el.FormField)),
-				Value(el.Value),
-			),
-		),
-		If(el.Help != "", P(Class("help"), Text(el.Help))),
+		Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
 
-func FileField(name, label string) Node {
-	return Div(
-		Class("field file"),
-		Label(
-			Class("file-label"),
-			Input(
-				Class("file-input"),
-				Type("file"),
-				Name(name),
-			),
-			Span(
-				Class("file-cta"),
-				Span(
-					Class("file-label"),
-					Text(label),
-				),
-			),
+func Help(text string) Node {
+	return If(len(text) > 0, Div(
+		Class("label"),
+		Text(text),
+	))
+}
+
+func Fieldset(label string, els ...Node) Node {
+	return FieldSet(
+		Class("fieldset"),
+		If(len(label) > 0, Legend(
+			Class("fieldset-legend"),
+			Text(label),
+		)),
+		Group(els),
+	)
+}
+
+func FileField(el FileFieldParams) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			Type("file"),
+			Class("file-input"),
+			Name(el.Name),
 		),
+		Help(el.Help),
 	)
 }
 
@@ -210,9 +198,9 @@ func formFieldStatusClass(fm form.Form, formField string) string {
 	case !fm.IsSubmitted():
 		return ""
 	case fm.FieldHasErrors(formField):
-		return "is-danger"
+		return "input-error"
 	default:
-		return "is-success"
+		return "input-success"
 	}
 }
 
@@ -228,8 +216,8 @@ func formFieldErrors(fm form.Form, field string) Node {
 
 	g := make(Group, len(errs))
 	for i, err := range errs {
-		g[i] = P(
-			Class("help is-danger"),
+		g[i] = Div(
+			Class("text-error"),
 			Text(err),
 		)
 	}
@@ -245,17 +233,35 @@ func CSRF(r *ui.Request) Node {
 	)
 }
 
-func FormButton(class, label string) Node {
+func FormButton(color Color, label string) Node {
 	return Button(
-		Class("button "+class),
+		Class("btn "+buttonColor(color)),
 		Text(label),
 	)
 }
 
-func ButtonLink(href, class, label string) Node {
+func ButtonLink(color Color, href, label string) Node {
 	return A(
 		Href(href),
-		Class("button "+class),
+		Class("btn "+buttonColor(color)),
 		Text(label),
 	)
+}
+
+func buttonColor(color Color) string {
+	// Only colors being used are included so unused styles are not compiled.
+	switch color {
+	case ColorPrimary:
+		return "btn-primary"
+	case ColorInfo:
+		return "btn-info"
+	case ColorAccent:
+		return "btn-accent"
+	case ColorError:
+		return "btn-error"
+	case ColorLink:
+		return "btn-link"
+	default:
+		return ""
+	}
 }
