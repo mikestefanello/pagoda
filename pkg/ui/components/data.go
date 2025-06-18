@@ -13,6 +13,7 @@ type (
 		Color  Color
 		Size   Size
 	}
+
 	Stat struct {
 		Title       string
 		Value       string

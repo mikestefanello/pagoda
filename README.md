@@ -205,7 +205,7 @@ These settings, and many others, can be changed via the [configuration](#configu
 
 Rather than using `make run`, if you prefer live reloading so your app automatically rebuilds and runs whenever you save code changes, start by installing [Air](https://github.com/air-verse/air), if you haven't already, by running `make air-install` (or `make install` to install all tools), then use `make watch` to start the application with automatic live reloading.
 
-When code changes are detected, `make css` will run to re-compile Tailwind styles automatically before restarting the app. If you choose not to use Tailwind, either modify `make css` to run whatever commands you require, or remove this usage from the [configuration](https://github.com/mikestefanello/pagoda/blob/main/.air.toml).
+When code changes are detected, `make css` will run to re-compile Tailwind styles automatically before restarting the app. If you choose not to use Tailwind, either modify `make css` to run whatever commands you require, or remove this from the `make build` target.
 
 ## Service container
 

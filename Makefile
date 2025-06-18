@@ -1,4 +1,4 @@
-# The Tailwind CSS CLI package to install (see https://github.com/tailwindlabs/tailwindcss/releases/latest)
+# The Tailwind CSS CLI package to install (pick the one that matches your OS: https://github.com/tailwindlabs/tailwindcss/releases/latest)
 TAILWIND_PACKAGE = tailwindcss-linux-x64
 
 .PHONY: help
@@ -56,3 +56,7 @@ check-updates: ## Check for direct dependency updates
 .PHONY: css
 css: ## Build and minify Tailwind CSS
 	./tailwindcss -i tailwind.css -o public/static/main.css -m
+
+.PHONY: build
+build: css ## Build CSS and compile the application binary
+	go build -o ./tmp/main ./cmd/web
