@@ -121,6 +121,7 @@ func SelectList(el OptionsParams) Node {
 		el.Label,
 		Select(
 			Class("select "+formFieldStatusClass(el.Form, el.FormField)),
+			Name(el.Name),
 			buttons,
 		),
 		Help(el.Help),
