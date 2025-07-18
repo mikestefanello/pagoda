@@ -1,5 +1,9 @@
 # The Tailwind CSS CLI package to install (pick the one that matches your OS: https://github.com/tailwindlabs/tailwindcss/releases/latest)
 TAILWIND_PACKAGE = tailwindcss-linux-x64
+UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		TAILWIND_PACKAGE = tailwindcss-macos-arm64
+	endif
 
 .PHONY: help
 help: ## Print make targets
