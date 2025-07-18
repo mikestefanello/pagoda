@@ -16,6 +16,9 @@ ifeq ($(OS_SYSNAME),linux)
 	OS_MACHINE = x64
 endif
 
+# The appropriate Tailwind package for your OS will attempt to be automatically determined.
+# If this is not working, hard-code the package you want using these options:
+# https://github.com/tailwindlabs/tailwindcss/releases/latest
 TAILWIND_PACKAGE = tailwindcss-$(OS_SYSNAME)-$(OS_MACHINE)
 
 .PHONY: help

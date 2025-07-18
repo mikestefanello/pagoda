@@ -183,13 +183,13 @@ cd pagoda
 
 Several optional tools are available to make development easier for you. This includes [Ent](#orm) code-generator, for generating ORM code, [Air](https://github.com/air-verse/air) CLI, to provide [live reloading](#live-reloading), and [Tailwind CSS](https://tailwindcss.com/docs/installation/tailwind-cli) CLI, to generate CSS. 
 
-If you wish to use Tailwind (with or without [Daisy UI](https://daisyui.com/)), modify the [Makefile](https://github.com/mikestefanello/pagoda/blob/main/Makefile), and adjust the `TAILWIND_PACKAGE` variable to reference the proper package for your operating system. By default, it's set to work with Linux x64. If you want to use Tailwind but don't want to use the standalone CLI, ie `npm`, modify the `tailwind-install` and `css` _make targets_ based on your preferences.
+If you don't want to use Tailwind and/or [Daisy UI](https://daisyui.com/), or don't want to use Tailwind's standalone CLI, but rather `npm`, for example, modify the `tailwind-install` and `css` [make targets](https://github.com/mikestefanello/pagoda/blob/main/Makefile) based on your preferences. If the script cannot automatically determine the proper Tailwind package to install, modify the `TAILWIND_PACKAGE` variable to match your operating system.
 
 To easily install all tools, run `make install` from the root of the repo. There are also separate _make targets_ for each tool (run `make help` to list all targets).
 
 ### Create an admin account
 
-To access the [admin panel](#admin-panel), you must log in with an admin user and to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly-generated password for the account.
+To access the [admin panel](#admin-panel), you must log in with an admin user and to create your first admin user account, you must use the command-line. Execute `make admin email=your@email.com` from the root of the codebase, and an admin account will be generated using that email address. The console will print the randomly generated password for the account.
 
 Once you have one admin account, you can use that account to manage other users and admins from within the UI.
 
