@@ -1,9 +1,22 @@
-# The Tailwind CSS CLI package to install (pick the one that matches your OS: https://github.com/tailwindlabs/tailwindcss/releases/latest)
-TAILWIND_PACKAGE = tailwindcss-linux-x64
-UNAME_S := $(shell uname -s)
-	ifeq ($(UNAME_S),Darwin)
-		TAILWIND_PACKAGE = tailwindcss-macos-arm64
+# Get the OS name in lowercase (linux, darwin)
+OS_SYSNAME := $(shell uname -s | tr A-Z a-z)
+# Get the machine architecture (x86_64, arm64)
+OS_MACHINE := $(shell uname -m)
+
+# If mac OS, use `macos-arm64` or `macos-x64`
+ifeq ($(OS_SYSNAME),darwin)
+	OS_SYSNAME = macos
+	ifneq ($(OS_MACHINE),arm64)
+		OS_MACHINE = x64
 	endif
+endif
+
+# If Linux, use `linux-x64`
+ifeq ($(OS_SYSNAME),linux)
+	OS_MACHINE = x64
+endif
+
+TAILWIND_PACKAGE = tailwindcss-$(OS_SYSNAME)-$(OS_MACHINE)
 
 .PHONY: help
 help: ## Print make targets
