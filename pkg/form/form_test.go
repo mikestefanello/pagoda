@@ -36,7 +36,7 @@ func TestGetClear(t *testing.T) {
 	}
 
 	t.Run("get empty context", func(t *testing.T) {
-		// Empty context, still return a form
+		// Empty context, still return a form.
 		ctx, _ := tests.NewContext(e, "/")
 		form := Get[example](ctx)
 		assert.NotNil(t, form)
@@ -49,12 +49,16 @@ func TestGetClear(t *testing.T) {
 		ctx, _ := tests.NewContext(e, "/")
 		ctx.Set(context.FormKey, &form)
 
-		// Get again and expect the values were stored
+		// Get again and expect the values were stored.
 		got := Get[example](ctx)
 		require.NotNil(t, got)
-		assert.Equal(t, "test", form.Name)
+		assert.Equal(t, "test", got.Name)
 
-		// Clear
+		// Attempt getting a different type to ensure there's no panic.
+		ret := Get[int](ctx)
+		require.NotNil(t, ret)
+
+		// Clear.
 		Clear(ctx)
 		got = Get[example](ctx)
 		require.NotNil(t, got)

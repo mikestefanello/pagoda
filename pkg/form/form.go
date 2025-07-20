@@ -9,8 +9,8 @@ import (
 type Form interface {
 	// Submit marks the form as submitted, stores a pointer to it in the context, binds the request
 	// values to the struct fields, and validates the input based on the struct tags.
-	// Returns a validator.ValidationErrors if the form values were not valid.
-	// Returns an echo.HTTPError if the request failed to process.
+	// Returns a validator.ValidationErrors, if the form values were not valid, or an echo.HTTPError,
+	// if the request failed to process.
 	Submit(c echo.Context, form any) error
 
 	// IsSubmitted returns true if the form was submitted.
@@ -35,7 +35,9 @@ type Form interface {
 // Get gets a form from the context or initializes a new copy if one is not set.
 func Get[T any](ctx echo.Context) *T {
 	if v := ctx.Get(context.FormKey); v != nil {
-		return v.(*T)
+		if form, ok := v.(*T); ok {
+			return form
+		}
 	}
 	var v T
 	return &v
