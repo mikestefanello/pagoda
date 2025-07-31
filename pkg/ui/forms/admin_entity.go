@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"entgo.io/ent/entc/load"
 	"entgo.io/ent/schema/field"
 	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -14,7 +13,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
+func AdminEntity(r *ui.Request, schema admin.EntitySchema, values url.Values) Node {
 	// TODO inline validation?
 	isNew := values == nil
 	nodes := make(Group, 0)
@@ -40,7 +39,7 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 			continue
 		}
 
-		switch f.Info.Type {
+		switch f.Type {
 		case field.TypeString:
 			p := InputFieldParams{
 				Name:      f.Name,
@@ -93,8 +92,8 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 			}
 			for _, enum := range f.Enums {
 				options = append(options, Choice{
-					Label: enum.V,
-					Value: enum.V,
+					Label: enum.Label,
+					Value: enum.Value,
 				})
 			}
 			nodes = append(nodes, SelectList(OptionsParams{

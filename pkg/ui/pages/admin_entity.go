@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -26,7 +25,7 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	)
 }
 
-func AdminEntityInput(ctx echo.Context, schema *load.Schema, values url.Values) error {
+func AdminEntityInput(ctx echo.Context, schema admin.EntitySchema, values url.Values) error {
 	r := ui.NewRequest(ctx)
 	if values == nil {
 		r.Title = fmt.Sprintf("Add %s", schema.Name)

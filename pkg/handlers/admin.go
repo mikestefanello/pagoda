@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"entgo.io/ent/entc/gen"
-	"entgo.io/ent/entc/load"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/backlite/ui"
 	"github.com/mikestefanello/pagoda/ent"
@@ -25,7 +23,6 @@ import (
 
 type Admin struct {
 	orm      *ent.Client
-	graph    *gen.Graph
 	admin    *admin.Handler
 	backlite *ui.Handler
 }
@@ -36,7 +33,6 @@ func init() {
 
 func (h *Admin) Init(c *services.Container) error {
 	var err error
-	h.graph = c.Graph
 	h.orm = c.ORM
 	h.admin = admin.NewHandler(h.orm, admin.HandlerConfig{
 		ItemsPerPage: 25,
@@ -56,7 +52,7 @@ func (h *Admin) Routes(g *echo.Group) {
 	ag := g.Group("/admin", middleware.RequireAdmin)
 
 	entities := ag.Group("/entity")
-	for _, n := range h.graph.Nodes {
+	for _, n := range admin.GetSchema() {
 		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
 		ng.GET("", h.EntityList(n)).
 			Name = routenames.AdminEntityList(n.Name)
@@ -84,7 +80,7 @@ func (h *Admin) Routes(g *echo.Group) {
 }
 
 // middlewareEntityLoad is middleware to extract the entity ID and attempt to load the given entity.
-func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
+func (h *Admin) middlewareEntityLoad(n admin.EntitySchema) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			id, err := strconv.Atoi(ctx.Param("id"))
@@ -107,7 +103,7 @@ func (h *Admin) middlewareEntityLoad(n *gen.Type) echo.MiddlewareFunc {
 	}
 }
 
-func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityList(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		list, err := h.admin.List(ctx, n.Name)
 		if err != nil {
@@ -118,13 +114,13 @@ func (h *Admin) EntityList(n *gen.Type) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityAdd(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityAdd(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityInput(ctx, h.getEntitySchema(n), nil)
+		return pages.AdminEntityInput(ctx, n, nil)
 	}
 }
 
-func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityAddSubmit(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		err := h.admin.Create(ctx, n.Name)
 		if err != nil {
@@ -142,14 +138,14 @@ func (h *Admin) EntityAddSubmit(n *gen.Type) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityEdit(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityEdit(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
-		return pages.AdminEntityInput(ctx, h.getEntitySchema(n), v)
+		return pages.AdminEntityInput(ctx, n, v)
 	}
 }
 
-func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityEditSubmit(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		err := h.admin.Update(ctx, n.Name, id)
@@ -168,13 +164,13 @@ func (h *Admin) EntityEditSubmit(n *gen.Type) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityDelete(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityDelete(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		return pages.AdminEntityDelete(ctx, n.Name)
 	}
 }
 
-func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
+func (h *Admin) EntityDeleteSubmit(n admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
@@ -190,15 +186,6 @@ func (h *Admin) EntityDeleteSubmit(n *gen.Type) echo.HandlerFunc {
 			StatusCode(http.StatusFound).
 			Go()
 	}
-}
-
-func (h *Admin) getEntitySchema(n *gen.Type) *load.Schema {
-	for _, s := range h.graph.Schemas {
-		if s.Name == n.Name {
-			return s
-		}
-	}
-	return nil
 }
 
 func (h *Admin) Backlite(handler func(http.ResponseWriter, *http.Request) error) echo.HandlerFunc {
