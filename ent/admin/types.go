@@ -35,10 +35,3 @@ type HandlerConfig struct {
 	PageQueryKey string
 	TimeFormat   string
 }
-
-func GetEntityTypeNames() []string {
-	return []string{
-		"PasswordToken",
-		"User",
-	}
-}

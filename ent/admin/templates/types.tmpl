@@ -30,13 +30,4 @@
     	PageQueryKey string
     	TimeFormat string
     }
-
-    func GetEntityTypeNames() []string {
-        return []string{
-            {{- range $n := $.Nodes }}
-                "{{ $n.Name }}",
-            {{- end }}
-        }
-    }
-
 {{ end }}

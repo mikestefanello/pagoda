@@ -13,7 +13,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntity(r *ui.Request, schema admin.EntitySchema, values url.Values) Node {
+func AdminEntity(r *ui.Request, schema *admin.EntitySchema, values url.Values) Node {
 	// TODO inline validation?
 	isNew := values == nil
 	nodes := make(Group, 0)

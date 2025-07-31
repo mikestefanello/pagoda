@@ -27,7 +27,7 @@
         Enums []Enum
     }
 
-    var schema = []EntitySchema{
+    var schema = []*EntitySchema{
         {{- range $n := $.Nodes }}
             {
                 Name: "{{ $n.Name }}",
@@ -58,7 +58,7 @@
         {{ end }}
     }
 
-    func GetSchema() []EntitySchema {
+    func GetSchema() []*EntitySchema {
         return schema
     }
 

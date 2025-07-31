@@ -80,7 +80,7 @@ func (h *Admin) Routes(g *echo.Group) {
 }
 
 // middlewareEntityLoad is middleware to extract the entity ID and attempt to load the given entity.
-func (h *Admin) middlewareEntityLoad(n admin.EntitySchema) echo.MiddlewareFunc {
+func (h *Admin) middlewareEntityLoad(n *admin.EntitySchema) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			id, err := strconv.Atoi(ctx.Param("id"))
@@ -103,7 +103,7 @@ func (h *Admin) middlewareEntityLoad(n admin.EntitySchema) echo.MiddlewareFunc {
 	}
 }
 
-func (h *Admin) EntityList(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityList(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		list, err := h.admin.List(ctx, n.Name)
 		if err != nil {
@@ -114,13 +114,13 @@ func (h *Admin) EntityList(n admin.EntitySchema) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityAdd(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityAdd(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		return pages.AdminEntityInput(ctx, n, nil)
 	}
 }
 
-func (h *Admin) EntityAddSubmit(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityAddSubmit(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		err := h.admin.Create(ctx, n.Name)
 		if err != nil {
@@ -138,14 +138,14 @@ func (h *Admin) EntityAddSubmit(n admin.EntitySchema) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityEdit(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityEdit(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
 		return pages.AdminEntityInput(ctx, n, v)
 	}
 }
 
-func (h *Admin) EntityEditSubmit(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityEditSubmit(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		err := h.admin.Update(ctx, n.Name, id)
@@ -164,13 +164,13 @@ func (h *Admin) EntityEditSubmit(n admin.EntitySchema) echo.HandlerFunc {
 	}
 }
 
-func (h *Admin) EntityDelete(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityDelete(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		return pages.AdminEntityDelete(ctx, n.Name)
 	}
 }
 
-func (h *Admin) EntityDeleteSubmit(n admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityDeleteSubmit(n *admin.EntitySchema) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
 		if err := h.admin.Delete(ctx, n.Name, id); err != nil {

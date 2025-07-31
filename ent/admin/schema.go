@@ -23,7 +23,7 @@ type FieldSchema struct {
 	Enums     []Enum
 }
 
-var schema = []EntitySchema{
+var schema = []*EntitySchema{
 	{
 		Name: "PasswordToken",
 		Fields: []FieldSchema{
@@ -109,6 +109,6 @@ var schema = []EntitySchema{
 	},
 }
 
-func GetSchema() []EntitySchema {
+func GetSchema() []*EntitySchema {
 	return schema
 }

@@ -25,7 +25,7 @@ func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
 	)
 }
 
-func AdminEntityInput(ctx echo.Context, schema admin.EntitySchema, values url.Values) error {
+func AdminEntityInput(ctx echo.Context, schema *admin.EntitySchema, values url.Values) error {
 	r := ui.NewRequest(ctx)
 	if values == nil {
 		r.Title = fmt.Sprintf("Add %s", schema.Name)
