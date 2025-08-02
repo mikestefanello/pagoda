@@ -30,55 +30,55 @@ func NewHandler(client *ent.Client, cfg HandlerConfig) *Handler {
 	}
 }
 
-func (h *Handler) Create(ctx echo.Context, entityType string) error {
-	switch entityType {
-	case "PasswordToken":
+func (h *Handler) Create(ctx echo.Context, entityType EntityType) error {
+	switch entityType.(type) {
+	case *PasswordToken:
 		return h.PasswordTokenCreate(ctx)
-	case "User":
+	case *User:
 		return h.UserCreate(ctx)
 	default:
 		return fmt.Errorf("unsupported entity type: %s", entityType)
 	}
 }
 
-func (h *Handler) Get(ctx echo.Context, entityType string, id int) (url.Values, error) {
-	switch entityType {
-	case "PasswordToken":
+func (h *Handler) Get(ctx echo.Context, entityType EntityType, id int) (url.Values, error) {
+	switch entityType.(type) {
+	case *PasswordToken:
 		return h.PasswordTokenGet(ctx, id)
-	case "User":
+	case *User:
 		return h.UserGet(ctx, id)
 	default:
 		return nil, fmt.Errorf("unsupported entity type: %s", entityType)
 	}
 }
 
-func (h *Handler) Delete(ctx echo.Context, entityType string, id int) error {
-	switch entityType {
-	case "PasswordToken":
+func (h *Handler) Delete(ctx echo.Context, entityType EntityType, id int) error {
+	switch entityType.(type) {
+	case *PasswordToken:
 		return h.PasswordTokenDelete(ctx, id)
-	case "User":
+	case *User:
 		return h.UserDelete(ctx, id)
 	default:
 		return fmt.Errorf("unsupported entity type: %s", entityType)
 	}
 }
 
-func (h *Handler) Update(ctx echo.Context, entityType string, id int) error {
-	switch entityType {
-	case "PasswordToken":
+func (h *Handler) Update(ctx echo.Context, entityType EntityType, id int) error {
+	switch entityType.(type) {
+	case *PasswordToken:
 		return h.PasswordTokenUpdate(ctx, id)
-	case "User":
+	case *User:
 		return h.UserUpdate(ctx, id)
 	default:
 		return fmt.Errorf("unsupported entity type: %s", entityType)
 	}
 }
 
-func (h *Handler) List(ctx echo.Context, entityType string) (*EntityList, error) {
-	switch entityType {
-	case "PasswordToken":
+func (h *Handler) List(ctx echo.Context, entityType EntityType) (*EntityList, error) {
+	switch entityType.(type) {
+	case *PasswordToken:
 		return h.PasswordTokenList(ctx)
-	case "User":
+	case *User:
 		return h.UserList(ctx)
 	default:
 		return nil, fmt.Errorf("unsupported entity type: %s", entityType)

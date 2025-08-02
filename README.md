@@ -216,7 +216,6 @@ The container is located at `pkg/services/container.go` and is meant to house al
 - Configuration
 - Database
 - Files
-- Graph
 - Mail
 - ORM
 - Tasks
@@ -433,7 +432,7 @@ Users with admin [access](#access) will see additional links on the default side
 
 In order to automatically and dynamically provide admin functionality for entities, code generation is used by means of leveraging Ent's [extension API](https://entgo.io/docs/extensions) which makes generating code using the Ent graph schema very easy. A [custom extension](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/extension.go) is provided to generate code that provides flat entity type structs and handler code that work directly with Echo. So, both of those are required in order for any of this to work. Whenever you modify one of your entity types or generate a new one, the admin code will also automatically generate.
 
-Without going in to too much detail here, the generated code provides a [handler](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/handler.go) that is then used by a provided [web handler](https://github.com/mikestefanello/pagoda/blob/master/pkg/handlers/admin.go) to power all the routes used in the admin UI. While the rest of the related code should be simple enough to follow, it's worth calling attention to the highly-dynamic [entity form](https://github.com/mikestefanello/pagoda/blob/master/pkg/ui/forms/admin_entity.go) that is constructed using the _Ent_ graph data structure.
+Without going in to too much detail here, the generated code provides a [handler](https://github.com/mikestefanello/pagoda/blob/master/ent/admin/handler.go) that is then used by a provided [web handler](https://github.com/mikestefanello/pagoda/blob/master/pkg/handlers/admin.go) to power all the routes used in the admin UI. While the rest of the related code should be simple enough to follow, it's worth calling attention to the highly dynamic [entity form](https://github.com/mikestefanello/pagoda/blob/master/pkg/ui/forms/admin_entity.go) that is constructed using the _Ent_ graph data structure.
 
 ### Access
 
@@ -451,7 +450,7 @@ Since the generated code is completely dynamic, all entity functionality related
 
 * Determine which tests should be included and provide them.
 * Inline validation.
-* Either exposed sorting, or allow the _handler_ to be configured with sort criteria for each type.
+* Either exposed sorting or allow the _handler_ to be configured with sort criteria for each type.
 * Exposed filters.
 * Support all field types (types such as _JSON_ as currently not supported).
 * Control which fields appear in the entity list table.

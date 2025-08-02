@@ -7,14 +7,9 @@ import (
 	"log/slog"
 	"math/rand"
 	"os"
-	"path"
-	"path/filepath"
-	"runtime"
 	"strings"
 
 	entsql "entgo.io/ent/dialect/sql"
-	"entgo.io/ent/entc"
-	"entgo.io/ent/entc/gen"
 	"github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mikestefanello/backlite"
@@ -50,9 +45,6 @@ type Container struct {
 
 	// ORM stores a client to the ORM.
 	ORM *ent.Client
-
-	// Graph is the entity graph defined by your Ent schema.
-	Graph *gen.Graph
 
 	// Mail stores an email sending client.
 	Mail *MailClient
@@ -192,16 +184,6 @@ func (c *Container) initORM() {
 	if err := c.ORM.Schema.Create(context.Background()); err != nil {
 		panic(err)
 	}
-
-	// Load the graph.
-	_, b, _, _ := runtime.Caller(0)
-	d := path.Join(path.Dir(b))
-	p := filepath.Join(filepath.Dir(d), "../ent/schema")
-	g, err := entc.LoadGraph(p, &gen.Config{})
-	if err != nil {
-		panic(err)
-	}
-	c.Graph = g
 }
 
 // initAuth initializes the authentication client.
