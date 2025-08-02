@@ -121,11 +121,11 @@ func sidebarMenu(r *ui.Request) Node {
 	}
 
 	adminSubMenu := func() Node {
-		entityTypeLinks := make(Group, len(admin.GetSchema()))
-		for _, n := range admin.GetSchema() {
+		entityTypeLinks := make(Group, len(admin.GetEntityTypes()))
+		for _, n := range admin.GetEntityTypes() {
 			entityTypeLinks = append(
 				entityTypeLinks,
-				MenuLink(r, icons.PencilSquare(), n.Name, routenames.AdminEntityList(n.Name)),
+				MenuLink(r, icons.PencilSquare(), n.GetName(), routenames.AdminEntityList(n.GetName())),
 			)
 		}
 

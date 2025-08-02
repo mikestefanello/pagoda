@@ -11,7 +11,26 @@
                 {{ fieldName $f.Name }} {{ if (fieldIsPointer $f) }}*{{ end }}{{ $f.Type }} `form:"{{ $f.Name }}"`
             {{- end }}
         }
+
+        func (e *{{ $n.Name }}) GetName() string {
+            return Name{{ $n.Name }}
+        }
+
+        func (e *{{ $n.Name }}) GetSchema() []*FieldSchema {
+            return fields{{ $n.Name }}
+        }
     {{ end }}
+
+    type EntityType interface {
+        GetName() string
+        GetSchema() []*FieldSchema
+    }
+
+    var entityTypes = []EntityType{
+        {{- range $n := $.Nodes }}
+            &{{ $n.Name }}{},
+        {{- end }}
+    }
 
     type EntityList struct {
         Columns []string
@@ -29,5 +48,9 @@
     	ItemsPerPage int
     	PageQueryKey string
     	TimeFormat string
+    }
+
+    func GetEntityTypes() []EntityType {
+        return entityTypes
     }
 {{ end }}

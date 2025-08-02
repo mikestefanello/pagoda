@@ -13,7 +13,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntity(r *ui.Request, schema *admin.EntitySchema, values url.Values) Node {
+func AdminEntity(r *ui.Request, entityType admin.EntityType, values url.Values) Node {
 	// TODO inline validation?
 	isNew := values == nil
 	nodes := make(Group, 0)
@@ -33,7 +33,7 @@ func AdminEntity(r *ui.Request, schema *admin.EntitySchema, values url.Values) N
 	}
 
 	// Attempt to add form elements for all editable entity fields.
-	for _, f := range schema.Fields {
+	for _, f := range entityType.GetSchema() {
 		// TODO cardinality?
 		if !isNew && f.Immutable {
 			continue
@@ -115,7 +115,7 @@ func AdminEntity(r *ui.Request, schema *admin.EntitySchema, values url.Values) N
 			FormButton(ColorPrimary, "Submit"),
 			ButtonLink(
 				ColorNone,
-				r.Path(routenames.AdminEntityList(schema.Name)),
+				r.Path(routenames.AdminEntityList(entityType.GetName())),
 				"Cancel",
 			),
 		),

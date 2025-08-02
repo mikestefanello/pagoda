@@ -9,11 +9,6 @@
         "entgo.io/ent/schema/field"
     )
 
-    type EntitySchema struct {
-        Name string
-        Fields []FieldSchema
-    }
-
     type Enum struct {
         Label, Value string
     }
@@ -27,39 +22,33 @@
         Enums []Enum
     }
 
-    var schema = []*EntitySchema{
-        {{- range $n := $.Nodes }}
-            {
-                Name: "{{ $n.Name }}",
-                Fields: []FieldSchema{
-                    {{- range $f := $n.Fields }}
-                        {
-                            Name: "{{ $f.Name }}",
-                            Type: field.{{ $f.Type.Type.ConstName }},
-                            Optional: {{ $f.Optional }},
-                            Immutable: {{ $f.Immutable }},
-                            Sensitive: {{ $f.Sensitive }},
-                            {{- if len $f.Enums }}
-                                Enums: []Enum{
-                                    {{- range $e := $f.Enums }}
-                                        {
-                                            Label: "{{ $e.Label }}",
-                                            Value: "{{ $e.Value }}",
-                                        },
-                                    {{- end }}
+
+    {{- range $n := $.Nodes }}
+        const Name{{ $n.Name }} = "{{ $n.Name }}"
+
+        var fields{{ $n.Name }} = []*FieldSchema{
+            {{- range $f := $n.Fields }}
+                {
+                    Name: "{{ $f.Name }}",
+                    Type: field.{{ $f.Type.Type.ConstName }},
+                    Optional: {{ $f.Optional }},
+                    Immutable: {{ $f.Immutable }},
+                    Sensitive: {{ $f.Sensitive }},
+                    {{- if len $f.Enums }}
+                        Enums: []Enum{
+                            {{- range $e := $f.Enums }}
+                                {
+                                    Label: "{{ $e.Label }}",
+                                    Value: "{{ $e.Value }}",
                                 },
-                            {{- else }}
-                                Enums: nil,
                             {{- end }}
                         },
+                    {{- else }}
+                        Enums: nil,
                     {{- end }}
                 },
-            },
-        {{ end }}
-    }
-
-    func GetSchema() []*EntitySchema {
-        return schema
-    }
+            {{- end }}
+        }
+    {{ end }}
 
 {{ end }}

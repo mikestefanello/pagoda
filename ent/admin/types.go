@@ -9,6 +9,14 @@ type PasswordToken struct {
 	CreatedAt *time.Time `form:"created_at"`
 }
 
+func (e *PasswordToken) GetName() string {
+	return NamePasswordToken
+}
+
+func (e *PasswordToken) GetSchema() []*FieldSchema {
+	return fieldsPasswordToken
+}
+
 type User struct {
 	Name      string     `form:"name"`
 	Email     string     `form:"email"`
@@ -16,6 +24,24 @@ type User struct {
 	Verified  bool       `form:"verified"`
 	Admin     bool       `form:"admin"`
 	CreatedAt *time.Time `form:"created_at"`
+}
+
+func (e *User) GetName() string {
+	return NameUser
+}
+
+func (e *User) GetSchema() []*FieldSchema {
+	return fieldsUser
+}
+
+type EntityType interface {
+	GetName() string
+	GetSchema() []*FieldSchema
+}
+
+var entityTypes = []EntityType{
+	&PasswordToken{},
+	&User{},
 }
 
 type EntityList struct {
@@ -34,4 +60,8 @@ type HandlerConfig struct {
 	ItemsPerPage int
 	PageQueryKey string
 	TimeFormat   string
+}
+
+func GetEntityTypes() []EntityType {
+	return entityTypes
 }

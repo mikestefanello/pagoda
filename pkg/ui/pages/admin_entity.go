@@ -15,37 +15,37 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntityDelete(ctx echo.Context, entityTypeName string) error {
+func AdminEntityDelete(ctx echo.Context, entityType admin.EntityType) error {
 	r := ui.NewRequest(ctx)
-	r.Title = fmt.Sprintf("Delete %s", entityTypeName)
+	r.Title = fmt.Sprintf("Delete %s", entityType.GetName())
 
 	return r.Render(
 		layouts.Primary,
-		forms.AdminEntityDelete(r, entityTypeName),
+		forms.AdminEntityDelete(r, entityType),
 	)
 }
 
-func AdminEntityInput(ctx echo.Context, schema *admin.EntitySchema, values url.Values) error {
+func AdminEntityInput(ctx echo.Context, entityType admin.EntityType, values url.Values) error {
 	r := ui.NewRequest(ctx)
 	if values == nil {
-		r.Title = fmt.Sprintf("Add %s", schema.Name)
+		r.Title = fmt.Sprintf("Add %s", entityType.GetName())
 	} else {
-		r.Title = fmt.Sprintf("Edit %s", schema.Name)
+		r.Title = fmt.Sprintf("Edit %s", entityType.GetName())
 	}
 
 	return r.Render(
 		layouts.Primary,
-		forms.AdminEntity(r, schema, values),
+		forms.AdminEntity(r, entityType, values),
 	)
 }
 
 func AdminEntityList(
 	ctx echo.Context,
-	entityTypeName string,
+	entityType admin.EntityType,
 	entityList *admin.EntityList,
 ) error {
 	r := ui.NewRequest(ctx)
-	r.Title = entityTypeName
+	r.Title = entityType.GetName()
 
 	genHeader := func() Node {
 		g := make(Group, 0, len(entityList.Columns)+2)
@@ -67,13 +67,13 @@ func AdminEntityList(
 			Td(
 				ButtonLink(
 					ColorInfo,
-					r.Path(routenames.AdminEntityEdit(entityTypeName), row.ID),
+					r.Path(routenames.AdminEntityEdit(entityType.GetName()), row.ID),
 					"Edit",
 				),
 				Span(Class("mr-2")),
 				ButtonLink(
 					ColorError,
-					r.Path(routenames.AdminEntityDelete(entityTypeName), row.ID),
+					r.Path(routenames.AdminEntityDelete(entityType.GetName()), row.ID),
 					"Delete",
 				),
 			),
@@ -94,8 +94,8 @@ func AdminEntityList(
 			Class("form-control mb-2"),
 			ButtonLink(
 				ColorAccent,
-				r.Path(routenames.AdminEntityAdd(entityTypeName)),
-				fmt.Sprintf("Add %s", entityTypeName),
+				r.Path(routenames.AdminEntityAdd(entityType.GetName())),
+				fmt.Sprintf("Add %s", entityType.GetName()),
 			),
 		),
 		Table(
@@ -107,7 +107,7 @@ func AdminEntityList(
 		),
 		Pager(
 			entityList.Page,
-			r.Path(routenames.AdminEntityAdd(entityTypeName)),
+			r.Path(routenames.AdminEntityAdd(entityType.GetName())),
 			entityList.HasNextPage,
 			"",
 		),

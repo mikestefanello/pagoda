@@ -52,22 +52,22 @@ func (h *Admin) Routes(g *echo.Group) {
 	ag := g.Group("/admin", middleware.RequireAdmin)
 
 	entities := ag.Group("/entity")
-	for _, n := range admin.GetSchema() {
-		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.Name)))
+	for _, n := range admin.GetEntityTypes() {
+		ng := entities.Group(fmt.Sprintf("/%s", strings.ToLower(n.GetName())))
 		ng.GET("", h.EntityList(n)).
-			Name = routenames.AdminEntityList(n.Name)
+			Name = routenames.AdminEntityList(n.GetName())
 		ng.GET("/add", h.EntityAdd(n)).
-			Name = routenames.AdminEntityAdd(n.Name)
+			Name = routenames.AdminEntityAdd(n.GetName())
 		ng.POST("/add", h.EntityAddSubmit(n)).
-			Name = routenames.AdminEntityAddSubmit(n.Name)
+			Name = routenames.AdminEntityAddSubmit(n.GetName())
 		ng.GET("/:id/edit", h.EntityEdit(n), h.middlewareEntityLoad(n)).
-			Name = routenames.AdminEntityEdit(n.Name)
+			Name = routenames.AdminEntityEdit(n.GetName())
 		ng.POST("/:id/edit", h.EntityEditSubmit(n), h.middlewareEntityLoad(n)).
-			Name = routenames.AdminEntityEditSubmit(n.Name)
+			Name = routenames.AdminEntityEditSubmit(n.GetName())
 		ng.GET("/:id/delete", h.EntityDelete(n), h.middlewareEntityLoad(n)).
-			Name = routenames.AdminEntityDelete(n.Name)
+			Name = routenames.AdminEntityDelete(n.GetName())
 		ng.POST("/:id/delete", h.EntityDeleteSubmit(n), h.middlewareEntityLoad(n)).
-			Name = routenames.AdminEntityDeleteSubmit(n.Name)
+			Name = routenames.AdminEntityDeleteSubmit(n.GetName())
 	}
 
 	tasks := ag.Group("/tasks")
@@ -80,7 +80,7 @@ func (h *Admin) Routes(g *echo.Group) {
 }
 
 // middlewareEntityLoad is middleware to extract the entity ID and attempt to load the given entity.
-func (h *Admin) middlewareEntityLoad(n *admin.EntitySchema) echo.MiddlewareFunc {
+func (h *Admin) middlewareEntityLoad(n admin.EntityType) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			id, err := strconv.Atoi(ctx.Param("id"))
@@ -88,7 +88,7 @@ func (h *Admin) middlewareEntityLoad(n *admin.EntitySchema) echo.MiddlewareFunc 
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid entity ID")
 			}
 
-			entity, err := h.admin.Get(ctx, n.Name, id)
+			entity, err := h.admin.Get(ctx, n, id)
 			switch {
 			case err == nil:
 				ctx.Set(context.AdminEntityIDKey, id)
@@ -103,86 +103,86 @@ func (h *Admin) middlewareEntityLoad(n *admin.EntitySchema) echo.MiddlewareFunc 
 	}
 }
 
-func (h *Admin) EntityList(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityList(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		list, err := h.admin.List(ctx, n.Name)
+		list, err := h.admin.List(ctx, n)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err)
 		}
 
-		return pages.AdminEntityList(ctx, n.Name, list)
+		return pages.AdminEntityList(ctx, n, list)
 	}
 }
 
-func (h *Admin) EntityAdd(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityAdd(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		return pages.AdminEntityInput(ctx, n, nil)
 	}
 }
 
-func (h *Admin) EntityAddSubmit(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityAddSubmit(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		err := h.admin.Create(ctx, n.Name)
+		err := h.admin.Create(ctx, n)
 		if err != nil {
 			msg.Error(ctx, err.Error())
 			return h.EntityAdd(n)(ctx)
 		}
 
-		msg.Success(ctx, fmt.Sprintf("Successfully added %s.", n.Name))
+		msg.Success(ctx, fmt.Sprintf("Successfully added %s.", n.GetName()))
 
 		return redirect.
 			New(ctx).
-			Route(routenames.AdminEntityList(n.Name)).
+			Route(routenames.AdminEntityList(n.GetName())).
 			StatusCode(http.StatusFound).
 			Go()
 	}
 }
 
-func (h *Admin) EntityEdit(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityEdit(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		v := ctx.Get(context.AdminEntityKey).(map[string][]string)
 		return pages.AdminEntityInput(ctx, n, v)
 	}
 }
 
-func (h *Admin) EntityEditSubmit(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityEditSubmit(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
-		err := h.admin.Update(ctx, n.Name, id)
+		err := h.admin.Update(ctx, n, id)
 		if err != nil {
 			msg.Error(ctx, err.Error())
 			return h.EntityEdit(n)(ctx)
 		}
 
-		msg.Success(ctx, fmt.Sprintf("Updated %s.", n.Name))
+		msg.Success(ctx, fmt.Sprintf("Updated %s.", n.GetName()))
 
 		return redirect.
 			New(ctx).
-			Route(routenames.AdminEntityList(n.Name)).
+			Route(routenames.AdminEntityList(n.GetName())).
 			StatusCode(http.StatusFound).
 			Go()
 	}
 }
 
-func (h *Admin) EntityDelete(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityDelete(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-		return pages.AdminEntityDelete(ctx, n.Name)
+		return pages.AdminEntityDelete(ctx, n)
 	}
 }
 
-func (h *Admin) EntityDeleteSubmit(n *admin.EntitySchema) echo.HandlerFunc {
+func (h *Admin) EntityDeleteSubmit(n admin.EntityType) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		id := ctx.Get(context.AdminEntityIDKey).(int)
-		if err := h.admin.Delete(ctx, n.Name, id); err != nil {
+		if err := h.admin.Delete(ctx, n, id); err != nil {
 			msg.Error(ctx, err.Error())
 			return h.EntityDelete(n)(ctx)
 		}
 
-		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s (ID %d).", n.Name, id))
+		msg.Success(ctx, fmt.Sprintf("Successfully deleted %s (ID %d).", n.GetName(), id))
 
 		return redirect.
 			New(ctx).
-			Route(routenames.AdminEntityList(n.Name)).
+			Route(routenames.AdminEntityList(n.GetName())).
 			StatusCode(http.StatusFound).
 			Go()
 	}

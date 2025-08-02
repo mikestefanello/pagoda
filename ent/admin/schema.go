@@ -5,11 +5,6 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-type EntitySchema struct {
-	Name   string
-	Fields []FieldSchema
-}
-
 type Enum struct {
 	Label, Value string
 }
@@ -23,92 +18,84 @@ type FieldSchema struct {
 	Enums     []Enum
 }
 
-var schema = []*EntitySchema{
-	{
-		Name: "PasswordToken",
-		Fields: []FieldSchema{
-			{
-				Name:      "token",
-				Type:      field.TypeString,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: true,
-				Enums:     nil,
-			},
-			{
-				Name:      "user_id",
-				Type:      field.TypeInt,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-			{
-				Name:      "created_at",
-				Type:      field.TypeTime,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-		},
-	},
+const NamePasswordToken = "PasswordToken"
 
+var fieldsPasswordToken = []*FieldSchema{
 	{
-		Name: "User",
-		Fields: []FieldSchema{
-			{
-				Name:      "name",
-				Type:      field.TypeString,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-			{
-				Name:      "email",
-				Type:      field.TypeString,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-			{
-				Name:      "password",
-				Type:      field.TypeString,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: true,
-				Enums:     nil,
-			},
-			{
-				Name:      "verified",
-				Type:      field.TypeBool,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-			{
-				Name:      "admin",
-				Type:      field.TypeBool,
-				Optional:  false,
-				Immutable: false,
-				Sensitive: false,
-				Enums:     nil,
-			},
-			{
-				Name:      "created_at",
-				Type:      field.TypeTime,
-				Optional:  false,
-				Immutable: true,
-				Sensitive: false,
-				Enums:     nil,
-			},
-		},
+		Name:      "token",
+		Type:      field.TypeString,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: true,
+		Enums:     nil,
+	},
+	{
+		Name:      "user_id",
+		Type:      field.TypeInt,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "created_at",
+		Type:      field.TypeTime,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
 	},
 }
 
-func GetSchema() []*EntitySchema {
-	return schema
+const NameUser = "User"
+
+var fieldsUser = []*FieldSchema{
+	{
+		Name:      "name",
+		Type:      field.TypeString,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "email",
+		Type:      field.TypeString,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "password",
+		Type:      field.TypeString,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: true,
+		Enums:     nil,
+	},
+	{
+		Name:      "verified",
+		Type:      field.TypeBool,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "admin",
+		Type:      field.TypeBool,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "created_at",
+		Type:      field.TypeTime,
+		Optional:  false,
+		Immutable: true,
+		Sensitive: false,
+		Enums:     nil,
+	},
 }
