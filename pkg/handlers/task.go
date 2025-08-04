@@ -53,7 +53,7 @@ func (h *Task) Submit(ctx echo.Context) error {
 	}
 
 	// Insert the task
-	err = h.tasks.
+	_, err = h.tasks.
 		Add(tasks.ExampleTask{
 			Message: input.Message,
 		}).
