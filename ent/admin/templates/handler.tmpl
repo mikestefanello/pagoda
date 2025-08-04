@@ -35,10 +35,10 @@
         }
     }
 
-    func (h *Handler) Create(ctx echo.Context, entityType string) error {
-        switch entityType {
+    func (h *Handler) Create(ctx echo.Context, entityType EntityType) error {
+        switch entityType.(type) {
         {{- range $n := $.Nodes }}
-        case "{{ $n.Name }}":
+        case *{{ $n.Name }}:
             return h.{{ $n.Name }}Create(ctx)
         {{- end }}
         default:
@@ -46,10 +46,10 @@
         }
     }
 
-    func (h *Handler) Get(ctx echo.Context, entityType string, id int) (url.Values, error) {
-        switch entityType {
+    func (h *Handler) Get(ctx echo.Context, entityType EntityType, id int) (url.Values, error) {
+        switch entityType.(type) {
         {{- range $n := $.Nodes }}
-        case "{{ $n.Name }}":
+        case *{{ $n.Name }}:
             return h.{{ $n.Name }}Get(ctx, id)
         {{- end }}
         default:
@@ -57,10 +57,10 @@
         }
     }
 
-    func (h *Handler) Delete(ctx echo.Context, entityType string, id int) error {
-        switch entityType {
+    func (h *Handler) Delete(ctx echo.Context, entityType EntityType, id int) error {
+        switch entityType.(type) {
         {{- range $n := $.Nodes }}
-        case "{{ $n.Name }}":
+        case *{{ $n.Name }}:
             return h.{{ $n.Name }}Delete(ctx, id)
         {{- end }}
         default:
@@ -68,10 +68,10 @@
         }
     }
 
-    func (h *Handler) Update(ctx echo.Context, entityType string, id int) error {
-        switch entityType {
+    func (h *Handler) Update(ctx echo.Context, entityType EntityType, id int) error {
+        switch entityType.(type) {
         {{- range $n := $.Nodes }}
-        case "{{ $n.Name }}":
+        case *{{ $n.Name }}:
             return h.{{ $n.Name }}Update(ctx, id)
         {{- end }}
         default:
@@ -79,10 +79,10 @@
         }
     }
 
-    func (h *Handler) List(ctx echo.Context, entityType string) (*EntityList, error) {
-        switch entityType {
+    func (h *Handler) List(ctx echo.Context, entityType EntityType) (*EntityList, error) {
+        switch entityType.(type) {
         {{- range $n := $.Nodes }}
-        case "{{ $n.Name }}":
+        case *{{ $n.Name }}:
             return h.{{ $n.Name }}List(ctx)
         {{- end }}
         default:

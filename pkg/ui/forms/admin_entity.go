@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"entgo.io/ent/entc/load"
 	"entgo.io/ent/schema/field"
 	"github.com/mikestefanello/pagoda/ent/admin"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -14,7 +13,7 @@ import (
 	. "maragu.dev/gomponents/html"
 )
 
-func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
+func AdminEntity(r *ui.Request, entityType admin.EntityType, values url.Values) Node {
 	// TODO inline validation?
 	isNew := values == nil
 	nodes := make(Group, 0)
@@ -34,13 +33,13 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 	}
 
 	// Attempt to add form elements for all editable entity fields.
-	for _, f := range schema.Fields {
+	for _, f := range entityType.GetSchema() {
 		// TODO cardinality?
 		if !isNew && f.Immutable {
 			continue
 		}
 
-		switch f.Info.Type {
+		switch f.Type {
 		case field.TypeString:
 			p := InputFieldParams{
 				Name:      f.Name,
@@ -93,8 +92,8 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 			}
 			for _, enum := range f.Enums {
 				options = append(options, Choice{
-					Label: enum.V,
-					Value: enum.V,
+					Label: enum.Label,
+					Value: enum.Value,
 				})
 			}
 			nodes = append(nodes, SelectList(OptionsParams{
@@ -116,7 +115,7 @@ func AdminEntity(r *ui.Request, schema *load.Schema, values url.Values) Node {
 			FormButton(ColorPrimary, "Submit"),
 			ButtonLink(
 				ColorNone,
-				r.Path(routenames.AdminEntityList(schema.Name)),
+				r.Path(routenames.AdminEntityList(entityType.GetName())),
 				"Cancel",
 			),
 		),
