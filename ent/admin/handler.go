@@ -199,9 +199,6 @@ func (h *Handler) UserCreate(ctx echo.Context) error {
 	if payload.CreatedAt != nil {
 		op.SetCreatedAt(*payload.CreatedAt)
 	}
-	if payload.Role != nil {
-		op.SetRole(*payload.Role)
-	}
 	_, err := op.Save(ctx.Request().Context())
 	return err
 }
@@ -225,12 +222,6 @@ func (h *Handler) UserUpdate(ctx echo.Context, id int) error {
 	}
 	op.SetVerified(payload.Verified)
 	op.SetAdmin(payload.Admin)
-	if payload.Role == nil {
-		var empty user.Role
-		op.SetRole(empty)
-	} else {
-		op.SetRole(*payload.Role)
-	}
 	_, err = op.Save(ctx.Request().Context())
 	return err
 }
@@ -260,7 +251,6 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 			"Verified",
 			"Admin",
 			"Created at",
-			"Role",
 		},
 		Entities:    make([]EntityValues, 0, len(res)),
 		Page:        page,
@@ -276,7 +266,6 @@ func (h *Handler) UserList(ctx echo.Context) (*EntityList, error) {
 				fmt.Sprint(res[i].Verified),
 				fmt.Sprint(res[i].Admin),
 				res[i].CreatedAt.Format(h.Config.TimeFormat),
-				fmt.Sprint(res[i].Role),
 			},
 		})
 	}
@@ -295,7 +284,6 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	v.Set("email", entity.Email)
 	v.Set("verified", fmt.Sprint(entity.Verified))
 	v.Set("admin", fmt.Sprint(entity.Admin))
-	v.Set("role", fmt.Sprint(entity.Role))
 	return v, err
 }
 

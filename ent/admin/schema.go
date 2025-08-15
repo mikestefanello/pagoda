@@ -98,16 +98,4 @@ var fieldsUser = []*FieldSchema{
 		Sensitive: false,
 		Enums:     nil,
 	},
-	{
-		Name:      "role",
-		Type:      field.TypeEnum,
-		Optional:  false,
-		Immutable: false,
-		Sensitive: false,
-		Enums: []string{
-			"read",
-			"write",
-			"admin",
-		},
-	},
 }
