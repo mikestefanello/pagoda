@@ -22,52 +22,52 @@ type PasswordTokenCreate struct {
 }
 
 // SetToken sets the "token" field.
-func (ptc *PasswordTokenCreate) SetToken(s string) *PasswordTokenCreate {
-	ptc.mutation.SetToken(s)
-	return ptc
+func (_c *PasswordTokenCreate) SetToken(v string) *PasswordTokenCreate {
+	_c.mutation.SetToken(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (ptc *PasswordTokenCreate) SetUserID(i int) *PasswordTokenCreate {
-	ptc.mutation.SetUserID(i)
-	return ptc
+func (_c *PasswordTokenCreate) SetUserID(v int) *PasswordTokenCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ptc *PasswordTokenCreate) SetCreatedAt(t time.Time) *PasswordTokenCreate {
-	ptc.mutation.SetCreatedAt(t)
-	return ptc
+func (_c *PasswordTokenCreate) SetCreatedAt(v time.Time) *PasswordTokenCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ptc *PasswordTokenCreate) SetNillableCreatedAt(t *time.Time) *PasswordTokenCreate {
-	if t != nil {
-		ptc.SetCreatedAt(*t)
+func (_c *PasswordTokenCreate) SetNillableCreatedAt(v *time.Time) *PasswordTokenCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return ptc
+	return _c
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ptc *PasswordTokenCreate) SetUser(u *User) *PasswordTokenCreate {
-	return ptc.SetUserID(u.ID)
+func (_c *PasswordTokenCreate) SetUser(v *User) *PasswordTokenCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the PasswordTokenMutation object of the builder.
-func (ptc *PasswordTokenCreate) Mutation() *PasswordTokenMutation {
-	return ptc.mutation
+func (_c *PasswordTokenCreate) Mutation() *PasswordTokenMutation {
+	return _c.mutation
 }
 
 // Save creates the PasswordToken in the database.
-func (ptc *PasswordTokenCreate) Save(ctx context.Context) (*PasswordToken, error) {
-	if err := ptc.defaults(); err != nil {
+func (_c *PasswordTokenCreate) Save(ctx context.Context) (*PasswordToken, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ptc.sqlSave, ptc.mutation, ptc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ptc *PasswordTokenCreate) SaveX(ctx context.Context) *PasswordToken {
-	v, err := ptc.Save(ctx)
+func (_c *PasswordTokenCreate) SaveX(ctx context.Context) *PasswordToken {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -75,58 +75,58 @@ func (ptc *PasswordTokenCreate) SaveX(ctx context.Context) *PasswordToken {
 }
 
 // Exec executes the query.
-func (ptc *PasswordTokenCreate) Exec(ctx context.Context) error {
-	_, err := ptc.Save(ctx)
+func (_c *PasswordTokenCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptc *PasswordTokenCreate) ExecX(ctx context.Context) {
-	if err := ptc.Exec(ctx); err != nil {
+func (_c *PasswordTokenCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ptc *PasswordTokenCreate) defaults() error {
-	if _, ok := ptc.mutation.CreatedAt(); !ok {
+func (_c *PasswordTokenCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if passwordtoken.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized passwordtoken.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := passwordtoken.DefaultCreatedAt()
-		ptc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ptc *PasswordTokenCreate) check() error {
-	if _, ok := ptc.mutation.Token(); !ok {
+func (_c *PasswordTokenCreate) check() error {
+	if _, ok := _c.mutation.Token(); !ok {
 		return &ValidationError{Name: "token", err: errors.New(`ent: missing required field "PasswordToken.token"`)}
 	}
-	if v, ok := ptc.mutation.Token(); ok {
+	if v, ok := _c.mutation.Token(); ok {
 		if err := passwordtoken.TokenValidator(v); err != nil {
 			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
-	if _, ok := ptc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PasswordToken.user_id"`)}
 	}
-	if _, ok := ptc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PasswordToken.created_at"`)}
 	}
-	if len(ptc.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "PasswordToken.user"`)}
 	}
 	return nil
 }
 
-func (ptc *PasswordTokenCreate) sqlSave(ctx context.Context) (*PasswordToken, error) {
-	if err := ptc.check(); err != nil {
+func (_c *PasswordTokenCreate) sqlSave(ctx context.Context) (*PasswordToken, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ptc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ptc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -134,25 +134,25 @@ func (ptc *PasswordTokenCreate) sqlSave(ctx context.Context) (*PasswordToken, er
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	ptc.mutation.id = &_node.ID
-	ptc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ptc *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSpec) {
+func (_c *PasswordTokenCreate) createSpec() (*PasswordToken, *sqlgraph.CreateSpec) {
 	var (
-		_node = &PasswordToken{config: ptc.config}
+		_node = &PasswordToken{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(passwordtoken.Table, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
 	)
-	if value, ok := ptc.mutation.Token(); ok {
+	if value, ok := _c.mutation.Token(); ok {
 		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
 		_node.Token = value
 	}
-	if value, ok := ptc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := ptc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -180,16 +180,16 @@ type PasswordTokenCreateBulk struct {
 }
 
 // Save creates the PasswordToken entities in the database.
-func (ptcb *PasswordTokenCreateBulk) Save(ctx context.Context) ([]*PasswordToken, error) {
-	if ptcb.err != nil {
-		return nil, ptcb.err
+func (_c *PasswordTokenCreateBulk) Save(ctx context.Context) ([]*PasswordToken, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ptcb.builders))
-	nodes := make([]*PasswordToken, len(ptcb.builders))
-	mutators := make([]Mutator, len(ptcb.builders))
-	for i := range ptcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*PasswordToken, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ptcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PasswordTokenMutation)
@@ -203,11 +203,11 @@ func (ptcb *PasswordTokenCreateBulk) Save(ctx context.Context) ([]*PasswordToken
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ptcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ptcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -231,7 +231,7 @@ func (ptcb *PasswordTokenCreateBulk) Save(ctx context.Context) ([]*PasswordToken
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ptcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -239,8 +239,8 @@ func (ptcb *PasswordTokenCreateBulk) Save(ctx context.Context) ([]*PasswordToken
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ptcb *PasswordTokenCreateBulk) SaveX(ctx context.Context) []*PasswordToken {
-	v, err := ptcb.Save(ctx)
+func (_c *PasswordTokenCreateBulk) SaveX(ctx context.Context) []*PasswordToken {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -248,14 +248,14 @@ func (ptcb *PasswordTokenCreateBulk) SaveX(ctx context.Context) []*PasswordToken
 }
 
 // Exec executes the query.
-func (ptcb *PasswordTokenCreateBulk) Exec(ctx context.Context) error {
-	_, err := ptcb.Save(ctx)
+func (_c *PasswordTokenCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptcb *PasswordTokenCreateBulk) ExecX(ctx context.Context) {
-	if err := ptcb.Exec(ctx); err != nil {
+func (_c *PasswordTokenCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

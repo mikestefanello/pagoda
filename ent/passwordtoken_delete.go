@@ -20,56 +20,56 @@ type PasswordTokenDelete struct {
 }
 
 // Where appends a list predicates to the PasswordTokenDelete builder.
-func (ptd *PasswordTokenDelete) Where(ps ...predicate.PasswordToken) *PasswordTokenDelete {
-	ptd.mutation.Where(ps...)
-	return ptd
+func (_d *PasswordTokenDelete) Where(ps ...predicate.PasswordToken) *PasswordTokenDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ptd *PasswordTokenDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ptd.sqlExec, ptd.mutation, ptd.hooks)
+func (_d *PasswordTokenDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptd *PasswordTokenDelete) ExecX(ctx context.Context) int {
-	n, err := ptd.Exec(ctx)
+func (_d *PasswordTokenDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ptd *PasswordTokenDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *PasswordTokenDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(passwordtoken.Table, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
-	if ps := ptd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ptd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ptd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // PasswordTokenDeleteOne is the builder for deleting a single PasswordToken entity.
 type PasswordTokenDeleteOne struct {
-	ptd *PasswordTokenDelete
+	_d *PasswordTokenDelete
 }
 
 // Where appends a list predicates to the PasswordTokenDelete builder.
-func (ptdo *PasswordTokenDeleteOne) Where(ps ...predicate.PasswordToken) *PasswordTokenDeleteOne {
-	ptdo.ptd.mutation.Where(ps...)
-	return ptdo
+func (_d *PasswordTokenDeleteOne) Where(ps ...predicate.PasswordToken) *PasswordTokenDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ptdo *PasswordTokenDeleteOne) Exec(ctx context.Context) error {
-	n, err := ptdo.ptd.Exec(ctx)
+func (_d *PasswordTokenDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ptdo *PasswordTokenDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptdo *PasswordTokenDeleteOne) ExecX(ctx context.Context) {
-	if err := ptdo.Exec(ctx); err != nil {
+func (_d *PasswordTokenDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

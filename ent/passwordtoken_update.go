@@ -24,77 +24,77 @@ type PasswordTokenUpdate struct {
 }
 
 // Where appends a list predicates to the PasswordTokenUpdate builder.
-func (ptu *PasswordTokenUpdate) Where(ps ...predicate.PasswordToken) *PasswordTokenUpdate {
-	ptu.mutation.Where(ps...)
-	return ptu
+func (_u *PasswordTokenUpdate) Where(ps ...predicate.PasswordToken) *PasswordTokenUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetToken sets the "token" field.
-func (ptu *PasswordTokenUpdate) SetToken(s string) *PasswordTokenUpdate {
-	ptu.mutation.SetToken(s)
-	return ptu
+func (_u *PasswordTokenUpdate) SetToken(v string) *PasswordTokenUpdate {
+	_u.mutation.SetToken(v)
+	return _u
 }
 
 // SetNillableToken sets the "token" field if the given value is not nil.
-func (ptu *PasswordTokenUpdate) SetNillableToken(s *string) *PasswordTokenUpdate {
-	if s != nil {
-		ptu.SetToken(*s)
+func (_u *PasswordTokenUpdate) SetNillableToken(v *string) *PasswordTokenUpdate {
+	if v != nil {
+		_u.SetToken(*v)
 	}
-	return ptu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (ptu *PasswordTokenUpdate) SetUserID(i int) *PasswordTokenUpdate {
-	ptu.mutation.SetUserID(i)
-	return ptu
+func (_u *PasswordTokenUpdate) SetUserID(v int) *PasswordTokenUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ptu *PasswordTokenUpdate) SetNillableUserID(i *int) *PasswordTokenUpdate {
-	if i != nil {
-		ptu.SetUserID(*i)
+func (_u *PasswordTokenUpdate) SetNillableUserID(v *int) *PasswordTokenUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return ptu
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ptu *PasswordTokenUpdate) SetCreatedAt(t time.Time) *PasswordTokenUpdate {
-	ptu.mutation.SetCreatedAt(t)
-	return ptu
+func (_u *PasswordTokenUpdate) SetCreatedAt(v time.Time) *PasswordTokenUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ptu *PasswordTokenUpdate) SetNillableCreatedAt(t *time.Time) *PasswordTokenUpdate {
-	if t != nil {
-		ptu.SetCreatedAt(*t)
+func (_u *PasswordTokenUpdate) SetNillableCreatedAt(v *time.Time) *PasswordTokenUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ptu
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ptu *PasswordTokenUpdate) SetUser(u *User) *PasswordTokenUpdate {
-	return ptu.SetUserID(u.ID)
+func (_u *PasswordTokenUpdate) SetUser(v *User) *PasswordTokenUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the PasswordTokenMutation object of the builder.
-func (ptu *PasswordTokenUpdate) Mutation() *PasswordTokenMutation {
-	return ptu.mutation
+func (_u *PasswordTokenUpdate) Mutation() *PasswordTokenMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ptu *PasswordTokenUpdate) ClearUser() *PasswordTokenUpdate {
-	ptu.mutation.ClearUser()
-	return ptu
+func (_u *PasswordTokenUpdate) ClearUser() *PasswordTokenUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ptu *PasswordTokenUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ptu.sqlSave, ptu.mutation, ptu.hooks)
+func (_u *PasswordTokenUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ptu *PasswordTokenUpdate) SaveX(ctx context.Context) int {
-	affected, err := ptu.Save(ctx)
+func (_u *PasswordTokenUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -102,50 +102,50 @@ func (ptu *PasswordTokenUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ptu *PasswordTokenUpdate) Exec(ctx context.Context) error {
-	_, err := ptu.Save(ctx)
+func (_u *PasswordTokenUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptu *PasswordTokenUpdate) ExecX(ctx context.Context) {
-	if err := ptu.Exec(ctx); err != nil {
+func (_u *PasswordTokenUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ptu *PasswordTokenUpdate) check() error {
-	if v, ok := ptu.mutation.Token(); ok {
+func (_u *PasswordTokenUpdate) check() error {
+	if v, ok := _u.mutation.Token(); ok {
 		if err := passwordtoken.TokenValidator(v); err != nil {
 			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
-	if ptu.mutation.UserCleared() && len(ptu.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
 }
 
-func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ptu.check(); err != nil {
-		return n, err
+func (_u *PasswordTokenUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(passwordtoken.Table, passwordtoken.Columns, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
-	if ps := ptu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ptu.mutation.Token(); ok {
+	if value, ok := _u.mutation.Token(); ok {
 		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
 	}
-	if value, ok := ptu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)
 	}
-	if ptu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -158,7 +158,7 @@ func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ptu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -174,7 +174,7 @@ func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, ptu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{passwordtoken.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -182,8 +182,8 @@ func (ptu *PasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	ptu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // PasswordTokenUpdateOne is the builder for updating a single PasswordToken entity.
@@ -195,84 +195,84 @@ type PasswordTokenUpdateOne struct {
 }
 
 // SetToken sets the "token" field.
-func (ptuo *PasswordTokenUpdateOne) SetToken(s string) *PasswordTokenUpdateOne {
-	ptuo.mutation.SetToken(s)
-	return ptuo
+func (_u *PasswordTokenUpdateOne) SetToken(v string) *PasswordTokenUpdateOne {
+	_u.mutation.SetToken(v)
+	return _u
 }
 
 // SetNillableToken sets the "token" field if the given value is not nil.
-func (ptuo *PasswordTokenUpdateOne) SetNillableToken(s *string) *PasswordTokenUpdateOne {
-	if s != nil {
-		ptuo.SetToken(*s)
+func (_u *PasswordTokenUpdateOne) SetNillableToken(v *string) *PasswordTokenUpdateOne {
+	if v != nil {
+		_u.SetToken(*v)
 	}
-	return ptuo
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (ptuo *PasswordTokenUpdateOne) SetUserID(i int) *PasswordTokenUpdateOne {
-	ptuo.mutation.SetUserID(i)
-	return ptuo
+func (_u *PasswordTokenUpdateOne) SetUserID(v int) *PasswordTokenUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ptuo *PasswordTokenUpdateOne) SetNillableUserID(i *int) *PasswordTokenUpdateOne {
-	if i != nil {
-		ptuo.SetUserID(*i)
+func (_u *PasswordTokenUpdateOne) SetNillableUserID(v *int) *PasswordTokenUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return ptuo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ptuo *PasswordTokenUpdateOne) SetCreatedAt(t time.Time) *PasswordTokenUpdateOne {
-	ptuo.mutation.SetCreatedAt(t)
-	return ptuo
+func (_u *PasswordTokenUpdateOne) SetCreatedAt(v time.Time) *PasswordTokenUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ptuo *PasswordTokenUpdateOne) SetNillableCreatedAt(t *time.Time) *PasswordTokenUpdateOne {
-	if t != nil {
-		ptuo.SetCreatedAt(*t)
+func (_u *PasswordTokenUpdateOne) SetNillableCreatedAt(v *time.Time) *PasswordTokenUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ptuo
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ptuo *PasswordTokenUpdateOne) SetUser(u *User) *PasswordTokenUpdateOne {
-	return ptuo.SetUserID(u.ID)
+func (_u *PasswordTokenUpdateOne) SetUser(v *User) *PasswordTokenUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the PasswordTokenMutation object of the builder.
-func (ptuo *PasswordTokenUpdateOne) Mutation() *PasswordTokenMutation {
-	return ptuo.mutation
+func (_u *PasswordTokenUpdateOne) Mutation() *PasswordTokenMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ptuo *PasswordTokenUpdateOne) ClearUser() *PasswordTokenUpdateOne {
-	ptuo.mutation.ClearUser()
-	return ptuo
+func (_u *PasswordTokenUpdateOne) ClearUser() *PasswordTokenUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the PasswordTokenUpdate builder.
-func (ptuo *PasswordTokenUpdateOne) Where(ps ...predicate.PasswordToken) *PasswordTokenUpdateOne {
-	ptuo.mutation.Where(ps...)
-	return ptuo
+func (_u *PasswordTokenUpdateOne) Where(ps ...predicate.PasswordToken) *PasswordTokenUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ptuo *PasswordTokenUpdateOne) Select(field string, fields ...string) *PasswordTokenUpdateOne {
-	ptuo.fields = append([]string{field}, fields...)
-	return ptuo
+func (_u *PasswordTokenUpdateOne) Select(field string, fields ...string) *PasswordTokenUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated PasswordToken entity.
-func (ptuo *PasswordTokenUpdateOne) Save(ctx context.Context) (*PasswordToken, error) {
-	return withHooks(ctx, ptuo.sqlSave, ptuo.mutation, ptuo.hooks)
+func (_u *PasswordTokenUpdateOne) Save(ctx context.Context) (*PasswordToken, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ptuo *PasswordTokenUpdateOne) SaveX(ctx context.Context) *PasswordToken {
-	node, err := ptuo.Save(ctx)
+func (_u *PasswordTokenUpdateOne) SaveX(ctx context.Context) *PasswordToken {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -280,42 +280,42 @@ func (ptuo *PasswordTokenUpdateOne) SaveX(ctx context.Context) *PasswordToken {
 }
 
 // Exec executes the query on the entity.
-func (ptuo *PasswordTokenUpdateOne) Exec(ctx context.Context) error {
-	_, err := ptuo.Save(ctx)
+func (_u *PasswordTokenUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ptuo *PasswordTokenUpdateOne) ExecX(ctx context.Context) {
-	if err := ptuo.Exec(ctx); err != nil {
+func (_u *PasswordTokenUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ptuo *PasswordTokenUpdateOne) check() error {
-	if v, ok := ptuo.mutation.Token(); ok {
+func (_u *PasswordTokenUpdateOne) check() error {
+	if v, ok := _u.mutation.Token(); ok {
 		if err := passwordtoken.TokenValidator(v); err != nil {
 			return &ValidationError{Name: "token", err: fmt.Errorf(`ent: validator failed for field "PasswordToken.token": %w`, err)}
 		}
 	}
-	if ptuo.mutation.UserCleared() && len(ptuo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "PasswordToken.user"`)
 	}
 	return nil
 }
 
-func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *PasswordToken, err error) {
-	if err := ptuo.check(); err != nil {
+func (_u *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *PasswordToken, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(passwordtoken.Table, passwordtoken.Columns, sqlgraph.NewFieldSpec(passwordtoken.FieldID, field.TypeInt))
-	id, ok := ptuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "PasswordToken.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ptuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, passwordtoken.FieldID)
 		for _, f := range fields {
@@ -327,20 +327,20 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 			}
 		}
 	}
-	if ps := ptuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ptuo.mutation.Token(); ok {
+	if value, ok := _u.mutation.Token(); ok {
 		_spec.SetField(passwordtoken.FieldToken, field.TypeString, value)
 	}
-	if value, ok := ptuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(passwordtoken.FieldCreatedAt, field.TypeTime, value)
 	}
-	if ptuo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -353,7 +353,7 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ptuo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -369,10 +369,10 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &PasswordToken{config: ptuo.config}
+	_node = &PasswordToken{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ptuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{passwordtoken.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -380,6 +380,6 @@ func (ptuo *PasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *Passwor
 		}
 		return nil, err
 	}
-	ptuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

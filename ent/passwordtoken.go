@@ -70,7 +70,7 @@ func (*PasswordToken) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the PasswordToken fields.
-func (pt *PasswordToken) assignValues(columns []string, values []any) error {
+func (_m *PasswordToken) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -81,27 +81,27 @@ func (pt *PasswordToken) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			pt.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case passwordtoken.FieldToken:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field token", values[i])
 			} else if value.Valid {
-				pt.Token = value.String
+				_m.Token = value.String
 			}
 		case passwordtoken.FieldUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				pt.UserID = int(value.Int64)
+				_m.UserID = int(value.Int64)
 			}
 		case passwordtoken.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				pt.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			pt.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -109,45 +109,45 @@ func (pt *PasswordToken) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the PasswordToken.
 // This includes values selected through modifiers, order, etc.
-func (pt *PasswordToken) Value(name string) (ent.Value, error) {
-	return pt.selectValues.Get(name)
+func (_m *PasswordToken) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryUser queries the "user" edge of the PasswordToken entity.
-func (pt *PasswordToken) QueryUser() *UserQuery {
-	return NewPasswordTokenClient(pt.config).QueryUser(pt)
+func (_m *PasswordToken) QueryUser() *UserQuery {
+	return NewPasswordTokenClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this PasswordToken.
 // Note that you need to call PasswordToken.Unwrap() before calling this method if this PasswordToken
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (pt *PasswordToken) Update() *PasswordTokenUpdateOne {
-	return NewPasswordTokenClient(pt.config).UpdateOne(pt)
+func (_m *PasswordToken) Update() *PasswordTokenUpdateOne {
+	return NewPasswordTokenClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the PasswordToken entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (pt *PasswordToken) Unwrap() *PasswordToken {
-	_tx, ok := pt.config.driver.(*txDriver)
+func (_m *PasswordToken) Unwrap() *PasswordToken {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: PasswordToken is not a transactional entity")
 	}
-	pt.config.driver = _tx.drv
-	return pt
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (pt *PasswordToken) String() string {
+func (_m *PasswordToken) String() string {
 	var builder strings.Builder
 	builder.WriteString("PasswordToken(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pt.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("token=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", pt.UserID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(pt.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
