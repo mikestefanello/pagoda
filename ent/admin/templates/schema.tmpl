@@ -19,7 +19,7 @@
         Optional bool
         Immutable bool
         Sensitive bool
-        Enums []Enum
+        Enums []string
     }
 
 
@@ -35,12 +35,9 @@
                     Immutable: {{ $f.Immutable }},
                     Sensitive: {{ $f.Sensitive }},
                     {{- if len $f.Enums }}
-                        Enums: []Enum{
+                        Enums: []string{
                             {{- range $e := $f.Enums }}
-                                {
-                                    Label: "{{ $e.Label }}",
-                                    Value: "{{ $e.Value }}",
-                                },
+                                "{{ $e.Value }}",
                             {{- end }}
                         },
                     {{- else }}

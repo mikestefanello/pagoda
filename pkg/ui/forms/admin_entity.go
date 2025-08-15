@@ -92,8 +92,8 @@ func AdminEntity(r *ui.Request, entityType admin.EntityType, values url.Values) 
 			}
 			for _, enum := range f.Enums {
 				options = append(options, Choice{
-					Label: enum.Label,
-					Value: enum.Value,
+					Label: enum,
+					Value: enum,
 				})
 			}
 			nodes = append(nodes, SelectList(OptionsParams{

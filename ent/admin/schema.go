@@ -15,7 +15,7 @@ type FieldSchema struct {
 	Optional  bool
 	Immutable bool
 	Sensitive bool
-	Enums     []Enum
+	Enums     []string
 }
 
 const NamePasswordToken = "PasswordToken"
@@ -97,5 +97,17 @@ var fieldsUser = []*FieldSchema{
 		Immutable: true,
 		Sensitive: false,
 		Enums:     nil,
+	},
+	{
+		Name:      "role",
+		Type:      field.TypeEnum,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums: []string{
+			"read",
+			"write",
+			"admin",
+		},
 	},
 }
