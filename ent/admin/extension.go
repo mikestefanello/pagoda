@@ -22,35 +22,20 @@ type Extension struct {
 }
 
 func (*Extension) Templates() []*gen.Template {
+	funcs := make(template.FuncMap)
+	for k, v := range gen.Funcs {
+		funcs[k] = v
+	}
+	funcs["fieldLabel"] = FieldLabel
+	funcs["fieldIsPointer"] = fieldIsPointer
+
 	return []*gen.Template{
 		gen.MustParse(
 			gen.NewTemplate("admin").
-				Funcs(template.FuncMap{
-					"fieldName":      fieldName,
-					"fieldLabel":     FieldLabel,
-					"fieldIsPointer": fieldIsPointer,
-				}).
+				Funcs(funcs).
 				ParseFS(templateDir, "templates/*tmpl"),
 		),
 	}
-}
-
-// fieldName provides a struct field name from an entity field name (ie, user_id -> UserID).
-func fieldName(name string) string {
-	if len(name) == 0 {
-		return name
-	}
-
-	parts := strings.Split(name, "_")
-	for i := 0; i < len(parts); i++ {
-		if parts[i] == "id" {
-			parts[i] = "ID"
-		} else {
-			parts[i] = upperFirst(parts[i])
-		}
-	}
-
-	return strings.Join(parts, "")
 }
 
 // FieldLabel provides a label for an entity field name (ie, user_id -> User ID).

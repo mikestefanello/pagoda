@@ -100,11 +100,11 @@
             op := h.client.{{ $n.Name }}.Create()
             {{- range $f := $n.Fields }}
                 {{- if (fieldIsPointer $f) }}
-                    if payload.{{ fieldName $f.Name }} != nil {
-                        op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                    if payload.{{ pascal $f.Name }} != nil {
+                        op.Set{{ pascal $f.Name }}(*payload.{{ pascal $f.Name }})
                     }
                 {{- else }}
-                    op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
+                    op.Set{{ pascal $f.Name }}(payload.{{ pascal $f.Name }})
                 {{- end }}
             {{- end }}
             _, err := op.Save(ctx.Request().Context())
@@ -126,26 +126,26 @@
             {{- range $f := $n.Fields }}
                 {{- if not $f.Immutable }}
                     {{- if $f.Sensitive }}
-                        if payload.{{ fieldName $f.Name }} != nil {
-                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                        if payload.{{ pascal $f.Name }} != nil {
+                            op.Set{{ pascal $f.Name }}(*payload.{{ pascal $f.Name }})
                         }
                     {{- else if $f.Nillable }}
-                        op.SetNillable{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
+                        op.SetNillable{{ pascal $f.Name }}(payload.{{ pascal $f.Name }})
                     {{- else if $f.Optional }}
-                        if payload.{{ fieldName $f.Name }} == nil {
-                            op.Clear{{ fieldName $f.Name }}()
+                        if payload.{{ pascal $f.Name }} == nil {
+                            op.Clear{{ pascal $f.Name }}()
                         } else {
-                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                            op.Set{{ pascal $f.Name }}(*payload.{{ pascal $f.Name }})
                         }
                     {{- else if (fieldIsPointer $f) }}
-                        if payload.{{ fieldName $f.Name }} == nil {
+                        if payload.{{ pascal $f.Name }} == nil {
                             var empty {{ $f.Type }}
-                            op.Set{{ fieldName $f.Name }}(empty)
+                            op.Set{{ pascal $f.Name }}(empty)
                         } else {
-                            op.Set{{ fieldName $f.Name }}(*payload.{{ fieldName $f.Name }})
+                            op.Set{{ pascal $f.Name }}(*payload.{{ pascal $f.Name }})
                         }
                     {{- else }}
-                        op.Set{{ fieldName $f.Name }}(payload.{{ fieldName $f.Name }})
+                        op.Set{{ pascal $f.Name }}(payload.{{ pascal $f.Name }})
                     {{- end }}
                 {{- end }}
             {{- end }}
@@ -191,11 +191,11 @@
                     {{- range $f := $n.Fields }}
                         {{- if not $f.Sensitive }}
                             {{- if eq $f.Type.String "string" }}
-                                res[i].{{ fieldName $f.Name }},
+                                res[i].{{ pascal $f.Name }},
                             {{- else if eq $f.Type.String "time.Time" }}
-                                res[i].{{ fieldName $f.Name }}.Format(h.Config.TimeFormat),
+                                res[i].{{ pascal $f.Name }}.Format(h.Config.TimeFormat),
                             {{- else }}
-                                fmt.Sprint(res[i].{{ fieldName $f.Name }}),
+                                fmt.Sprint(res[i].{{ pascal $f.Name }}),
                             {{- end }}
                         {{- end }}
                     {{- end }}
@@ -216,11 +216,11 @@
             {{- range $f := $n.Fields }}
                 {{- if and (not $f.Sensitive) (not $f.Immutable) }}
                     {{- if eq $f.Type.String "string" }}
-                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }})
+                        v.Set("{{ $f.Name }}", entity.{{ pascal $f.Name }})
                     {{- else if eq $f.Type.String "time.Time" }}
-                        v.Set("{{ $f.Name }}", entity.{{ fieldName $f.Name }}.Format(dateTimeFormat))
+                        v.Set("{{ $f.Name }}", entity.{{ pascal $f.Name }}.Format(dateTimeFormat))
                     {{- else }}
-                        v.Set("{{ $f.Name }}", fmt.Sprint(entity.{{ fieldName $f.Name }}))
+                        v.Set("{{ $f.Name }}", fmt.Sprint(entity.{{ pascal $f.Name }}))
                     {{- end }}
                 {{- end }}
             {{- end }}
