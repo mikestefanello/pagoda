@@ -17,18 +17,6 @@ func (e *PasswordToken) GetSchema() []*FieldSchema {
 	return fieldsPasswordToken
 }
 
-type Thing struct {
-	CreatedAt *time.Time `form:"created_at"`
-}
-
-func (e *Thing) GetName() string {
-	return NameThing
-}
-
-func (e *Thing) GetSchema() []*FieldSchema {
-	return fieldsThing
-}
-
 type User struct {
 	Name      string     `form:"name"`
 	Email     string     `form:"email"`
@@ -53,7 +41,6 @@ type EntityType interface {
 
 var entityTypes = []EntityType{
 	&PasswordToken{},
-	&Thing{},
 	&User{},
 }
 
