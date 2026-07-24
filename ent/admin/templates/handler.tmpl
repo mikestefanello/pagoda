@@ -7,6 +7,7 @@
     package admin
 
     import (
+        "errors"
         "fmt"
         "net/url"
         "strconv"
@@ -210,6 +211,12 @@
             entity, err := h.client.{{ $n.Name }}.Get(ctx.Request().Context(), id)
             if err != nil {
                 return nil, err
+            }
+
+            // This is here to bypass a compilation error that the entity variable will be unused
+            // if there are no editable fields present.
+            if entity == nil {
+                return nil, errors.New("failed to load entity")
             }
 
             v := url.Values{}

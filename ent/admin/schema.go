@@ -47,6 +47,19 @@ var fieldsPasswordToken = []*FieldSchema{
 	},
 }
 
+const NameThing = "Thing"
+
+var fieldsThing = []*FieldSchema{
+	{
+		Name:      "created_at",
+		Type:      field.TypeTime,
+		Optional:  false,
+		Immutable: true,
+		Sensitive: false,
+		Enums:     nil,
+	},
+}
+
 const NameUser = "User"
 
 var fieldsUser = []*FieldSchema{

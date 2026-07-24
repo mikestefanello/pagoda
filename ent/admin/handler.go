@@ -2,6 +2,7 @@
 package admin
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/passwordtoken"
+	"github.com/mikestefanello/pagoda/ent/thing"
 	"github.com/mikestefanello/pagoda/ent/user"
 )
 
@@ -34,6 +36,8 @@ func (h *Handler) Create(ctx echo.Context, entityType EntityType) error {
 	switch entityType.(type) {
 	case *PasswordToken:
 		return h.PasswordTokenCreate(ctx)
+	case *Thing:
+		return h.ThingCreate(ctx)
 	case *User:
 		return h.UserCreate(ctx)
 	default:
@@ -45,6 +49,8 @@ func (h *Handler) Get(ctx echo.Context, entityType EntityType, id int) (url.Valu
 	switch entityType.(type) {
 	case *PasswordToken:
 		return h.PasswordTokenGet(ctx, id)
+	case *Thing:
+		return h.ThingGet(ctx, id)
 	case *User:
 		return h.UserGet(ctx, id)
 	default:
@@ -56,6 +62,8 @@ func (h *Handler) Delete(ctx echo.Context, entityType EntityType, id int) error 
 	switch entityType.(type) {
 	case *PasswordToken:
 		return h.PasswordTokenDelete(ctx, id)
+	case *Thing:
+		return h.ThingDelete(ctx, id)
 	case *User:
 		return h.UserDelete(ctx, id)
 	default:
@@ -67,6 +75,8 @@ func (h *Handler) Update(ctx echo.Context, entityType EntityType, id int) error 
 	switch entityType.(type) {
 	case *PasswordToken:
 		return h.PasswordTokenUpdate(ctx, id)
+	case *Thing:
+		return h.ThingUpdate(ctx, id)
 	case *User:
 		return h.UserUpdate(ctx, id)
 	default:
@@ -78,6 +88,8 @@ func (h *Handler) List(ctx echo.Context, entityType EntityType) (*EntityList, er
 	switch entityType.(type) {
 	case *PasswordToken:
 		return h.PasswordTokenList(ctx)
+	case *Thing:
+		return h.ThingList(ctx)
 	case *User:
 		return h.UserList(ctx)
 	default:
@@ -176,9 +188,100 @@ func (h *Handler) PasswordTokenGet(ctx echo.Context, id int) (url.Values, error)
 		return nil, err
 	}
 
+	// This is here to bypass a compilation error that the entity variable will be unused
+	// if there are no editable fields present.
+	if entity == nil {
+		return nil, errors.New("failed to load entity")
+	}
+
 	v := url.Values{}
 	v.Set("user_id", fmt.Sprint(entity.UserID))
 	v.Set("created_at", entity.CreatedAt.Format(dateTimeFormat))
+	return v, err
+}
+
+func (h *Handler) ThingCreate(ctx echo.Context) error {
+	var payload Thing
+	if err := h.bind(ctx, &payload); err != nil {
+		return err
+	}
+
+	op := h.client.Thing.Create()
+	if payload.CreatedAt != nil {
+		op.SetCreatedAt(*payload.CreatedAt)
+	}
+	_, err := op.Save(ctx.Request().Context())
+	return err
+}
+
+func (h *Handler) ThingUpdate(ctx echo.Context, id int) error {
+	entity, err := h.client.Thing.Get(ctx.Request().Context(), id)
+	if err != nil {
+		return err
+	}
+
+	var payload Thing
+	if err = h.bind(ctx, &payload); err != nil {
+		return err
+	}
+
+	op := entity.Update()
+	_, err = op.Save(ctx.Request().Context())
+	return err
+}
+
+func (h *Handler) ThingDelete(ctx echo.Context, id int) error {
+	return h.client.Thing.DeleteOneID(id).
+		Exec(ctx.Request().Context())
+}
+
+func (h *Handler) ThingList(ctx echo.Context) (*EntityList, error) {
+	page, offset := h.getPageAndOffset(ctx)
+	res, err := h.client.Thing.
+		Query().
+		Limit(h.Config.ItemsPerPage + 1).
+		Offset(offset).
+		Order(thing.ByID(sql.OrderDesc())).
+		All(ctx.Request().Context())
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := &EntityList{
+		Columns: []string{
+			"Created at",
+		},
+		Entities:    make([]EntityValues, 0, len(res)),
+		Page:        page,
+		HasNextPage: len(res) > h.Config.ItemsPerPage,
+	}
+
+	for i := 0; i <= len(res)-1; i++ {
+		list.Entities = append(list.Entities, EntityValues{
+			ID: res[i].ID,
+			Values: []string{
+				res[i].CreatedAt.Format(h.Config.TimeFormat),
+			},
+		})
+	}
+
+	return list, err
+}
+
+func (h *Handler) ThingGet(ctx echo.Context, id int) (url.Values, error) {
+	entity, err := h.client.Thing.Get(ctx.Request().Context(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	// This is here to bypass a compilation error that the entity variable will be unused
+	// if there are no editable fields present.
+	if entity == nil {
+		return nil, errors.New("failed to load entity")
+	}
+
+	v := url.Values{}
 	return v, err
 }
 
@@ -277,6 +380,12 @@ func (h *Handler) UserGet(ctx echo.Context, id int) (url.Values, error) {
 	entity, err := h.client.User.Get(ctx.Request().Context(), id)
 	if err != nil {
 		return nil, err
+	}
+
+	// This is here to bypass a compilation error that the entity variable will be unused
+	// if there are no editable fields present.
+	if entity == nil {
+		return nil, errors.New("failed to load entity")
 	}
 
 	v := url.Values{}
