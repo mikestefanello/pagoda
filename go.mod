@@ -3,21 +3,21 @@ module github.com/mikestefanello/pagoda
 go 1.25.0
 
 require (
-	entgo.io/ent v0.14.5
-	github.com/PuerkitoBio/goquery v1.10.3
-	github.com/go-playground/validator/v10 v10.29.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
+	entgo.io/ent v0.14.6
+	github.com/PuerkitoBio/goquery v1.12.0
+	github.com/go-playground/validator/v10 v10.30.3
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gorilla/context v1.1.2
 	github.com/gorilla/sessions v1.4.0
 	github.com/labstack/echo/v4 v4.14.0
-	github.com/mattn/go-sqlite3 v1.14.32
+	github.com/mattn/go-sqlite3 v1.14.49
 	github.com/maypok86/otter v1.2.4
-	github.com/mikestefanello/backlite v0.6.0
+	github.com/mikestefanello/backlite v0.7.0
 	github.com/spf13/afero v1.15.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.54.0
-	maragu.dev/gomponents v1.2.0
+	golang.org/x/crypto v0.55.0
+	maragu.dev/gomponents v1.3.0
 )
 
 require (
@@ -29,7 +29,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gammazero/deque v1.2.0 // indirect
 	github.com/go-openapi/inflect v0.21.5 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -56,13 +56,13 @@ require (
 	github.com/zclconf/go-cty v1.17.0 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.37.0 // indirect
-	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	golang.org/x/tools v0.47.0 // indirect
+	golang.org/x/tools v0.48.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

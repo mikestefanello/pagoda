@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,8 +22,7 @@ func TestCache_GetSet(t *testing.T) {
 	require.NotNil(t, got)
 
 	// Check it was converted to a Raw component.
-	_, ok := got.(NodeFunc)
-	require.True(t, ok)
+	assert.Equal(t, "raw", reflect.TypeOf(got).Name())
 
 	// Both nodes should render the same string.
 	buf1, buf2 := bytes.NewBuffer(nil), bytes.NewBuffer(nil)
