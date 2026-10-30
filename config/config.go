@@ -1,10 +1,13 @@
 package config
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/mikestefanello/pagoda/pkg/log"
 	"github.com/spf13/viper"
 )
 
@@ -141,6 +144,15 @@ func GetConfig() (Config, error) {
 
 	if err := viper.Unmarshal(&c); err != nil {
 		return c, err
+	}
+
+	// Check if an encryption key is not set.
+	if len(c.App.EncryptionKey) == 0 {
+		b := make([]byte, 32)
+		rand.Read(b)
+		c.App.EncryptionKey = hex.EncodeToString(b)
+
+		log.Default().Warn("generating random encryption key because key was not set")
 	}
 
 	return c, nil

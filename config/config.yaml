@@ -16,8 +16,10 @@ app:
   # since it's likely your app's HTTP settings are not identical to what is exposed by your server.
   host: "http://localhost:8000"
   environment: "local"
-  # Change this on any live environments.
-  encryptionKey: "?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"
+  # If this is omitted, the app will generate a random key each time it starts, which isn't ideal
+  # because existing sessions will be wiped out. For live environments, it is recommended that you
+  # set/rotate this yourself either directly or using an environment variable.
+  encryptionKey: ""
   timeout: "20s"
   passwordToken:
       expiration: "60m"

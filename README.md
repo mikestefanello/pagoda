@@ -351,7 +351,7 @@ func SomeFunction(ctx echo.Context) error {
 
 ### Encryption
 
-Session data is encrypted for security purposes. The encryption key is stored in [configuration](#configuration) at `Config.App.EncryptionKey`. While the default is fine for local development, it is **imperative** that you change this value for any live environment otherwise session data can be compromised.
+Session data is encrypted for security purposes. The encryption key is stored in [configuration](#configuration) at `Config.App.EncryptionKey`. By default, no key is provided, and one will be randomly generated when the app starts, which means that existing session data will be wiped on each start unless you set a key yourself. A warning will be logged when this happens so you are aware. It is recommended to set (and optionally rotate) the key yourself, either directly or via [environment variable](#environment-overrides), on any live environments.
 
 ## Authentication
 
