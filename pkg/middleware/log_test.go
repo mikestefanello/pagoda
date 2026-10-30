@@ -74,6 +74,7 @@ func TestLogRequestID(t *testing.T) {
 
 func TestLogRequest(t *testing.T) {
 	statusCode := 200
+	var ipAddr string
 	h := new(mockLogHandler)
 
 	exec := func() {
@@ -81,9 +82,9 @@ func TestLogRequest(t *testing.T) {
 		logger := slog.New(h).With("previous", "param")
 		log.Set(ctx, logger)
 		ctx.Request().Header.Set("Referer", "ref.com")
-		ctx.Request().Header.Set(echo.HeaderXRealIP, "21.12.12.21")
 
 		require.NoError(t, tests.ExecuteHandler(ctx, func(ctx echo.Context) error {
+			ipAddr = ctx.RealIP()
 			return ctx.String(statusCode, "hello")
 		},
 			SetLogger(),
@@ -93,7 +94,7 @@ func TestLogRequest(t *testing.T) {
 
 	exec()
 	assert.Equal(t, "param", h.GetAttr("previous"))
-	assert.Equal(t, "21.12.12.21", h.GetAttr("ip"))
+	assert.Equal(t, ipAddr, h.GetAttr("ip"))
 	assert.Equal(t, "test.localhost", h.GetAttr("host"))
 	assert.Equal(t, "ref.com", h.GetAttr("referer"))
 	assert.Equal(t, "200", h.GetAttr("status"))
